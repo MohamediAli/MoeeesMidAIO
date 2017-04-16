@@ -40,7 +40,7 @@ Orianna.cpp(1272): warning C4305: 'initializing': truncation from 'double' to 'f
 Orianna.cpp(1273): warning C4305: '+=': truncation from 'double' to 'float'
   PluginSDK.cpp
   Rembrandt.cpp
-c:\users\moe\documents\visual studio 2015\projects\moeeesmids\moeeesmids\Geometry.h(65): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
+c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\Geometry.h(65): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
 Rembrandt.cpp(71): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
 Rembrandt.cpp(89): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
   Taliyah.cpp
@@ -52,10 +52,10 @@ Taliyah.cpp(515): warning C4244: 'initializing': conversion from 'double' to 'fl
 Taliyah.cpp(529): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
 Taliyah.cpp(549): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 Taliyah.cpp(555): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-     Creating library .\Release\MoeeesMids.lib and object .\Release\MoeeesMids.exp
+     Creating library ..\..\Release\MoeeesMids.lib and object ..\..\Release\MoeeesMids.exp
   Generating code
-c:\users\moe\documents\visual studio 2015\projects\moeeesmids\moeeesmids\orianna.cpp(784): warning C4715: 'Orianna::FarmQ': not all control paths return a value
+c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\orianna.cpp(784): warning C4715: 'Orianna::FarmQ': not all control paths return a value
   All 1043 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  MoeeesMids.vcxproj -> C:\Users\Moe\Documents\Visual Studio 2015\Projects\MoeeesMids\MoeeesMids\.\Release\MoeeesMids.dll
-  MoeeesMids.vcxproj -> .\Release\MoeeesMids.pdb (Full PDB)
+  MoeeesMids.vcxproj -> C:\Users\Moe\Documents\GitHub\MoeeesMidAIO\MoeeesMids\MoeeesMids\..\..\Release\MoeeesMids.dll
+  MoeeesMids.vcxproj -> ..\..\Release\MoeeesMids.pdb (Full PDB)
