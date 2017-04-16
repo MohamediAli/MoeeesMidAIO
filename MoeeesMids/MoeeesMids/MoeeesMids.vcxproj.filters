@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{85cd6ce4-3ddf-44c1-b545-aa40ab46d373}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Champs">
+      <UniqueIdentifier>{12daf0f4-871f-44a1-a7aa-70ee1aab5142}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Malachite Pred">
+      <UniqueIdentifier>{90b428cb-5ae6-4417-97bb-f292423dfdf2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vector3.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginSDK.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="LPPConstants.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginData.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Champion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Orianna.h">
+      <Filter>Champs</Filter>
+    </ClInclude>
+    <ClInclude Include="Rembrandt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lords.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ahri.h">
+      <Filter>Champs</Filter>
+    </ClInclude>
+    <ClInclude Include="Taliyah.h">
+      <Filter>Champs</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PluginSDK.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Extensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Orianna.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+    <ClCompile Include="Champion.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+    <ClCompile Include="Core.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+    <ClCompile Include="Rembrandt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ahri.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+    <ClCompile Include="Taliyah.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
