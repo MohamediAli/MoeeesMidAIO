@@ -77,7 +77,9 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	eMenu = Parent->AddMenu("E Settings");
 	rMenu = Parent->AddMenu("R Settongs");
 	LaneClearMenu = Parent->AddMenu("Lane Clear");
+	Prediction = Parent->AddMenu("Prediction");
 	MiscMenu = Parent->AddMenu("Miscs");
+
 	Drawings = Parent->AddMenu("All Drawings");
 
 
@@ -100,6 +102,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 
 	ComboE = eMenu->CheckBox("Use E in Combo", true);
 	killStealE = eMenu->CheckBox("Kill Steal with E", true);
+	harassE = eMenu->CheckBox("Harass with E", false);
 	HealthPercent = eMenu->AddFloat("Shield  Self if Health Percent Below: ", 0, 100, 30);
 	ShieldTeamate = eMenu->CheckBox("Shield Teammates", true);
 	ShieldTeamatePercent = eMenu->AddFloat("^->Shield Teammate if Health Percent Below: ", 0, 100, 30);
@@ -126,6 +129,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	DrawR = Drawings->CheckBox("Draw R", true);
 	drawBall = Drawings->CheckBox("Draw Ball Animation", true);
 	ballSelect = Drawings->AddFloat("Ball Style 0 = Divine [Nader Sl] 1 = Gagondix", 0, 1, 0);
+	PredictionType = Prediction->AddInteger("Prediction 0 = LordZed Prediction 1 = Common", 0, 1, 0);
 
 
 }
@@ -825,9 +829,12 @@ void Orianna::CastQ(IUnit* target)
 		E->CastOnPlayer();
 		return;
 	}
-
+	if (PredictionType->GetInteger() == 0 ){
 	QCast(Q);
-
+	}
+	else  {
+		Q->CastOnTarget(target, kHitChanceHigh);
+	}
 
 }
 
@@ -922,6 +929,10 @@ void Orianna::Combo()
 
 void Orianna::Harass()
 {
+	if (harassE->Enabled())
+	{
+		eLogic();
+	}
 	if (harassW->Enabled() && W->IsReady() && GEntityList->Player()->ManaPercent() > harassWMana->GetFloat() && SpellCheck(StationaryBall->GetPosition(), W->Radius(), W->GetDelay()))
 	{
 		W->CastOnPlayer();
