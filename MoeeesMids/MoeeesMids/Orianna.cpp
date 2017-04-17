@@ -345,267 +345,79 @@ void Orianna::OnSpellCast(CastedSpell const& args) {
 		}
 
 		if (Extensions::GetDistance(GEntityList->Player(), args.Caster_->GetPosition()) <= E->Range() && args.Caster_->IsValidTarget() && E->IsReady()) {
-
-			if (std::string(args.Name_) == "ShenE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "JaxLeapStrike") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "AatroxQ") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "AkaliShadowDance") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "HeadButt") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "BandageToss") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "DianaTeleport") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "EkkoE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "EliseSpidereInitial") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "CamilleE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "KledR") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "KledE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "IvernQ") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "IllaoiW") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "Crowstorm") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "FioraQ") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "GnarE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "GnarBigE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "GragasE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "HecarimUlt") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "IreliaGatotsu") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "JarvanIVCataclysm") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "JarvanIVDragonStrike") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "KatarinaE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "KennenLightningRush") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "KhazixE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "LeblancSlide") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "LeblancSlideM") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "LeonaZenithBlade") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "MaokaiUnstableGrowth") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "NocturneParanoia") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "OlafRagnarok") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "SionR") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "RengarR") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "ShyvanaTransformCast") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "ShyvanaTransformLeap") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "ThreshQLeap") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "WarwickR") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "GallioE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "ZacE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "LucianE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "MonkeyKingNimbus") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "NautilusAnchorDrag") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "Pantheon_LeapBash") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "PoppyHeroicCharge") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "QuinnE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "RenektonSliceAndDice") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "RiftWalk") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "RivenTriCleave") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "RocketJump") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "SejuaniArcticAssault") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "TalonCutThroat") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "UFSlash") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "UdyrBearStance") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "KatarinaE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "Valkyrie") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "ViQ") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "ViR") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "VolibearQ") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "XenZhaoSweep") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "YasuoDashWrapper") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "blindmonkqtwo") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "khazixelong") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "reksaieburrowed") {
-				E->CastOnTarget(args.Caster_);
-
-			}
-			if (std::string(args.Name_) == "TryndamereE") {
-				E->CastOnTarget(args.Caster_);
-
-			}
+			std::vector<std::string> SpellNames = {
+        "ShenE",
+        "JaxLeapStrike",
+        "AatroxQ",
+        "AkaliShadowDance",
+        "HeadButt",
+        "BandageToss",
+        "DianaTeleport",
+        "EkkoE",
+        "EliseSpidereInitial",
+        "CamilleE",
+        "KledR",
+        "KledE",
+        "IvernQ",
+        "IllaoiW",
+        "Crowstorm",
+        "FioraQ",
+        "GnarE",
+        "GnarBigE",
+        "GragasE",
+        "HecarimUlt",
+        "IreliaGatotsu",
+        "JarvanIVCataclysm",
+        "JarvanIVDragonStrike",
+        "KatarinaE",
+        "KennenLightningRush",
+        "KhazixE",
+        "LeblancSlide",
+        "LeblancSlideM",
+        "LeonaZenithBlade",
+        "MaokaiUnstableGrowth",
+        "NocturneParanoia",
+        "OlafRagnarok",
+        "SionR",
+        "RengarR",
+        "ShyvanaTransformCast",
+        "ShyvanaTransformLeap",
+        "ThreshQLeap",
+        "WarwickR",
+        "GallioE",
+        "ZacE",
+        "LucianE",
+        "MonkeyKingNimbus",
+        "NautilusAnchorDrag",
+        "Pantheon_LeapBash",
+        "PoppyHeroicCharge",
+        "QuinnE",
+        "RenektonSliceAndDice",
+        "RiftWalk",
+        "RivenTriCleave",
+        "RocketJump",
+        "SejuaniArcticAssault",
+        "TalonCutThroat",
+        "UFSlash",
+        "UdyrBearStance",
+        "KatarinaE",
+        "Valkyrie",
+        "ViQ",
+        "ViR",
+        "VolibearQ",
+        "XenZhaoSweep",
+        "YasuoDashWrapper",
+        "blindmonkqtwo",
+        "khazixelong",
+        "reksaieburrowed",
+        "TryndamereE"
+    };
+
+    for (auto spellName : SpellNames)
+    {
+        if (std::string(args.Name_) == spellName)
+            E->CastOnTarget(args.Caster_);
+    }
 		}
 	}
 }
