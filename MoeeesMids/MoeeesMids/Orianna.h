@@ -4,6 +4,7 @@
 #include "Extensions.h"
 #include <unordered_map>
 
+
 class Orianna : public virtual Champion
 {
 public:IMenu*			OriannaMenu;
@@ -85,6 +86,7 @@ private:
 	IMenu* qMenu;
 	IMenu* wMenu;
 	IMenu* eMenu;
+	IMenuOption* HPBar;
 
 	IMenuOption* ComboQ;
 	IMenuOption* ComboQWorked;

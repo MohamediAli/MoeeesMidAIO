@@ -16,6 +16,7 @@ public:
 
 private:
 
+	IMenuOption* HPBar;
 	void CastE(IUnit* target);
 	Vec3 getPosToEflash(Vec3 target);
 	void CastFlash();

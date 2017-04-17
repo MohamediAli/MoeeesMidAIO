@@ -31,6 +31,7 @@ private:
 	void dmgdraw();
 	void KillSteal();
 	void Drawing();
+	
 
 	IMenu*			TaliyahMenu;
 	IMenu* ComboMenu;
@@ -44,6 +45,7 @@ private:
 	IMenu* wMenu;
 	IMenu* eMenu;
 
+	IMenuOption* HPBar;
 	IMenuOption* ComboQ;
 	IMenuOption* ComboQWorked;
 	IMenuOption* ComboW;

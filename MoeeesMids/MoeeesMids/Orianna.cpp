@@ -1,6 +1,8 @@
 ﻿#include "Orianna.h"
 #include <time.h>
 #include "Lords.h"
+#include "Rembrandt.h"
+
 #define M_PI 3.14159265358979323846
 bool FlashUlting = false;
 IUnit *StationaryBall, *MovingBall;
@@ -123,12 +125,14 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 
 	DrawReady = Drawings->CheckBox("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox("Draw Damage", true);
+	HPBar = Drawings->AddColor("Change Health Bar", 69,64,185,100);
 	DrawQ = Drawings->CheckBox("Draw Q", true);
 	DrawW = Drawings->CheckBox("Draw W", true);
 	DrawE = Drawings->CheckBox("Draw E", true);
 	DrawR = Drawings->CheckBox("Draw R", true);
 	drawBall = Drawings->CheckBox("Draw Ball Animation", true);
 	ballSelect = Drawings->AddFloat("Ball Style 0 = Divine [Nader Sl] 1 = Gagondix", 0, 1, 0);
+
 	PredictionType = Prediction->AddInteger("Prediction 0 = LordZed Prediction 1 = Common", 0, 1, 0);
 
 
@@ -1040,26 +1044,13 @@ void Orianna::dmgdraw()
 				if (R->IsReady()) {
 					RDamage = rDmg(hero) + GDamage->GetAutoAttackDamage(GEntityList->Player(), hero, true);
 				}
+				Vec4 BarColor;
+				HPBar->GetColor(&BarColor);
 
 				float totalDamage = QDamage + WDamage + EDamage + RDamage;
 				float percentHealthAfterDamage = max(0, hero->GetHealth() - float(totalDamage)) / hero->GetMaxHealth();
-				float yPos = barPos.y + yOffset;
-				float xPosDamage = (barPos.x + xOffset) + Width * percentHealthAfterDamage;
-				float xPosCurrentHp = barPos.x + xOffset + Width * (hero->GetHealth() / hero->GetMaxHealth());
-				if (!hero->IsDead() && hero->IsValidTarget())
-				{
-					float differenceInHP = xPosCurrentHp - xPosDamage;
-					float pos1 = barPos.x + 9 + (107 * percentHealthAfterDamage);
-
-					for (int i = 0; i < differenceInHP; i++)
-					{
-						GRender->DrawLine(Vec2(pos1 + i, yPos), Vec2(pos1 + i, yPos + Height), FillColor);
-					}
-					if (!hero->IsVisible())
-					{
-
-					}
-				}
+				Rembrandt::DrawDamageOnChampionHPBar(hero, totalDamage, BarColor);
+				
 			}
 		}
 	}

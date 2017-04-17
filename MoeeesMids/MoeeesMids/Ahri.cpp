@@ -1,5 +1,6 @@
 #include "Ahri.h"
 #include "Extensions.h"
+#include "Rembrandt.h"
 
 
 Ahri::~Ahri()
@@ -69,6 +70,7 @@ Ahri::Ahri(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 
 
 	DrawDmg = Drawings->CheckBox("Draw Damage Calaclations", true);
+	HPBar = Drawings->AddColor("Change Health Bar", 69, 64, 185, 100);
 	DrawReady = Drawings->CheckBox("Draw Ready Spells", true);
 	DrawQ = Drawings->CheckBox("Draw Q", true);
 	DrawW = Drawings->CheckBox("Draw W", true);
@@ -220,26 +222,12 @@ void Ahri::dmgdraw()
 				if (E->IsReady()) {
 					EDamage = GDamage->GetSpellDamage(GEntityList->Player(), hero, kSlotE);
 				}
+				Vec4 BarColor;
+				HPBar->GetColor(&BarColor);
 
 				float totalDamage = QDamage + WDamage + EDamage + RDamage;
 				float percentHealthAfterDamage = max(0, hero->GetHealth() - float(totalDamage)) / hero->GetMaxHealth();
-				float yPos = barPos.y + yOffset;
-				float xPosDamage = (barPos.x + xOffset) + Width * percentHealthAfterDamage;
-				float xPosCurrentHp = barPos.x + xOffset + Width * (hero->GetHealth() / hero->GetMaxHealth());
-				if (!hero->IsDead() && hero->IsValidTarget())
-				{
-					float differenceInHP = xPosCurrentHp - xPosDamage;
-					float pos1 = barPos.x + 9 + (107 * percentHealthAfterDamage);
-
-					for (int i = 0; i < differenceInHP; i++)
-					{
-						GRender->DrawLine(Vec2(pos1 + i, yPos), Vec2(pos1 + i, yPos + Height), FillColor);
-					}
-					if (!hero->IsVisible())
-					{
-
-					}
-				}
+				Rembrandt::DrawDamageOnChampionHPBar(hero, totalDamage, BarColor);
 			}
 		}
 	}
