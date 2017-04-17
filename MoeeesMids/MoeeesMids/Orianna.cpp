@@ -241,12 +241,12 @@ bool Orianna::OnPreCast(int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndP
 		return false;
 	}
 
-
+/*
 	if (Slot == kSlotE && W->IsReady() && !Q->IsReady() && ComboW->Enabled()) {
 		if (SpellCheck(StationaryBall->GetPosition(), W->Radius(), W->GetDelay()) > 0)
 			W->CastOnPlayer();
 		return false;
-	}
+	}*/
 
 
 	return true;
@@ -403,7 +403,7 @@ void Orianna::OnSpellCast(CastedSpell const& args) {
         "SejuaniArcticAssault",
         "TalonCutThroat",
         "UFSlash",
-        "UdyrBearStance",
+      //  "UdyrBearStance",
         "KatarinaE",
         "Valkyrie",
         "ViQ",
@@ -692,7 +692,10 @@ void Orianna::eLogic() {
 
 void Orianna::Combo()
 {
+	
 	eLogic();
+	
+
 	if (W->IsReady() && ComboW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) > 0) || Extensions::EnemiesInRange(GetMovingBallPos(), W->Radius())) {
 		W->CastOnPlayer();
 	}
@@ -753,8 +756,8 @@ void Orianna::Harass()
 	{
 		eLogic();
 	}
-	if (harassW->Enabled() && W->IsReady() && GEntityList->Player()->ManaPercent() > harassWMana->GetFloat() && SpellCheck(StationaryBall->GetPosition(), W->Radius(), W->GetDelay()))
-	{
+
+	if (W->IsReady() && harassW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) > 0) || Extensions::EnemiesInRange(GetMovingBallPos(), W->Radius())) {
 		W->CastOnPlayer();
 	}
 
