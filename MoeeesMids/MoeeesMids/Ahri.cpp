@@ -268,7 +268,7 @@ void Ahri::Combo()
 
 	}
 
-	if (ComboW->Enabled() && W->IsReady() && player->IsValidTarget(target, W->Range()) && GEntityList->Player()->GetMana() >100 + W->ManaCost())
+	if (ComboW->Enabled() && W->IsReady() && player->IsValidTarget(target, W->Range()) && GEntityList->Player()->GetMana() > 100 + W->ManaCost())
 	{
 		W->CastOnPlayer();
 
@@ -292,7 +292,7 @@ void Ahri::Harass()
 
 	}
 
-	if (Q->IsReady() && HarassQ->Enabled() && player->IsValidTarget(target, Q->Range()) && GEntityList->Player()->GetMana() >100 + Q->ManaCost())
+	if (Q->IsReady() && HarassQ->Enabled() && player->IsValidTarget(target, Q->Range()) && GEntityList->Player()->GetMana() > 100 + Q->ManaCost())
 	{
 		Q->CastOnTarget(target, kHitChanceVeryHigh);
 

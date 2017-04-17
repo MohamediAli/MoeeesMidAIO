@@ -357,12 +357,12 @@ void Taliyah::LaneClear()
 
 		}
 
-		if (laneClearE->Enabled() && GEntityList->Player()->ManaPercent()>laneClearEMana->GetFloat() && E->IsReady() && player->IsValidTarget(minions, E->Range()))
+		if (laneClearE->Enabled() && GEntityList->Player()->ManaPercent() > laneClearEMana->GetFloat() && E->IsReady() && player->IsValidTarget(minions, E->Range()))
 		{
 			E->CastOnUnit(minions);
 		}
 
-		if (laneClearW->Enabled() && GEntityList->Player()->ManaPercent()>laneClearWMana->GetFloat() && W->IsReady() && player->IsValidTarget(minions, W->Range()))
+		if (laneClearW->Enabled() && GEntityList->Player()->ManaPercent() > laneClearWMana->GetFloat() && W->IsReady() && player->IsValidTarget(minions, W->Range()))
 		{
 			W->CastFrom(minions->GetPosition(), player->GetPosition());
 		}
@@ -388,12 +388,12 @@ void Taliyah::JungleClear()
 
 		}
 
-		if (JungleClearE->Enabled() && GEntityList->Player()->ManaPercent()>JungleClearEMana->GetFloat() && E->IsReady() && player->IsValidTarget(minions, W->Range()))
+		if (JungleClearE->Enabled() && GEntityList->Player()->ManaPercent() > JungleClearEMana->GetFloat() && E->IsReady() && player->IsValidTarget(minions, W->Range()))
 		{
 			E->CastOnUnit(minions);
 		}
 
-		if (JungleClearW->Enabled() && GEntityList->Player()->ManaPercent()>JungleClearWMana->GetFloat() && W->IsReady() && player->IsValidTarget(minions, W->Range()))
+		if (JungleClearW->Enabled() && GEntityList->Player()->ManaPercent() > JungleClearWMana->GetFloat() && W->IsReady() && player->IsValidTarget(minions, W->Range()))
 		{
 			W->CastOnUnit(minions);
 		}

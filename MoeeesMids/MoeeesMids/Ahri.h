@@ -13,6 +13,7 @@ public:
 	void OnRender();
 	void AntiGapclose(GapCloserSpell const& args);
 	void AntiInterrupt(InterruptibleSpell const& args);
+
 private:
 
 	void CastE(IUnit* target);

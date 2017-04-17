@@ -832,10 +832,10 @@ void Orianna::CastQ(IUnit* target)
 		E->CastOnPlayer();
 		return;
 	}
-	if (PredictionType->GetInteger() == 0 ){
-	QCast(Q);
+	if (PredictionType->GetInteger() == 0) {
+		QCast(Q);
 	}
-	else  {
+	else {
 		Q->CastOnTarget(target, kHitChanceHigh);
 	}
 
@@ -861,7 +861,7 @@ void Orianna::eLogic() {
 		CastE(player);
 		return;
 	}
-	
+
 	for (auto ally : GEntityList->GetAllHeros(true, false))
 	{
 		if (Extensions::EnemiesInRange(ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range())
