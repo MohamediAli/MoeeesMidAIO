@@ -1,41 +1,22 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(368,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
-  Core.cpp
-  Orianna.cpp
-Orianna.cpp(46): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-Orianna.cpp(213): warning C4390: ';': empty controlled statement found; is this the intent?
-Orianna.cpp(226): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(231): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(238): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(257): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(271): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(801): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(889): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(936): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(1030): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-Orianna.cpp(1048): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1063): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1070): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1085): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1092): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1104): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1132): warning C4305: '+=': truncation from 'double' to 'float'
-Orianna.cpp(1137): warning C4305: 'initializing': truncation from 'double' to 'float'
-Orianna.cpp(1138): warning C4305: '+=': truncation from 'double' to 'float'
-Orianna.cpp(1154): warning C4305: 'argument': truncation from 'double' to 'const float'
-Orianna.cpp(1155): warning C4305: 'argument': truncation from 'double' to 'const float'
-Orianna.cpp(1158): warning C4305: 'initializing': truncation from 'double' to 'float'
-Orianna.cpp(1159): warning C4305: '+=': truncation from 'double' to 'float'
-Orianna.cpp(1225): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-Orianna.cpp(1264): warning C4305: 'initializing': truncation from 'double' to 'float'
-Orianna.cpp(1265): warning C4305: '+=': truncation from 'double' to 'float'
-Orianna.cpp(1281): warning C4305: 'argument': truncation from 'double' to 'const float'
-Orianna.cpp(1284): warning C4305: 'initializing': truncation from 'double' to 'float'
-Orianna.cpp(1285): warning C4305: '+=': truncation from 'double' to 'float'
+  Ahri.cpp
+Ahri.cpp(215): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+Ahri.cpp(218): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+Ahri.cpp(221): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Taliyah.cpp
+Taliyah.cpp(461): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(489): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(496): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(510): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(517): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(531): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(551): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(557): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
      Creating library ..\..\Release\MoeeesMids.lib and object ..\..\Release\MoeeesMids.exp
   Generating code
-  7 of 1043 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+  4 of 1043 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   MoeeesMids.vcxproj -> C:\Users\Moe\Documents\GitHub\MoeeesMidAIO\MoeeesMids\MoeeesMids\..\..\Release\MoeeesMids.dll
   MoeeesMids.vcxproj -> ..\..\Release\MoeeesMids.pdb (Full PDB)

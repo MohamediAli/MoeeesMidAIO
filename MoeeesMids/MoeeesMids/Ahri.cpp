@@ -78,6 +78,13 @@ Ahri::Ahri(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 
 void Ahri::OnGameUpdate()
 {
+	Automated();
+	killSteal();
+
+	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused()) {
+		return;
+	}
+
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		Combo();
@@ -113,8 +120,7 @@ void Ahri::OnGameUpdate()
 		}
 	}
 
-	Automated();
-	killSteal();
+
 
 }
 

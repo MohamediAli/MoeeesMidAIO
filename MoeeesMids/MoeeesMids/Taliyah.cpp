@@ -80,7 +80,9 @@ void Taliyah::OnGameUpdate()
 	KillSteal();
 	Automatic();
 
-
+	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused()) {
+		return;
+	}
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		Combo();

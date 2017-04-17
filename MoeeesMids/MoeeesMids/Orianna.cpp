@@ -184,6 +184,9 @@ void Orianna::OnGameUpdate()
 	Automatic();
 
 	//debug key
+	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused()) {
+		return;
+	}
 
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
