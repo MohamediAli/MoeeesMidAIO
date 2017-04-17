@@ -39,8 +39,8 @@ protected:
 	ISpell2* Flash;
 	ISpell2* RFlash;
 	ISpell2* EFlash;
-	int xOffset = 10;
-	int yOffset = 15;
+	int xOffset = 0;
+	int yOffset = 0;
 	int Width = 103;
 	int Height = 8;
 	Vec4 Color = Vec4(105, 198, 5, 255);

@@ -1,4 +1,10 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(368,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  Ahri.cpp
+Ahri.cpp(209): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+Ahri.cpp(212): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+Ahri.cpp(215): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Champion.cpp
+  Core.cpp
   Orianna.cpp
 Orianna.cpp(46): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
 Orianna.cpp(209): warning C4390: ';': empty controlled statement found; is this the intent?
@@ -31,11 +37,20 @@ Orianna.cpp(1253): warning C4305: '+=': truncation from 'double' to 'float'
 Orianna.cpp(1269): warning C4305: 'argument': truncation from 'double' to 'const float'
 Orianna.cpp(1272): warning C4305: 'initializing': truncation from 'double' to 'float'
 Orianna.cpp(1273): warning C4305: '+=': truncation from 'double' to 'float'
+  Taliyah.cpp
+Taliyah.cpp(459): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(487): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(494): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(508): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(515): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(529): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(549): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+Taliyah.cpp(555): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
      Creating library ..\..\Release\MoeeesMids.lib and object ..\..\Release\MoeeesMids.exp
   Generating code
   1 of 1043 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    4 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   MoeeesMids.vcxproj -> C:\Users\Moe\Documents\GitHub\MoeeesMidAIO\MoeeesMids\MoeeesMids\..\..\Release\MoeeesMids.dll
   MoeeesMids.vcxproj -> ..\..\Release\MoeeesMids.pdb (Full PDB)
