@@ -50,6 +50,8 @@ private:
 	IUnit *StationaryBall, *MovingBall;
 	Vec3 BallPosition;
 	int Ticks;
+	IMenuOption* PredictionType;
+	IMenu* Prediction;
 	float BallRad = 75;
 
 	int xOffset = 10;

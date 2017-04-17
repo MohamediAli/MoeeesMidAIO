@@ -125,7 +125,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	DrawE = Drawings->CheckBox("Draw E", true);
 	DrawR = Drawings->CheckBox("Draw R", true);
 	drawBall = Drawings->CheckBox("Draw Ball Animation", true);
-	ballSelect = Drawings->AddInteger("Ball Style 0 = Divine [Nader Sl] 1 = Gagondix", 0, 1, 0);
+	ballSelect = Drawings->AddFloat("Ball Style 0 = Divine [Nader Sl] 1 = Gagondix", 0, 1, 0);
 
 
 }
@@ -866,15 +866,16 @@ void Orianna::eLogic() {
 void Orianna::Combo()
 {
 	eLogic();
+	if (W->IsReady() && ComboW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) > 0) || Extensions::EnemiesInRange(GetMovingBallPos(), W->Radius())) {
+		W->CastOnPlayer();
+	}
 	if (isBallMoving())
 		return;
 
 	auto target1 = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead())
 		return;
-	if (W->IsReady() && ComboW->Enabled() && SpellCheck(StationaryBall->GetPosition(), W->Radius(), W->GetDelay()) > 0) {
-		W->CastOnPlayer();
-	}
+
 
 	if (R->IsReady() && ComboR->Enabled() && Extensions::EnemiesInRange(StationaryBall->GetPosition(), R->Radius() * 2) > 0)
 	{
@@ -1304,7 +1305,7 @@ void Orianna::Drawing()
 			DrawGagongReplicate(GetMovingBallPos());
 		}
 	}
-	if (drawBall->Enabled() && ballSelect->GetInteger() == 1)
+	else if (drawBall->Enabled() && ballSelect->GetInteger() == 1)
 	{
 		if (StationaryBall && (StationaryBall->IsValidObject() || StationaryBall->IsValidTarget()))
 		{
