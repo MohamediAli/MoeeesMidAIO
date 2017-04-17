@@ -47,7 +47,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	Q = GPluginSDK->CreateSpell2(kSlotQ, kCircleCast, true, true, kCollidesWithYasuoWall);
 	Q->SetSkillshot(0.f, 150.f, 1400.f, 810.f);
 	W = GPluginSDK->CreateSpell2(kSlotW, kCircleCast, false, true, kCollidesWithNothing);
-	W->SetSkillshot(0.25f, 220.f, FLT_MAX, 245.f);
+	W->SetSkillshot(0.f, 220.f, FLT_MAX, 245.f);
 	E = GPluginSDK->CreateSpell2(kSlotE, kTargetCast, false, true, kCollidesWithYasuoWall);
 	E->SetSkillshot(0.25f, 80.f, 1700.f, 1095.f);
 	R = GPluginSDK->CreateSpell2(kSlotR, kCircleCast, false, true, kCollidesWithNothing);
