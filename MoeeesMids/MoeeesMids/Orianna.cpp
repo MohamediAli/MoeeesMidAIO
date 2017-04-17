@@ -166,6 +166,7 @@ void Orianna::PerformFlashUlt()
 
 		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && !target->IsInvulnerable() && result.HitChance >= kHitChanceVeryHigh)
 		{
+			FlashUlting = true;
 			RFlash->CastOnTarget(target, kHitChanceVeryHigh);
 			GPluginSDK->DelayFunctionCall(500 + (GGame->Latency()) / 2, [=]() { CastFlash(); FlashUlting = false; });
 
@@ -1038,7 +1039,7 @@ void Orianna::Automatic()
 	}
 	if (GetAsyncKeyState(FlashUlt->GetInteger()) && !GGame->IsChatOpen() && GUtility->IsLeagueWindowFocused())
 	{
-		FlashUlting = true;
+		
 		PerformFlashUlt();
 	}
 
