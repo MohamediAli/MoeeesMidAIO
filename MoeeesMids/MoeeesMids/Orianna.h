@@ -24,8 +24,9 @@ public:IMenu*			OriannaMenu;
 
 private:
 	void SaveTeam();
+	float BallDelay();
 	std::tuple<int, Vec3> GetBestQLocation(IUnit* mainTarget);
-	int SpellCheck(Vec3 Location, int range, double delay);
+	int SpellCheck(Vec3 Location, int range, float delay);
 	BOOL isBallMoving();
 	Vec3 GetMovingBallPos();
 	bool pairCompare(const std::pair<int, Vec2>& firstElem, const std::pair<int, Vec2>& secondElem);

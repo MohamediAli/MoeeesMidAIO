@@ -304,7 +304,15 @@ BOOL Orianna::isBallMoving()
 	return 	GGame->Time() - QBallData.StartTime < QBallData.OverAllTime;
 }
 
-//Author= Divine[NaderSl]
+float Orianna::BallDelay()
+{
+	if (GGame->Time() - QBallData.StartTime < QBallData.OverAllTime) {
+		return (GGame->Time() - QBallData.StartTime);
+	}
+	else return 0;
+}
+
+//Divine[NaderSl]
 Vec3 Orianna::GetMovingBallPos()
 {
 	float EndTime = QBallData.StartTime + QBallData.OverAllTime;
@@ -448,7 +456,7 @@ void Orianna::OnCreate(IUnit* object) {
 	{
 		if (strcmp(objectName, "Orianna_Base_Z_ball_glow_green.troy") == 0 && object->IsVisible() && object->IsValidObject())
 		{
-			BallPosition = ball->GetPosition();
+			
 			result1.push_back(ball);
 
 		}
@@ -605,7 +613,7 @@ Vec3 Orianna::FarmQ(Vec3 pos)
 }
 
 
-int Orianna::SpellCheck(Vec3 pos, int range, double delay)
+int Orianna::SpellCheck(Vec3 pos, int range, float delay)
 {
 
 	auto count = 0;
@@ -793,7 +801,7 @@ void Orianna::Combo()
 		return;
 
 
-	if (W->IsReady() && ComboW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) || (Extensions::EnemiesInRange(BallPosition, W->Radius()) )))
+	if (W->IsReady() && ComboW->Enabled() &&  ((Extensions::EnemiesInRange(BallPosition, W->Radius()) > 0) || Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius())))
 {
 		W->CastOnPlayer();
 	}
