@@ -353,7 +353,7 @@ void Orianna::OnSpellCast(CastedSpell const& args) {
 			}
 		}
 
-		if (Extensions::GetDistance(GEntityList->Player(), args.Caster_->GetPosition()) <= E->Range() && args.Caster_->IsValidTarget() && E->IsReady()) {
+		if (Extensions::GetDistance(GEntityList->Player(), args.Caster_->GetPosition()) <= E->Range() && args.Caster_->IsValidTarget() && E->IsReady() && !args.Caster_->IsEnemy(GEntityList->Player())) {
 			std::vector<std::string> SpellNames = {
         "ShenE",
         "JaxLeapStrike",
