@@ -203,12 +203,12 @@ void Orianna::OnGameUpdate()
 		Combo();
 	}
 
-	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
+	else if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
 	{
 		Harass();
 	}
 
-	if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
+	else if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
 	{
 		LaneClear();
 
