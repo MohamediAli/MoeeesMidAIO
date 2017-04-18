@@ -31,4 +31,5 @@ namespace Extensions
 	float Dist2D(Vec2 from, Vec2 to);
 	float Dist2D(Vec2 from, Vec3 to);
 	int CountMinionsInTargetRange(Vec3 target, float range);
+	double distance_squared(double *a, double *b);
 }

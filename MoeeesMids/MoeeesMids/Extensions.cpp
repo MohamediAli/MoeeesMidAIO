@@ -159,3 +159,12 @@
 
 		return minions;
 	}
+
+	double Extensions::distance_squared(double *a, double *b)
+	{
+		double dx = a[0] - b[0];
+		double dy = a[1] - b[1];
+		double dz = a[2] - b[2];
+
+		return dx*dx + dy*dy + dz*dz;
+	}

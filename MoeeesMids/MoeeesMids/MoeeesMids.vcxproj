@@ -153,6 +153,7 @@
     <ClInclude Include="Extensions.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Lords.h" />
+    <ClInclude Include="MEC.h" />
     <ClInclude Include="Orianna.h" />
     <ClInclude Include="LPPConstants.h" />
     <ClInclude Include="PluginData.h" />

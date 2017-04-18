@@ -23,7 +23,8 @@ public:IMenu*			OriannaMenu;
 	   std::vector<std::string> ballAnimation;
 
 private:
-
+	void SaveTeam();
+	std::tuple<int, Vec3> GetBestQLocation(IUnit* mainTarget);
 	int SpellCheck(Vec3 Location, int range, double delay);
 	BOOL isBallMoving();
 	Vec3 GetMovingBallPos();
