@@ -69,6 +69,7 @@ void  LoadEvents()
 	GEventManager->AddEventHandler(kEventOnNewPath, OnNewPath);
 
 	GGame->PrintChat("<font color=\"#ff4dee\"><b>Moeee's Mid AIO</b></font><b><font color=\"#FFFFFF\"> Loaded!</font></b>");
+	
 }
 
 void  UnloadEvents()

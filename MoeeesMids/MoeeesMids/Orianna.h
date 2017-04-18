@@ -19,7 +19,8 @@ public:IMenu*			OriannaMenu;
 	   bool onMouseWheel(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
 	   bool OnPreCast(int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition);
 	   void AntiGapclose(GapCloserSpell const& args);
-
+	   std::vector<std::string> PredType;
+	   std::vector<std::string> ballAnimation;
 
 private:
 

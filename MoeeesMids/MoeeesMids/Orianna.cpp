@@ -122,6 +122,8 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	laneClearW = LaneClearMenu->CheckBox("Wave Clear with W", true);
 	laneClearWMana = LaneClearMenu->AddFloat("^-> Only Wave Clear W if Mana >", 0, 100, 50);
 
+	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
+	PredType = { "Lord's", "Core" };
 
 	DrawReady = Drawings->CheckBox("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox("Draw Damage", true);
@@ -131,9 +133,10 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	DrawE = Drawings->CheckBox("Draw E", true);
 	DrawR = Drawings->CheckBox("Draw R", true);
 	drawBall = Drawings->CheckBox("Draw Ball Animation", true);
-	ballSelect = Drawings->AddFloat("Ball Style 0 = Divine [Nader Sl] 1 = Gagondix", 0, 1, 0);
 
-	PredictionType = Prediction->AddInteger("Prediction 0 = LordZed Prediction 1 = Common", 0, 1, 0);
+	ballSelect = Drawings->AddSelection ("Choose Ball Style", 0, ballAnimation);
+
+	PredictionType = Prediction->AddSelection("Choose Prediction Type", 0, PredType);
 
 
 }
@@ -694,17 +697,19 @@ void Orianna::Combo()
 {
 	
 	eLogic();
-	
-
-	if (W->IsReady() && ComboW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) > 0) || Extensions::EnemiesInRange(GetMovingBallPos(), W->Radius())) {
-		W->CastOnPlayer();
-	}
-	if (isBallMoving())
-		return;
 
 	auto target1 = GTargetSelector->FindTarget(QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
+
+
+	if (W->IsReady() && ComboW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) > 0) ||  (Extensions::EnemiesInRange(GetMovingBallPos(), W->Radius()) && !Q->IsReady()) ) {
+		W->CastOnPlayer();
+	}
+
+	if (isBallMoving())
+		return;
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead())
 		return;
+
 
 
 	if (R->IsReady() && ComboR->Enabled() && Extensions::EnemiesInRange(StationaryBall->GetPosition(), R->Radius() * 2) > 0)
