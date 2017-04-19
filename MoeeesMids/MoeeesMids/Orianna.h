@@ -143,5 +143,5 @@ private:
 	IMenuOption* gapCloserE;
 	IMenuOption* autoQ;
 	IMenuOption* autoW;
-	IMenuOption *HealthPercent, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR;
+	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR;
 };

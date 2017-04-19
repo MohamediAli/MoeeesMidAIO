@@ -117,7 +117,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	ComboE = eMenu->CheckBox("Use E in Combo", true);
 	killStealE = eMenu->CheckBox("Kill Steal with E", true);
 	harassE = eMenu->CheckBox("Harass with E", false);
-	HealthPercent = eMenu->AddFloat("Shield  Self if Health Percent Below: ", 0, 100, 30);
+	HealthPercentage = eMenu->AddFloat("Shield  Self if Health Percent Below: ", 0, 100, 30);
 	ShieldTeamate = eMenu->CheckBox("Shield Teammates", true);
 	ShieldTeamatePercent = eMenu->AddFloat("^->Shield Teammate if Health Percent Below: ", 0, 100, 30);
 
@@ -857,7 +857,7 @@ void Orianna::Combo()
 
 	if (E->IsReady() && !(GEntityList->Player()->IsDead()))
 	{
-		if (GEntityList->Player()->HealthPercent() <= HealthPercent->GetInteger() && Extensions::EnemiesInRange(GEntityList->Player()->GetPosition(), 600) > 0) {
+		if (GEntityList->Player()->HealthPercent() <= HealthPercentage->GetInteger() && Extensions::EnemiesInRange(GEntityList->Player()->GetPosition(), 600) > 0) {
 			E->CastOnPlayer();
 		} //Cast on self
 
