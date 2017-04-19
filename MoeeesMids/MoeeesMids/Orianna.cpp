@@ -139,7 +139,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 
 	DrawReady = Drawings->CheckBox("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox("Draw Damage", true);
-	HPBar = Drawings->AddColor("Change Health Bar", 69,64,185,100);
+	HPBarColor = Drawings->AddColor("Change Health Bar", 69,64,185,100);
 	DrawQ = Drawings->CheckBox("Draw Q", true);
 	DrawW = Drawings->CheckBox("Draw W", true);
 	DrawE = Drawings->CheckBox("Draw E", true);
@@ -1178,7 +1178,7 @@ void Orianna::dmgdraw()
 					RDamage = rDmg(hero) + GDamage->GetAutoAttackDamage(GEntityList->Player(), hero, true);
 				}
 				Vec4 BarColor;
-				HPBar->GetColor(&BarColor);
+				HPBarColor->GetColor(&BarColor);
 
 				float totalDamage = QDamage + WDamage + EDamage + RDamage;
 				float percentHealthAfterDamage = max(0, hero->GetHealth() - float(totalDamage)) / hero->GetMaxHealth();

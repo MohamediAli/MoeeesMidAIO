@@ -90,7 +90,7 @@ private:
 	IMenu* qMenu;
 	IMenu* wMenu;
 	IMenu* eMenu;
-	IMenuOption* HPBar;
+	IMenuOption* HPBarColor;
 
 	IMenuOption* ComboQ;
 	IMenuOption* ComboQWorked;

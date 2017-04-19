@@ -186,6 +186,8 @@ void Ahri::PerformFlashCharm()
 		auto target = GTargetSelector->GetFocusedTarget() != nullptr
 			? GTargetSelector->GetFocusedTarget()
 			: GTargetSelector->FindTarget(QuickestKill, SpellDamage, EFlash->Range());
+		if (target == nullptr || !target->IsHero() || target->IsDead() || !target->IsValidTarget() )
+			return;
 
 
 		auto flashPosition = GEntityList->Player()->ServerPosition().Extend(GGame->CursorPosition(), Flash->Range());
