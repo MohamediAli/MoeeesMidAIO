@@ -1,6 +1,6 @@
 #include "Taliyah.h"
 #include "Rembrandt.h"
-
+#include "Extensions.h"
 
 Taliyah::~Taliyah()
 {
@@ -79,23 +79,25 @@ Taliyah::Taliyah(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 
 void Taliyah::OnGameUpdate()
 {
-	KillSteal();
-	Automatic();
+
 
 	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused()) {
 		return;
 	}
+	KillSteal();
+	Automatic();
+
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		Combo();
 	}
 
-	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
+	else if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
 	{
 		Harass();
 	}
 
-	if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
+	else if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
 	{
 		LaneClear();
 		JungleClear();
@@ -225,26 +227,6 @@ void Taliyah::Combo()
 	if (target == nullptr || !target->IsHero())
 		return;
 
-	for (auto qaoe : GEntityList->GetAllUnits())
-	{
-		if (strcmp(qaoe->GetObjectName(), "Taliyah_Base_Q_aoe.troy") == 0 && qaoe->IsVisible() && qaoe->IsValidObject())
-		{
-
-			if (target && target->IsValidTarget() && player->IsFacing(target))
-			{
-				auto flDist = (player->GetPosition() - target->GetPosition()).Length2D();
-				auto flDistToCursor = (target->GetPosition() - GGame->CursorPosition()).Length2D();
-				if (flDistToCursor > flDist)
-					flDist += flDist / 3;
-				else
-					flDist -= flDist / 3;
-
-				Vec3 pos;
-				GPrediction->GetFutureUnitPosition(target, 0.11f, true, pos);
-				if (GGame->IssueOrder(player, kMoveTo, pos.Extend(player->GetPosition(), flDist))) return;
-			}
-		}
-	}
 
 	if (ComboW->Enabled() && W->IsReady() && player->IsValidTarget(target, W->Range()))
 	{
@@ -262,11 +244,12 @@ void Taliyah::Combo()
 					W->CastFrom(prediction_output.CastPosition, player->GetPosition());
 				}
 			}
-			if (E->IsReady() && (player->GetPosition() - target->GetPosition()).Length() < 420) {
+			if (E->IsReady() && W->IsReady() && Extensions::GetDistance(player, target) < 420) {
 				W->CastOnTarget(target, kHitChanceVeryHigh);
 			}
 
 		}
+
 		if (eOnGround) {
 			if ((player->GetPosition() - target->GetPosition()).Length() > 420)
 
@@ -296,28 +279,30 @@ void Taliyah::Combo()
 			}
 
 		}
-
 	}
 
-	if (ComboE->Enabled() && E->IsReady() && !W->IsReady() && player->IsValidTarget(target, E->Range())) {
-		//GPluginSDK->DelayFunctionCall(400, []() { CastE(); });
-		CastE();
-	}
-	if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget(target, Q->Range() + 50))
-	{
-		if (comboFullQ->Enabled() && qFive == true) {
-			Q->CastOnTarget(target, kHitChanceMedium);
+
+
+		if (ComboE->Enabled() && E->IsReady() && !W->IsReady() && player->IsValidTarget(target, E->Range())) {
+			//GPluginSDK->DelayFunctionCall(400, []() { CastE(); });
+			CastE();
 		}
+		if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget(target, Q->Range() + 50))
+		{
+			if (comboFullQ->Enabled() && qFive == true) {
+				Q->CastOnTarget(target, kHitChanceMedium);
+			}
 
-		if (!comboFullQ->Enabled()) {
-			Q->CastOnTarget(target, kHitChanceMedium);
+			if (!comboFullQ->Enabled()) {
+				Q->CastOnTarget(target, kHitChanceMedium);
+			}
+
+
 		}
-
-
 	}
 
+	
 
-}
 
 
 void Taliyah::Harass()
