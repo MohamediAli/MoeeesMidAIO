@@ -29,6 +29,7 @@ private:
 	int SpellCheck(Vec3 Location, int range, float delay);
 	BOOL isBallMoving();
 	Vec3 GetMovingBallPos();
+	Vec3 GetMovingBallPosW();
 	bool pairCompare(const std::pair<int, Vec2>& firstElem, const std::pair<int, Vec2>& secondElem);
 	void TeamFightQ(Vec3 pos);
 	Vec3 FarmQ(Vec3 pos);

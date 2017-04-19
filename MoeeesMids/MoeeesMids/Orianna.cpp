@@ -46,6 +46,15 @@ struct MovingBallData
 
 } QBallData;
 
+struct MovingBallDataW
+{
+	Vec3 StartPos;
+	Vec3 EndPos;
+	float OverAllTime;
+	float StartTime;
+
+} WBallData;
+
 Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 {
 	srand(time(NULL));
@@ -80,7 +89,7 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 	qMenu = Parent->AddMenu("Q Settings");
 	wMenu = Parent->AddMenu("W Settings");
 	eMenu = Parent->AddMenu("E Settings");
-	rMenu = Parent->AddMenu("R Settongs");
+	rMenu = Parent->AddMenu("R Settings");
 	LaneClearMenu = Parent->AddMenu("Lane Clear");
 	Prediction = Parent->AddMenu("Prediction");
 	MiscMenu = Parent->AddMenu("Miscs");
@@ -320,6 +329,14 @@ Vec3 Orianna::GetMovingBallPos()
 	return Vec3(CurrPos.x, GNavMesh->GetHeightForPoint(Vec2(CurrPos.x, CurrPos.z)) + 110, CurrPos.z);
 }
 
+Vec3 Orianna::GetMovingBallPosW()
+{
+	float EndTime = WBallData.StartTime + WBallData.OverAllTime;
+	Vec3 CurrPos = Extensions::lerp((EndTime - GGame->Time()) / WBallData.OverAllTime, WBallData.EndPos, WBallData.StartPos);
+	return Vec3(CurrPos.x, GNavMesh->GetHeightForPoint(Vec2(CurrPos.x, CurrPos.z)) + 110, CurrPos.z);
+}
+
+
 void Orianna::OnSpellCast(CastedSpell const& args) {
 
 
@@ -327,21 +344,23 @@ void Orianna::OnSpellCast(CastedSpell const& args) {
 	{
 		if (std::string(args.Name_) == "OrianaIzunaCommand")
 		{
+			
 			//Author= Divine[NaderSl]
-			BallPosition = args.EndPosition_;
+			
 			if (&args.Position_ && &args.EndPosition_ && args.Speed_)
 			{
 				// v = d/t => t = d/v
 				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
 				float dist = (args.EndPosition_ - StartPos).Length();
 				QBallData = { StartPos,args.EndPosition_,(dist / args.Speed_), GGame->Time() };
+				WBallData = { StartPos,args.EndPosition_,(dist / args.Speed_), GGame->Time() };
 			}
 		}
 
 		if (std::string(args.Name_) == "OrianaRedactCommand")
 		{
 			//Author= Divine[NaderSl]
-			BallPosition = args.EndPosition_;
+			
 			if (&args.Position_ && &args.EndPosition_ && args.Speed_)
 			{
 				// v = d/t => t = d/v
@@ -433,8 +452,14 @@ void Orianna::OnSpellCast(CastedSpell const& args) {
 
 
 void Orianna::OnCreate(IUnit* object) {
+
 	auto objectName = object->GetObjectName();
-	if (!objectName)return;
+
+
+	if (strcmp(object->GetObjectName(), "Orianna_Base_Z_Izuna_nova.troy") == 0)
+	{
+		BallPosition = object->GetPosition();
+	}
 	//auto player = GEntityList->Player();
 	//	GUtility->CreateDebugConsole();
 	//	GUtility->LogConsole(objectName);
@@ -451,16 +476,8 @@ void Orianna::OnCreate(IUnit* object) {
 		}
 	}
 
-	std::vector<IUnit*> result1;
-	for (auto ball : GEntityList->GetAllUnits())
-	{
-		if (strcmp(objectName, "Orianna_Base_Z_ball_glow_green.troy") == 0 && object->IsVisible() && object->IsValidObject())
-		{
-			
-			result1.push_back(ball);
 
-		}
-	}
+
 
 
 }
@@ -793,6 +810,11 @@ void Orianna::eLogic() {
 
 void Orianna::Combo()
 {
+	if (W->IsReady() && ComboW->Enabled() && ((Extensions::EnemiesInRange(GetMovingBallPosW(), W->Radius())) || (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()))))
+	{
+		W->CastOnPlayer();
+	}
+
 
 	eLogic();
 
@@ -800,11 +822,7 @@ void Orianna::Combo()
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead())
 		return;
 
-
-	if (W->IsReady() && ComboW->Enabled() &&  ((Extensions::EnemiesInRange(BallPosition, W->Radius()) > 0) || Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius())))
-{
-		W->CastOnPlayer();
-	}
+	
 
 	if (isBallMoving())
 		return;
@@ -867,7 +885,7 @@ void Orianna::Harass()
 		eLogic();
 	}
 
-	if (W->IsReady() && harassW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) || (Extensions::EnemiesInRange(BallPosition, W->Radius())))) {
+	if (W->IsReady() && harassW->Enabled() && (Extensions::EnemiesInRange(StationaryBall->GetPosition(), W->Radius()) || (Extensions::EnemiesInRange(GetMovingBallPosW(), W->Radius())))) {
 		W->CastOnPlayer();
 	}
 
@@ -961,7 +979,7 @@ void Orianna::Automatic()
 		CastQ(target1);
 	}
 
-	if (autoW->Enabled() && W->IsReady() && GEntityList->Player()->ManaPercent() > harassWMana->GetFloat() && (SpellCheck(StationaryBall->GetPosition(), W->Radius(), W->GetDelay())  || (Extensions::EnemiesInRange(BallPosition, W->Radius()))))
+	if (autoW->Enabled() && W->IsReady() && GEntityList->Player()->ManaPercent() > harassWMana->GetFloat() && (SpellCheck(StationaryBall->GetPosition(), W->Radius(), W->GetDelay())  || (Extensions::EnemiesInRange(GetMovingBallPosW(), W->Radius()))))
 	{
 		W->CastOnPlayer();
 
