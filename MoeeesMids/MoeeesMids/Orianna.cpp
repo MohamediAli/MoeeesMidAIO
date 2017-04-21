@@ -850,7 +850,7 @@ void Orianna::Combo()
 	// check if more than X target to try aoe q position
 	if (Q->IsReady() && ComboQ->Enabled() && GEntityList->Player()->IsValidTarget(target, Q->Range()) && R->IsReady() && Extensions::EnemiesInRange(target->ServerPosition(), R->Radius() * 2) > 1)
 		(TeamFightQ(target->ServerPosition()));
-	else
+	else if (Q->IsReady() && ComboQ->Enabled() && GEntityList->Player()->IsValidTarget(target, Q->Range()))
 	{
 		// do a normal cast not aoe one
 		CastQ(target);
@@ -899,7 +899,7 @@ void Orianna::Harass()
 	if (harassQ->Enabled() && GEntityList->Player()->ManaPercent() > harassQMana->GetFloat()) {
 		if (Q->IsReady() && target != nullptr && GEntityList->Player()->IsValidTarget(target, 900) && Extensions::EnemiesInRange(target->ServerPosition(), R->Radius() * 2) > 1)
 			(TeamFightQ(target->ServerPosition()));
-		else
+		else if (Q->IsReady() && ComboQ->Enabled() && GEntityList->Player()->IsValidTarget(target, Q->Range()))
 		{
 			CastQ(target);
 		}
