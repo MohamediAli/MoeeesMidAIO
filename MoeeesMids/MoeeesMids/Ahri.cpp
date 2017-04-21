@@ -194,7 +194,7 @@ void Ahri::PerformFlashCharm()
 		AdvPredictionOutput result;
 		EFlash->RunPrediction(target, false, kCollidesWithMinions, &result);
 
-		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && !target->IsInvulnerable() && result.HitChance >= kHitChanceVeryHigh)
+		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && !target->IsInvulnerable() && result.HitChance >= kHitChanceVeryHigh && E->IsReady())
 		{
 			EFlash->CastOnTarget(target, kHitChanceVeryHigh);
 			GPluginSDK->DelayFunctionCall(200 + (GGame->Latency()) / 2, [=]() { CastFlash(); });

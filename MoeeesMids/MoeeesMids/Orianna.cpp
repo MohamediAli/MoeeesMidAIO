@@ -333,7 +333,9 @@ Vec3 Orianna::GetMovingBallPosW()
 {
 	float EndTime = WBallData.StartTime + WBallData.OverAllTime;
 	Vec3 CurrPos = Extensions::lerp((EndTime - GGame->Time()) / WBallData.OverAllTime, WBallData.EndPos, WBallData.StartPos);
+	if ((EndTime - GGame->Time())<0.1){
 	return Vec3(CurrPos.x, GNavMesh->GetHeightForPoint(Vec2(CurrPos.x, CurrPos.z)) + 110, CurrPos.z);
+	}
 }
 
 
@@ -753,7 +755,7 @@ void Orianna::CastQ(IUnit* target)
 	float distance = Extensions::GetDistance(StationaryBall->GetPosition(), target->ServerPosition());
 	auto player = GEntityList->Player();
 
-	if (E->IsReady() && player->GetMana() > R->ManaCost() + Q->ManaCost() + W->ManaCost() + E->ManaCost() && distance > Extensions::GetDistance(player->GetPosition(), target->ServerPosition()) + 380)
+	if (E->IsReady() && player->GetMana() > R->ManaCost() + Q->ManaCost() + W->ManaCost() + E->ManaCost() && distance > Extensions::GetDistance(player->GetPosition(), target->ServerPosition()) + 330)
 	{
 		E->CastOnPlayer();
 		return;
@@ -778,7 +780,7 @@ void Orianna::CastQ(IUnit* target)
 
 void Orianna::eLogic() {
 	auto player = GEntityList->Player();//sebby start
-	if (isBallMoving() || !E->IsReady())
+	if (isBallMoving() || !E->IsReady() || SpellCheck(GetMovingBallPosW(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat() || SpellCheck(StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
 		return;
 	auto ballEnemies = Extensions::EnemiesInRange(StationaryBall->GetPosition(), 600);
 	int playerEnemies;
