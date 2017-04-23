@@ -152,6 +152,7 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="Extensions.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Karthus.h" />
     <ClInclude Include="Lords.h" />
     <ClInclude Include="MEC.h" />
     <ClInclude Include="Orianna.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="Champion.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Extensions.cpp" />
+    <ClCompile Include="Karthus.cpp" />
     <ClCompile Include="Orianna.cpp" />
     <ClCompile Include="PluginSDK.cpp" />
     <ClCompile Include="Rembrandt.cpp" />

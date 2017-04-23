@@ -63,6 +63,9 @@
     <ClInclude Include="MEC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Karthus.h">
+      <Filter>Champs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PluginSDK.cpp">
@@ -87,6 +90,9 @@
       <Filter>Champs</Filter>
     </ClCompile>
     <ClCompile Include="Taliyah.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+    <ClCompile Include="Karthus.cpp">
       <Filter>Champs</Filter>
     </ClCompile>
   </ItemGroup>

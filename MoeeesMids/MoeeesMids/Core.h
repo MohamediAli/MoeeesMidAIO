@@ -4,6 +4,7 @@
 #include "Orianna.h"
 #include "Ahri.h"
 #include "Taliyah.h"
+#include "Karthus.h"
 /*  Core Variables  */
 
 //MENU

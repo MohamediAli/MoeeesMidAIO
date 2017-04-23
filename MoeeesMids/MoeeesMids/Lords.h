@@ -23,9 +23,8 @@ float Distances(Vec3 from, Vec3 to)
 	return (from - to).Length2D();
 }
 
-static bool QCast(ISpell2* spell)
+static bool QCast(ISpell2* spell, IUnit* target)
 {
-	auto target = GTargetSelector->FindTarget(QuickestKill, SpellDamage, 810);
 	if (!target->IsValidTarget())
 		return false;
 	int eId = target->GetNetworkId();
@@ -94,7 +93,6 @@ static bool QCast(ISpell2* spell)
 	if (predpos == Vec3(0, 0, 0))
 		return false;
 	spell->CastOnPosition(predpos);
-	GGame->IssueOrder(GEntityList->Player(), kMoveTo, GGame->CursorPosition());
 	return true;
 
 

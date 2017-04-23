@@ -7,6 +7,7 @@
 
 namespace Extensions
 {
+	
 	int RandInt(int min, int max);
 	float GetDistanceVectors(Vec3 from, Vec3 to);
 	bool InFountain(IUnit *unit);
