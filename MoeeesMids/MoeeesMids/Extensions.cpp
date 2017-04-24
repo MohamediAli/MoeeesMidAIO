@@ -88,18 +88,33 @@ float Extensions::GetDistance (IUnit* Player, IUnit* target)
 	return (Player->GetPosition() - target->GetPosition()).Length2D();
 }
 
+//follow this convention
+float Extensions::GetDistanceSqr (Vec3 from, Vec3 to)
+{
+	return (from - to).LengthSqr();
+}
+float Extensions::GetDistanceSqr2D (Vec3 from, Vec3 to)
+{
+	return (from - to).LengthSqr2D();
+}
+
 float Extensions::GetDistance (Vec3 from, Vec3 to)
 {
-	return (from - to).Length2D();
+	return (from - to).Length();
 }
 
 float Extensions::GetDistance (IUnit* from, Vec3 to)
 {
-	return (from->GetPosition() - to).Length2D();
+	return (from->GetPosition() - to).Length();
 }
 float Extensions::GetDistance (Vec2 from, Vec2 to)
 {
 	return (from - to).Length();
+}
+
+float Extensions:: GetDistanceSqr (Vec2 from, Vec2 to)
+{
+	return (from - to).LengthSqr();
 }
 
 int Extensions::CountEnemiesInRange (float range)
@@ -125,12 +140,16 @@ bool Extensions::IsValid (Vec3 p)
 	return p.x != 0 && p.z != 0;
 }
 
-Vec3 Extensions::To3D (Vec2 p)
+
+Vec3 Extensions::To3D (Vec2 p, float height)
 {
-	return Vec3 (p.x, 0, p.y);
+	return Vec3 (p.x, height, p.y);
 }
 
-
+Vec3 Extensions::To3D (Vec2 p)
+{
+	return Vec3 (p.x, GNavMesh->GetHeightForPoint (p), p.y);
+}
 float Extensions::Dist2D (IUnit * to)
 {
 	return (GEntityList->Player()->ServerPosition() - to->ServerPosition()).Length2D() -

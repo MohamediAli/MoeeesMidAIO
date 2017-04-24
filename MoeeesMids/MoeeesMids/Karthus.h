@@ -30,6 +30,11 @@ private:
 	void dmgdraw();
 	void LaneClear();
 	void LastHit();
+	float WallOfPainWidth();
+	float WallOfPainMaxRangeSqr();
+	float WallOfPainMaxRange();
+	bool IsInWallOfPainRange (Vec2 position);
+	void  CastWallOfPain();
 	void Drawing();
 
 	float czx = 0, czy = 0, czx2 = 0, czy2 = 0;

@@ -186,10 +186,9 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 	if (target == Source && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 		if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range())  && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
 			{
-			Q->CastOnPosition (TeamFightQ (target->ServerPosition()));
 			return;
 			}
-		else if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
+		else if (Q->IsReady() && target == Source && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
 			{
 			// do a normal cast not aoe one
 			CastQ (target);
@@ -264,7 +263,7 @@ void Orianna::OnInterrupt (InterruptibleSpell const& Args)
 		{
 		Q->CastOnPosition (Args.Source->ServerPosition());
 		}
-	if (R->IsReady() && InterruptR->Enabled() && SpellCheck (StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) > 0)
+	if (R->IsReady() && InterruptR->Enabled() && SpellCheckKS (StationaryBall->GetPosition(), R->Range(), 0.5, Args.Source))
 		{
 		R->CastOnPlayer();
 		}
@@ -585,7 +584,6 @@ Vec3 Orianna::FarmQ (Vec3 pos)
 		{
 		return (Extensions::To3D (entry.second));
 		}
-	return (Vec3 (0, 0, 0));
 }
 
 
@@ -907,7 +905,7 @@ bool Orianna::isChasing (IUnit* Target)
 void Orianna::eLogic()
 {
 	auto player = Hero;//sebby start
-	if (isBallMoving() || !E->IsReady() || SpellCheck (GetMovingBallPosW(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat() || SpellCheck (StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
+	if (isBallMoving() || !E->IsReady() || W->IsReady() || SpellCheck (GetMovingBallPosW(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat() || SpellCheck (StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
 	{ return; }
 	auto ballEnemies = Extensions::EnemiesInRange (StationaryBall->GetPosition(), 600);
 	int playerEnemies = 0;
@@ -927,7 +925,7 @@ void Orianna::eLogic()
 		}
 	for (auto ally : GEntityList->GetAllHeros (true, false))
 		{
-		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && !isBallMoving())
+		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && !isBallMoving() && Hero != ally)
 			{
 			CastE (ally);
 			return;
@@ -966,6 +964,10 @@ void Orianna::Combo()
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || isBallMoving() || target->IsDead())
 	{ return; }
+	if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()) && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		{
+		Q->CastOnPosition (TeamFightQ (target->ServerPosition()));
+		}
 	// check if more than X target to try aoe q position
 	if (E->IsReady() && ! (Hero->IsDead()))
 		{

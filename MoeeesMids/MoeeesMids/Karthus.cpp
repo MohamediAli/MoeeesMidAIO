@@ -77,6 +77,7 @@ void Karthus::OnGameUpdate()
 }
 void Karthus::OnRender()
 {
+	CastWallOfPain();
 	Drawing();
 	dmgdraw();
 }
@@ -238,6 +239,53 @@ Vec3 Karthus::PredPos (IUnit* Hero, float Delay)    //credits sn karthus
 	return (path[path.size() - 1]).To3D();
 }
 
+float Karthus::WallOfPainWidth()
+{
+	return 700 + 100 * GEntityList->Player()->GetSpellLevel (kSlotW);
+}
+
+float Karthus::WallOfPainMaxRangeSqr()
+{
+	float WallOfPainHalfWidth = WallOfPainWidth() / 2.0f;
+	return W->Range() * W->Range() + WallOfPainHalfWidth*WallOfPainHalfWidth;
+}
+
+float Karthus::WallOfPainMaxRange()
+{
+	return std::sqrt (WallOfPainMaxRangeSqr());
+}
+
+bool Karthus::IsInWallOfPainRange (Vec2 position)
+{
+	return Extensions::GetDistanceSqr (GEntityList->Player()->GetPosition().To2D(), position) < WallOfPainMaxRangeSqr();
+}
+
+
+void  Karthus::CastWallOfPain()
+{
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, WallOfPainMaxRange());
+	Vec3 futurePos;
+	GPrediction->GetFutureUnitPosition (target, W->GetDelay(), true, futurePos);
+	if (IsInWallOfPainRange (futurePos.To2D()))
+		{
+		GGame->PrintChat ("hi");
+		auto myPos = Hero->ServerPosition();
+		auto myPos2D = myPos.To2D();
+		auto targetPos = futurePos;
+		auto targetPos2D = targetPos.To2D();
+		float x = W->Range();
+		float y = std::sqrt (Extensions::GetDistanceSqr (myPos, targetPos) - x*x);
+		float z = Extensions::GetDistance (myPos, targetPos);
+		float angle = (std::acos ( (y*y + z*z - x*x) / (2.0f * y * z))); // *PI / 180; //convert to radian
+		auto direction = (myPos2D - targetPos2D).VectorNormalize().Rotated (angle);
+		auto castPosition = Extensions::To3D (targetPos2D + y * direction);
+		GRender->DrawOutlinedCircle (castPosition, Vec4 (0, 255, 0, 225), 300);
+		//(direction1);
+		}
+}
+
+
+
 Vec3 Karthus::FarmQ (Vec3 pos)
 {
 	auto posChecked = 0;
@@ -307,10 +355,9 @@ void Karthus::Combo()
 			Q->CastOnPosition (PredPos (QTarget, 0.75f));
 			}
 		}
-	if (ComboW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()))
+	if (ComboW->Enabled() && W->IsReady())
 		{
-		W->SetOverrideRadius (wWidthChange (target));
-		W->CastOnTarget (target);
+		CastWallOfPain();
 		}
 }
 

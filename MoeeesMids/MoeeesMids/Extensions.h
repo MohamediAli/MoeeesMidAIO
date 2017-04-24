@@ -3,7 +3,7 @@
 #include <cmath>
 
 #define PI 3.14159265
-#define TO_RAD(deg)(deg*PI)/180;
+#define TO_RAD(deg) deg*PI/180;
 
 namespace Extensions
 {
@@ -17,13 +17,17 @@ Vec3 Cross (Vec3 a, Vec3 b);
 Vec3 RotateZ (Vec3 target, Vec3 Origin, float deg);
 int EnemiesInRange (Vec3 Source, float range);
 float GetDistance (IUnit* Player, IUnit* target);
+float GetDistanceSqr (Vec3 from, Vec3 to);
+float GetDistanceSqr2D (Vec3 from, Vec3 to);
 float GetDistance (Vec3 from, Vec3 to);
 float GetDistance (IUnit* from, Vec3 to);
 float GetDistance (Vec2 from, Vec2 to);
+float GetDistanceSqr (Vec2 from, Vec2 to);
 int CountEnemiesInRange (float range);
 bool IsValid (Vec2 p);
 bool IsValid (Vec3 p);
 Vec3 To3D (Vec2 p);
+Vec3 To3D (Vec2 p, float height);
 float Dist2D (IUnit * to);
 float Dist (IUnit * from, IUnit * to);
 float Dist2D (IUnit * from, IUnit * to);
