@@ -4,7 +4,7 @@
 #include "Rembrandt.h"
 #include "MEC.h"
 #include <tuple>
-#include <list>
+
 
 #define M_PI 3.14159265358979323846
 bool FlashUlting = false;
@@ -59,7 +59,6 @@ struct MovingBallDataW
 
 Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
-	srand (time (NULL));
 	Q = GPluginSDK->CreateSpell2 (kSlotQ, kCircleCast, true, true, kCollidesWithYasuoWall);
 	Q->SetSkillshot (0.f, 150.f, 1400.f, 810.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
@@ -70,12 +69,12 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	R->SetSkillshot (0.6f, 365.f, FLT_MAX, 325.f);
 	RFlash = GPluginSDK->CreateSpell2 (kSlotR, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithNothing));
 	RFlash->SetSkillshot (0.25f, 60, FLT_MAX, 775);
-	if (strcmp (GEntityList->Player()->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
+	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
 		{
 		Flash = GPluginSDK->CreateSpell2 (kSummonerSlot1, kCircleCast, false, false, kCollidesWithNothing);
 		Flash->SetOverrideRange (425.f);
 		}
-	if (strcmp (GEntityList->Player()->GetSpellName (kSummonerSlot2), "SummonerFlash") == 0)
+	if (strcmp (Hero->GetSpellName (kSummonerSlot2), "SummonerFlash") == 0)
 		{
 		Flash = GPluginSDK->CreateSpell2 (kSummonerSlot2, kCircleCast, false, false, kCollidesWithNothing);
 		Flash->SetOverrideRange (425.f);
@@ -85,6 +84,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	wMenu = Parent->AddMenu ("W Settings");
 	eMenu = Parent->AddMenu ("E Settings");
 	rMenu = Parent->AddMenu ("R Settings");
+	oneVerusOne = Parent->AddMenu ("1v1 Settings");
 	LaneClearMenu = Parent->AddMenu ("Lane Clear");
 	Prediction = Parent->AddMenu ("Prediction");
 	MiscMenu = Parent->AddMenu ("Miscs");
@@ -112,7 +112,9 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	BlockR = rMenu->CheckBox ("Block R on no hits", true);
 	FlashUlt = rMenu->AddKey ("Flash Ult key", 84);
 	InterruptR = rMenu->CheckBox ("Use Ult to Interrupt Spells", true);
-	KillStealR = rMenu->CheckBox ("Use Ult to Kill Steal", true);
+	KillStealR = rMenu->CheckBox ("Use Ult to Kill Steal", false);
+	onev1 = oneVerusOne->CheckBox ("Enable 1v1 Mode", true);
+	extraAutos = oneVerusOne->AddInteger ("Add Extra Autos in Ult Damage Calc", 0, 5, 2);
 	Laneclear = LaneClearMenu->CheckBox ("Use Spells in Lane Clear", true);
 	laneClearQ = LaneClearMenu->CheckBox ("Wave Clear with Q", true);
 	laneClearQMana = LaneClearMenu->AddFloat ("^-> Only Wave Clear Q if Mana >", 0, 100, 50);
@@ -120,7 +122,6 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	laneClearWMana = LaneClearMenu->AddFloat ("^-> Only Wave Clear W if Mana >", 0, 100, 50);
 	mouseClear = LaneClearMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
 	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
-	PredType = { "Oracle", "Core", "Lord's" };
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
 	HPBarColor = Drawings->AddColor ("Change Health Bar", 69, 64, 185, 100);
@@ -131,12 +132,13 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	drawLC = Drawings->CheckBox ("Draw Lance Clear Status", true);
 	drawBall = Drawings->CheckBox ("Draw Ball Animation", true);
 	ballSelect = Drawings->AddSelection ("Choose Ball Style", 0, ballAnimation);
+	PredType = { "Oracle", "Core", "Lord's" };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 }
 
 Vec3 Orianna::getPosToRflash (Vec3 target)
 {
-	return  GEntityList->Player()->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
+	return  Hero->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
 }
 
 void Orianna::CastFlash()
@@ -149,16 +151,16 @@ void Orianna::CastFlash()
 
 void Orianna::PerformFlashUlt()
 {
-	GGame->IssueOrder (GEntityList->Player(), kMoveTo, GGame->CursorPosition());
+	GGame->IssueOrder (Hero, kMoveTo, GGame->CursorPosition());
 	auto target1 = GTargetSelector->GetFocusedTarget();
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead())
 	{ return; }
-	if (R->IsReady() && Flash->IsReady() && StationaryBall == GEntityList->Player())
+	if (R->IsReady() && Flash->IsReady() && StationaryBall == Hero)
 		{
 		auto target = GTargetSelector->GetFocusedTarget() != nullptr
 		              ? GTargetSelector->GetFocusedTarget()
 		              : GTargetSelector->FindTarget (QuickestKill, SpellDamage, RFlash->Range());
-		auto flashPosition = GEntityList->Player()->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
+		//auto flashPosition = Hero->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
 		AdvPredictionOutput result;
 		RFlash->RunPrediction (target, false, kCollidesWithNothing, &result);
 		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && !target->IsInvulnerable() && result.HitChance >= kHitChanceVeryHigh)
@@ -182,14 +184,16 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 	if (target == nullptr || !target->IsHero() || isBallMoving() || target->IsDead())
 	{ return; }
 	if (target == Source && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
-		if (Q->IsReady() && ComboQ->Enabled() && GEntityList->Player()->IsValidTarget (target, Q->Range()) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range())  && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
 			{
 			Q->CastOnPosition (TeamFightQ (target->ServerPosition()));
+			return;
 			}
-		else if (Q->IsReady() && ComboQ->Enabled() && GEntityList->Player()->IsValidTarget (target, Q->Range()))
+		else if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
 			{
 			// do a normal cast not aoe one
 			CastQ (target);
+			return;
 			}
 	if (autoQ->Enabled() && Q->IsReady())
 		{
@@ -230,7 +234,7 @@ void Orianna::OnRender()
 	if (Laneclear->Enabled() && drawLC->Enabled())
 		{
 		Vec2 pos;
-		if (GGame->Projection (GEntityList->Player()->GetPosition(), &pos));
+		if (GGame->Projection (Hero->GetPosition(), &pos));
 		GRender->DrawTextW (Vec2 (pos.x + 72, pos.y + 10), Vec4 (0, 255, 0, 255), "LANE CLEAR ON");
 		}
 }
@@ -254,9 +258,9 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 
 void Orianna::OnInterrupt (InterruptibleSpell const& Args)
 {
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	if (Args.Source == nullptr || Args.Source->IsDead()) { return; }
-	if (Q->IsReady() && player->IsValidTarget (Args.Source, Q->Range()) && Args.Source != nullptr && Args.Source != GEntityList->Player() && Args.Source->IsEnemy (GEntityList->Player()))
+	if (Q->IsReady() && player->IsValidTarget (Args.Source, Q->Range()) && Args.Source != nullptr && Args.Source != Hero && Args.Source->IsEnemy (Hero))
 		{
 		Q->CastOnPosition (Args.Source->ServerPosition());
 		}
@@ -268,9 +272,9 @@ void Orianna::OnInterrupt (InterruptibleSpell const& Args)
 
 void Orianna::AntiGapclose (GapCloserSpell const& args)
 {
-	if (Q->IsReady() && !GEntityList->Player()->IsDead() && args.Source->IsEnemy (GEntityList->Player()) && gapcloseQ->Enabled() && args.Source->IsValidTarget())
+	if (Q->IsReady() && !Hero->IsDead() && args.Source->IsEnemy (Hero) && gapcloseQ->Enabled() && args.Source->IsValidTarget())
 		{
-		if (Extensions::GetDistance (GEntityList->Player(), args.EndPosition) <= Q->Range())
+		if (Extensions::GetDistance (Hero, args.EndPosition) <= Q->Range())
 			{
 			auto delay = (GBuffData->GetEndTime (args.Data) - GGame->Time() - Q->GetDelay());
 			if (delay > 0)
@@ -283,7 +287,7 @@ void Orianna::AntiGapclose (GapCloserSpell const& args)
 
 int Orianna::GetEHits()
 {
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	auto hits = std::vector <IUnit*>();
 	for (auto enemy : GEntityList->GetAllHeros (false, true))
 		{
@@ -340,7 +344,7 @@ Vec3 Orianna::GetMovingBallPosW()
 
 void Orianna::OnSpellCast (CastedSpell const& args)
 {
-	if (!args.Caster_->IsEnemy (GEntityList->Player()))
+	if (!args.Caster_->IsEnemy (Hero))
 		{
 		if (std::string (args.Name_) == "OrianaIzunaCommand")
 			{
@@ -365,7 +369,7 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 				QBallData = { StartPos,args.EndPosition_, (dist / 1900), GGame->Time() };
 				}
 			}
-		if (Extensions::GetDistance (GEntityList->Player(), args.Caster_->GetPosition()) <= E->Range() && autoEiniti->Enabled() && args.Caster_->IsValidTarget() && E->IsReady() && !args.Caster_->IsEnemy (GEntityList->Player()))
+		if (Extensions::GetDistance (Hero, args.Caster_->GetPosition()) <= E->Range() && autoEiniti->Enabled() && args.Caster_->IsValidTarget() && E->IsReady() && !args.Caster_->IsEnemy (Hero))
 			{
 			std::vector<std::string> SpellNames =
 				{
@@ -452,7 +456,7 @@ void Orianna::OnCreate (IUnit* object)
 		{
 		BallPosition = object->GetPosition();
 		}
-	//auto player = GEntityList->Player();
+	//auto player = Hero;
 	//	GUtility->CreateDebugConsole();
 	//	GUtility->LogConsole(objectName);
 	if (object->IsValidObject() && object->IsVisible())
@@ -501,7 +505,7 @@ Vec3 Orianna::TeamFightQ (Vec3 pos)
 				// dont push is wall
 				continue;
 				}
-			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, Hero->ServerPosition()) > Q->Range())
 				{
 				// dont push to far away to cast;
 				continue;
@@ -561,7 +565,7 @@ Vec3 Orianna::FarmQ (Vec3 pos)
 				// dont push is wall
 				continue;
 				}
-			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, Hero->ServerPosition()) > Q->Range())
 				{
 				// dont push to far away to cast;
 				continue;
@@ -724,8 +728,8 @@ bool Orianna::SpellCheckKS (Vec3 pos, int range, float delay, IUnit* target)
 
 void Orianna::CastE (IUnit* target)
 {
-	auto player = GEntityList->Player();
-	if (target != nullptr && (target->IsHero() && player->GetMana() > Q->ManaCost() + W->ManaCost() + E->ManaCost()))
+	auto player = Hero;
+	if (target != nullptr && E->IsReady() && (target->IsHero() && player->GetMana() > Q->ManaCost() + W->ManaCost() + E->ManaCost()))
 		{
 		E->CastOnTarget (target);
 		}
@@ -745,7 +749,7 @@ std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
 	auto enemy = GEntityList->GetAllHeros (false, true);
 	for (IUnit* enemy : enemy)
 		{
-		if (enemy->IsValidTarget() && Extensions::GetDistance (GEntityList->Player(), enemy) < Q->Range())
+		if (enemy->IsValidTarget() && Extensions::GetDistance (Hero, enemy) < Q->Range())
 			{
 			AdvPredictionOutput result2;
 			Q->RunPrediction (enemy, true, kCollidesWithYasuoWall, &result2);
@@ -792,9 +796,9 @@ std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
 
 /* void Orianna::SaveTeam()
 {
-	if (E->IsReady() && !(GEntityList->Player()->IsDead()))
+	if (E->IsReady() && !(Hero->IsDead()))
 	{
-		if (GEntityList->Player()->HealthPercent() <= HealthPercent->GetInteger() && Extensions::EnemiesInRange(GEntityList->Player()->GetPosition(), 600) > 0) {
+		if (Hero->HealthPercent() <= HealthPercent->GetInteger() && Extensions::EnemiesInRange(Hero->GetPosition(), 600) > 0) {
 			E->CastOnPlayer();
 		} //Cast on self
 
@@ -803,7 +807,7 @@ std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
 		  auto Teamates = GEntityList->GetAllHeros(true, false);
 		  for (IUnit* Teamate : Teamates)
 		  {
-		  if (Extensions::GetDistance(GEntityList->Player(), Teamate->GetPosition()) <= E->Range()) {
+		  if (Extensions::GetDistance(Hero, Teamate->GetPosition()) <= E->Range()) {
 		  if (!(Teamate->IsDead()) && Teamate->HealthPercent() <= ShieldTeamatePercent->GetInteger() && Extensions::EnemiesInRange(Teamate->GetPosition(), 600) > 0) {
 		  E->CastOnUnit(Teamate);
 		  } //Cast on injured teamate
@@ -815,38 +819,52 @@ void Orianna::CastQ (IUnit* target)
 	if (!Q->IsReady())
 	{ return; }
 	float distance = Extensions::GetDistance (StationaryBall->GetPosition(), target->ServerPosition());
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	if (E->IsReady() && player->GetMana() > R->ManaCost() + Q->ManaCost() + W->ManaCost() + E->ManaCost() && distance > Extensions::GetDistance (player->GetPosition(), target->ServerPosition()) + 330)
 		{
 		E->CastOnPlayer();
 		return;
 		}
 	Vec3 castOn;
-	BestCastPosition (target, Q, castOn, false);/*
+	BestCastPosition (target, Q, castOn, false);
 	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance (target, StationaryBall) >= 250)
 		{
 		auto directTravelTime = Extensions::GetDistance (StationaryBall, castOn) / Q->Speed();
 		auto bestEqTravelTime = FLT_MAX;
 		std::vector<std::pair<int, IUnit*>> bestAlly;
-		    GameObjects.AllyHeroes.Where (h = > h.IsValidTarget (E.Range, false))
-		    .OrderBy (h = > h.Distance (pred.CastPosition))
-		    .FirstOrDefault();
-
-		if (bestAlly != nullptr)
+		for (auto ally : GEntityList->GetAllHeros (true, false))
 			{
-			auto t = Extensions::GetDistance (StationaryBall, bestAlly->ServerPosition()) / E->Speed() +
-			         Extensions::GetDistance (bestAlly, castOn) / Q->Speed();
-			if (t < bestEqTravelTime)
+			if (!ally->IsDead() && ally != nullptr && ally != Hero)
 				{
-				bestEqTravelTime = t;
+				int distanceA = Extensions::GetDistance (Hero, ally);
+				if (distanceA < E->Range())
+					{
+					bestAlly.push_back (std::make_pair (distanceA, ally));
+					}
+				}
+			std::sort (bestAlly.begin(), bestAlly.end(), [] (auto &left, auto &right)
+				{
+				return left.first < right.first;
+				});
+			}
+		for (auto entry : bestAlly)
+			{
+			if (entry.second != nullptr)
+				{
+				auto t = Extensions::GetDistance (StationaryBall, entry.second->ServerPosition()) / E->Speed() +
+				         Extensions::GetDistance (entry.second, castOn) / Q->Speed();
+				if (t < bestEqTravelTime)
+					{
+					bestEqTravelTime = t;
+					}
+				}
+			if (entry.second != nullptr && bestEqTravelTime < directTravelTime * 1.3f)
+				{
+				CastE (entry.second);
+				return;
 				}
 			}
-		if (bestAlly != nullptr && bestEqTravelTime < directTravelTime * 1.3f)
-			{
-			CastE (bestAlly);
-			return;
-			}
-		}*/
+		}
 	if (PredictionType->GetInteger() == 2)
 		{
 		QCast (Q, target);
@@ -869,17 +887,31 @@ void Orianna::CastQ (IUnit* target)
 		}
 }
 
+bool Orianna::IsOneVsOne()
+{
+	if (Extensions::EnemiesInRange (Hero->GetPosition(), 1000) == 1 && Extensions::AlliesInRange (Hero->GetPosition(), 850) <= 3)
+		{
+		return true;
+		}
+	return false;
+}
 
 
+bool Orianna::isChasing (IUnit* Target)
+{
+	if (!Target->IsFacing (Hero) && Hero->IsFacing (Target))
+	{ return true; }
+	else { return false; }
+}
 
 void Orianna::eLogic()
 {
-	auto player = GEntityList->Player();//sebby start
+	auto player = Hero;//sebby start
 	if (isBallMoving() || !E->IsReady() || SpellCheck (GetMovingBallPosW(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat() || SpellCheck (StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
 	{ return; }
 	auto ballEnemies = Extensions::EnemiesInRange (StationaryBall->GetPosition(), 600);
-	int playerEnemies;
-	if (player->GetPosition() != StationaryBall->GetPosition())
+	int playerEnemies = 0;
+	if (player != StationaryBall)
 		{
 		playerEnemies = Extensions::EnemiesInRange (player->GetPosition(), 600);
 		}
@@ -895,7 +927,7 @@ void Orianna::eLogic()
 		}
 	for (auto ally : GEntityList->GetAllHeros (true, false))
 		{
-		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range())
+		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && !isBallMoving())
 			{
 			CastE (ally);
 			return;
@@ -920,7 +952,12 @@ void Orianna::Combo()
 			R->CastOnPlayer();
 			return;
 			}
-		if (rDmg (target1) >= target1->GetHealth() && KillStealR->Enabled() && (SpellCheckKS (StationaryBall->GetPosition(), R->Range(), 0.5,target1)))
+		else if (onev1->Enabled() && rD1v1 (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall->GetPosition(), R->Range(), 0.5, target1)))
+			{
+			R->CastOnPlayer();
+			return;
+			}
+		else if (KillStealR->Enabled()  && rDmg (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall->GetPosition(), R->Range(), 0.5,target1)))
 			{
 			R->CastOnPlayer();
 			return;
@@ -930,9 +967,9 @@ void Orianna::Combo()
 	if (target == nullptr || !target->IsHero() || isBallMoving() || target->IsDead())
 	{ return; }
 	// check if more than X target to try aoe q position
-	if (E->IsReady() && ! (GEntityList->Player()->IsDead()))
+	if (E->IsReady() && ! (Hero->IsDead()))
 		{
-		if (GEntityList->Player()->HealthPercent() <= HealthPercentage->GetInteger() && Extensions::EnemiesInRange (GEntityList->Player()->GetPosition(), 600) > 0)
+		if (Hero->HealthPercent() <= HealthPercentage->GetInteger() && Extensions::EnemiesInRange (Hero->GetPosition(), 600) > 0)
 			{
 			E->CastOnPlayer();
 			} //Cast on self
@@ -941,7 +978,7 @@ void Orianna::Combo()
 				auto Teamates = GEntityList->GetAllHeros(true, false);
 				for (IUnit* Teamate : Teamates)
 				{
-					if (Extensions::GetDistance(GEntityList->Player(), Teamate->GetPosition()) <= E->Range()) {
+					if (Extensions::GetDistance(Hero, Teamate->GetPosition()) <= E->Range()) {
 						if (!(Teamate->IsDead()) && Teamate->HealthPercent() <= ShieldTeamatePercent->GetInteger() && Extensions::EnemiesInRange(Teamate->GetPosition(), 600) > 0) {
 							E->CastOnUnit(Teamate);
 						} //Cast on injured teamate
@@ -966,27 +1003,27 @@ void Orianna::Harass()
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || !target->IsValidTarget())
 	{ return; }
-	if (harassQ->Enabled() && GEntityList->Player()->ManaPercent() > harassQMana->GetFloat())
+	if (harassQ->Enabled() && Hero->ManaPercent() > harassQMana->GetFloat())
 		{
-		if (Q->IsReady() && target != nullptr && GEntityList->Player()->IsValidTarget (target, 900) && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, 900) && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
 			{ (TeamFightQ (target->ServerPosition())); }
-		else if (Q->IsReady() && ComboQ->Enabled() && GEntityList->Player()->IsValidTarget (target, Q->Range()))
+		else if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
 			{
 			CastQ (target);
 			}
 		}
 }
 
+
 bool Orianna::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	if (mouseClear->Enabled())
+	if (!mouseClear->Enabled())
 		{
-		if (message != 0x20a)
-			{
-			return true;
-			}
-		Laneclear->UpdateInteger (!Laneclear->Enabled());
+		return true;
 		}
+	if (message != 0x20a)
+	{ return true; }
+	Laneclear->UpdateInteger (!Laneclear->Enabled());
 	return false;
 }
 
@@ -996,19 +1033,18 @@ void Orianna::LaneClear()
 	{ return; }
 	if (Laneclear->Enabled())
 		{
-		if (Extensions::CountMinionsInTargetRange (StationaryBall->GetPosition(), W->Radius()) > 2 && laneClearW->Enabled() && W->IsReady() && GEntityList->Player()->ManaPercent() > laneClearWMana->GetFloat() && (!isBallMoving()))
+		if (Extensions::CountMinionsInTargetRange (StationaryBall->GetPosition(), W->Radius()) > 2 && laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && (!isBallMoving()))
 			{
 			W->CastOnPlayer();
 			}
-		if (Q->IsReady() && laneClearQ->Enabled() && GEntityList->Player()->ManaPercent() > laneClearQMana->GetFloat())
+		if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat())
 			{
 			for (auto minion : GEntityList->GetAllMinions (false, true, true))
 				{
-				if (minion != nullptr && !minion->IsWard() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) <= 1000)
+				if (minion != nullptr && !minion->IsWard() && Extensions::GetDistance (Hero, minion->GetPosition()) <= 1000)
 					{
 					if (!minion->IsDead())
 						{
-						auto health = minion->GetHealth();
 						auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 650);
 						if (hp < qDmg (minion))
 							{
@@ -1027,10 +1063,10 @@ void Orianna::LaneClear()
 
 void Orianna::Automatic()
 {
-	if (GEntityList->Player()->HasBuff ("OrianaGhostSelf"))
+	if (Hero->HasBuff ("OrianaGhostSelf"))
 		{
-		BallPosition = GEntityList->Player()->GetPosition();
-		StationaryBall = GEntityList->Player();
+		BallPosition = Hero->GetPosition();
+		StationaryBall = Hero;
 		}
 	std::vector<IUnit*> result;
 	for (auto target : GEntityList->GetAllHeros (true, false))
@@ -1044,7 +1080,7 @@ void Orianna::Automatic()
 		}
 	if (isBallMoving())
 	{ return; }
-	if (autoW->Enabled() && W->IsReady() && GEntityList->Player()->ManaPercent() > harassWMana->GetFloat() && (SpellCheck (StationaryBall->GetPosition(), W->Radius(), W->GetDelay()) || (Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius()))))
+	if (autoW->Enabled() && W->IsReady() && Hero->ManaPercent() > harassWMana->GetFloat() && (SpellCheck (StationaryBall->GetPosition(), W->Radius(), W->GetDelay()) || (Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius()))))
 		{
 		W->CastOnPlayer();
 		}
@@ -1057,51 +1093,72 @@ void Orianna::Automatic()
 float Orianna::qDmg (IUnit* Target)
 {
 	float InitDamage = 0;
-	float BonusStackDamage = ( (0.50 * GEntityList->Player()->TotalMagicDamage()));
-	if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 1)
+	float BonusStackDamage = ( (0.50 * Hero->TotalMagicDamage()));
+	if (Hero->GetSpellLevel (kSlotQ) == 1)
 	{ InitDamage += (60 + BonusStackDamage); }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 2)
+	else if (Hero->GetSpellLevel (kSlotQ) == 2)
 	{ InitDamage += (90 + BonusStackDamage); }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 3)
+	else if (Hero->GetSpellLevel (kSlotQ) == 3)
 	{ InitDamage += (120 + BonusStackDamage); }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 4)
+	else if (Hero->GetSpellLevel (kSlotQ) == 4)
 	{ InitDamage += (150 + BonusStackDamage); }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 5)
+	else if (Hero->GetSpellLevel (kSlotQ) == 5)
 	{ InitDamage += (180 + BonusStackDamage); }
 	//「 MAGIC DAMAGE: 60 / 90 / 120 / 150 / 180 (+ 50% AP) 」
-	return GDamage->CalcMagicDamage (GEntityList->Player(), Target, InitDamage);
+	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
 }
 
 float Orianna::wDmg (IUnit* Target)
 {
 	float InitDamage = 0;
-	float BonusStackDamage = (0.7 * GEntityList->Player()->TotalMagicDamage());
-	if (GEntityList->Player()->GetSpellLevel (kSlotW) == 1)
+	float BonusStackDamage = (0.7 * Hero->TotalMagicDamage());
+	if (Hero->GetSpellLevel (kSlotW) == 1)
 	{ InitDamage += 70 + BonusStackDamage; }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotW) == 2)
+	else if (Hero->GetSpellLevel (kSlotW) == 2)
 	{ InitDamage += 115 + BonusStackDamage; }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotW) == 3)
+	else if (Hero->GetSpellLevel (kSlotW) == 3)
 	{ InitDamage += 160 + BonusStackDamage; }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotW) == 4)
+	else if (Hero->GetSpellLevel (kSlotW) == 4)
 	{ InitDamage += 205 + BonusStackDamage; }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotW) == 5)
+	else if (Hero->GetSpellLevel (kSlotW) == 5)
 	{ InitDamage += 250 + BonusStackDamage; }
 	// MAGIC DAMAGE: 70 / 115 / 160 / 205 / 250 (+ 70% AP)
-	return GDamage->CalcMagicDamage (GEntityList->Player(), Target, InitDamage);
+	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
 }
 
 float Orianna::rDmg (IUnit* Target)
 {
 	float InitDamage = 0;
-	float BonusStackDamage = (0.7 * GEntityList->Player()->TotalMagicDamage());
-	if (GEntityList->Player()->GetSpellLevel (kSlotR) == 1)
+	float BonusStackDamage = (0.7 * Hero->TotalMagicDamage());
+	if (Hero->GetSpellLevel (kSlotR) == 1)
+		{
+		InitDamage += 150 + BonusStackDamage;
+		}
+	else if (Hero->GetSpellLevel (kSlotR) == 2)
+		{
+		InitDamage += 225 + BonusStackDamage;
+		}
+	else if (Hero->GetSpellLevel (kSlotR) == 3)
+		{
+		InitDamage += 300 + BonusStackDamage;
+		}
+	// MAGIC DAMAGE: 150 / 225 / 300 (+ 70% AP)
+	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
+}
+
+float Orianna::rD1v1 (IUnit* Target)
+{
+	float InitDamage = 0;
+	float BonusStackDamage = (0.7 * Hero->TotalMagicDamage());
+	if (Hero->GetSpellLevel (kSlotR) == 1)
 	{ InitDamage += 150 + BonusStackDamage; }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotR) == 2)
+	else if (Hero->GetSpellLevel (kSlotR) == 2)
 	{ InitDamage += 225 + BonusStackDamage; }
-	else if (GEntityList->Player()->GetSpellLevel (kSlotR) == 3)
+	else if (Hero->GetSpellLevel (kSlotR) == 3)
 	{ InitDamage += 300 + BonusStackDamage; }
 	// MAGIC DAMAGE: 150 / 225 / 300 (+ 70% AP)
-	return GDamage->CalcMagicDamage (GEntityList->Player(), Target, InitDamage);
+	auto total = GDamage->CalcPhysicalDamage (Hero, Target, GDamage->GetAutoAttackDamage (Hero, Hero, true) * extraAutos->GetInteger()) + GDamage->CalcMagicDamage (Hero, Target, InitDamage);
+	return total;
 }
 
 void Orianna::KillSteal()
@@ -1175,7 +1232,7 @@ void Orianna::DrawGagongReplicate (Vec3 BallPos)
 		if (spiral_prev_vec.x == -1) { spiral_prev_vec = BallPos; }
 		if (GGame->Projection (spiral_curr_vec, &currv2D) && GGame->Projection (spiral_prev_vec, &prev2D))
 			//GRender->DrawLine(currv2D, prev2D, i? GagongColors[1]:GagongColors[0]);
-			if (BallPos != GEntityList->Player()->GetPosition())
+			if (BallPos != Hero->GetPosition())
 				{
 				if (!isBallMoving())
 					{
@@ -1213,12 +1270,11 @@ void Orianna::dmgdraw()
 					}
 				if (R->IsReady())
 					{
-					RDamage = rDmg (hero) + GDamage->GetAutoAttackDamage (GEntityList->Player(), hero, true);
+					RDamage = rDmg (hero) + GDamage->GetAutoAttackDamage (Hero, hero, true);
 					}
 				Vec4 BarColor;
 				HPBarColor->GetColor (&BarColor);
 				float totalDamage = QDamage + WDamage + EDamage + RDamage;
-				float percentHealthAfterDamage = max (0, hero->GetHealth() - float (totalDamage)) / hero->GetMaxHealth();
 				Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
 				}
 			}
@@ -1270,8 +1326,7 @@ void Orianna::DrawGagonDix (Vec3 BallPos, Vec4 Color)
 
 void Orianna::Drawing()
 {
-	auto Hero = GEntityList->Player();
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	if (drawBall->Enabled() && ballSelect->GetInteger() == 0)
 		{
 		if (StationaryBall && !isBallMoving() && (StationaryBall->IsValidObject() || StationaryBall->IsValidTarget()))

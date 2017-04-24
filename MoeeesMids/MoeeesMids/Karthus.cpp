@@ -2,7 +2,6 @@
 #include "Karthus.h"
 #include <algorithm>
 #include "Extensions.h"
-#include <sstream>
 #define M_PI 3.14159265358979323846
 
 
@@ -10,9 +9,7 @@ Karthus::~Karthus()
 {
 	KarthusMenu->Remove();
 }
-float czx = 0, czy = 0, czx2 = 0, czy2 = 0;
-bool cz = false;
-IUnit* QTarget;
+
 
 Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
@@ -31,6 +28,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Drawings = Parent->AddMenu ("Drawings");
 	MiscMenu = Parent->AddMenu ("Miscs");
 	ComboQ = qMenu->CheckBox ("Use Q in Combo", true);
+	autoQ = qMenu->CheckBox ("Automatic Harass Q", true);
 	harassQ = qMenu->CheckBox ("Harass with Q", true);
 	harassQMana = qMenu->AddFloat ("^-> Only Harras Q if Mana >", 0, 100, 50);
 	laneClearQ = qMenu->CheckBox ("Wave Clear with Q", true);
@@ -56,7 +54,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 void Karthus::OnGameUpdate()
 {
-	automaticE();
+	automatic();
 	zigzag();
 	QTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
@@ -85,7 +83,7 @@ void Karthus::OnRender()
 
 void Karthus::AntiGapclose (GapCloserSpell const& args)
 {
-	if (W->IsReady() && gapCloserW->Enabled() && GEntityList->Player()->IsValidTarget (args.Source, W->Range()) && args.Source->IsEnemy (GEntityList->Player()))
+	if (W->IsReady() && gapCloserW->Enabled() && Hero->IsValidTarget (args.Source, W->Range()) && args.Source->IsEnemy (Hero))
 		{
 		AdvPredictionOutput outputfam;
 		W->RunPrediction (args.Source, false, kCollidesWithMinions, &outputfam);
@@ -96,26 +94,38 @@ void Karthus::AntiGapclose (GapCloserSpell const& args)
 		}
 }
 
-void Karthus::automaticE()
+void Karthus::automatic()
 {
-	if (E->IsReady() && GEntityList->Player()->HasBuff ("KarthusDefile"))
+	if (E->IsReady() && Hero->HasBuff ("KarthusDefile"))
 		{
-		if (Extensions::CountMinionsInTargetRange (GEntityList->Player()->GetPosition(), E->Range()) > 2 && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
+		if (Extensions::CountMinionsInTargetRange (Hero->GetPosition(), E->Range()) > 2 && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
 			{
 			return;
 			}
-		if (Extensions::EnemiesInRange (GEntityList->Player()->GetPosition(), E->Range()) && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
+		if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
 			{
 			return;
 			}
 		E->CastOnPlayer();
+		}
+	if (autoQ->Enabled() && Q->IsReady())
+		{
+		auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
+		if (target1 == nullptr || !target1->IsHero() || !target1->IsValidTarget())
+			{
+			return;
+			}
+		if (!cz)
+			{
+			Q->CastOnPosition (PredPos (QTarget, 0.75f));
+			}
 		}
 }
 
 
 void Karthus::eToggle()
 {
-	if (E->IsReady() && !GEntityList->Player()->HasBuff ("KarthusDefile"))
+	if (E->IsReady() && !Hero->HasBuff ("KarthusDefile"))
 		{
 		E->CastOnPlayer();
 		}
@@ -123,17 +133,17 @@ void Karthus::eToggle()
 
 float Karthus::qWidthChange (IUnit* target)
 {
-	return 	std::max (30.f, (1.f - (Extensions::GetDistance (GEntityList->Player(), target->GetPosition())) / Q->Range()) * 160.f);
+	return 	std::max (30.f, (1.f - (Extensions::GetDistance (Hero, target->GetPosition())) / Q->Range()) * 160.f);
 }
 
 float Karthus::wWidthChange (IUnit* target)
 {
-	return 	std::max (70.f, (1.f - (Extensions::GetDistance (GEntityList->Player(), target->GetPosition())) / W->Range()) * 160.f);
+	return 	std::max (70.f, (1.f - (Extensions::GetDistance (Hero, target->GetPosition())) / W->Range()) * 160.f);
 }
 
 void Karthus::zigzag()   //credits sn karthus
 {
-	if (QTarget == NULL || !QTarget->IsHero() || !QTarget->IsValidTarget())
+	if (QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget())
 		{
 		return;
 		}
@@ -201,7 +211,7 @@ void Karthus::zigzag()   //credits sn karthus
 Vec3 Karthus::PredPos (IUnit* Hero, float Delay)    //credits sn karthus
 {
 	float value = 0.f;
-	if (Hero->IsFacing (GEntityList->Player()))
+	if (Hero->IsFacing (Hero))
 		{
 		value = (50.f - Hero->BoundingRadius());
 		}
@@ -255,7 +265,7 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 				// dont push is wall
 				continue;
 				}
-			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, Hero->ServerPosition()) > Q->Range())
 				{
 				// dont push to far away to cast;
 				continue;
@@ -279,11 +289,11 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 
 void Karthus::Combo()
 {
-	if (Extensions::EnemiesInRange (GEntityList->Player()->GetPosition(), E->Range()) && ComboE->Enabled())
+	if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && ComboE->Enabled())
 		{
 		eToggle();
 		}
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || !target->IsValidTarget())
 		{
@@ -306,8 +316,8 @@ void Karthus::Combo()
 
 void Karthus::Harass()
 {
-	auto player = GEntityList->Player();
-	if (Extensions::EnemiesInRange (GEntityList->Player()->GetPosition(), E->Range()) && harassE->Enabled() && GEntityList->Player()->ManaPercent() >= harassEMana->GetFloat())
+	auto player = Hero;
+	if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && harassE->Enabled() && Hero->ManaPercent() >= harassEMana->GetFloat())
 		{
 		eToggle();
 		}
@@ -316,7 +326,7 @@ void Karthus::Harass()
 		{
 		return;
 		}
-	if (harassQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()) && GEntityList->Player()->ManaPercent() >= harassQMana->GetFloat())
+	if (harassQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()) && Hero->ManaPercent() >= harassQMana->GetFloat())
 		{
 		//Q->SetOverrideRadius(qWidthChange(target));
 		if (!cz)
@@ -335,54 +345,52 @@ void Karthus::Harass()
 float Karthus::qDmg (IUnit* Target)
 {
 	float InitDamage = 0;
-	float BonusStackDamage = ( (0.3 * GEntityList->Player()->TotalMagicDamage()));
-	if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 1)
+	float BonusStackDamage = ( (0.3 * Hero->TotalMagicDamage()));
+	if (Hero->GetSpellLevel (kSlotQ) == 1)
 		{
 		InitDamage += (40 + BonusStackDamage);
 		}
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 2)
+	else if (Hero->GetSpellLevel (kSlotQ) == 2)
 		{
 		InitDamage += (60 + BonusStackDamage);
 		}
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 3)
+	else if (Hero->GetSpellLevel (kSlotQ) == 3)
 		{
 		InitDamage += (80 + BonusStackDamage);
 		}
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 4)
+	else if (Hero->GetSpellLevel (kSlotQ) == 4)
 		{
 		InitDamage += (100 + BonusStackDamage);
 		}
-	else if (GEntityList->Player()->GetSpellLevel (kSlotQ) == 5)
+	else if (Hero->GetSpellLevel (kSlotQ) == 5)
 		{
 		InitDamage += (120 + BonusStackDamage);
 		}
-	return GDamage->CalcMagicDamage (GEntityList->Player(), Target, InitDamage);
+	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
 }
 
 float Karthus::rDmg (IUnit* Target)
 {
 	float InitDamage = 0;
-	float BonusStackDamage = (0.6 * GEntityList->Player()->TotalMagicDamage());
-	if (GEntityList->Player()->GetSpellLevel (kSlotR) == 1)
+	float BonusStackDamage = (0.6 * Hero->TotalMagicDamage());
+	if (Hero->GetSpellLevel (kSlotR) == 1)
 		{
 		InitDamage += 250 + BonusStackDamage;
 		}
-	else if (GEntityList->Player()->GetSpellLevel (kSlotR) == 2)
+	else if (Hero->GetSpellLevel (kSlotR) == 2)
 		{
 		InitDamage += 400 + BonusStackDamage;
 		}
-	else if (GEntityList->Player()->GetSpellLevel (kSlotR) == 3)
+	else if (Hero->GetSpellLevel (kSlotR) == 3)
 		{
 		InitDamage += 550 + BonusStackDamage;
 		}
-	return GDamage->CalcMagicDamage (GEntityList->Player(), Target, InitDamage);
+	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
 }
 
 void Karthus::dmgdraw()
 {
-	auto player = GEntityList->Player();
 	std::string killable = "Killable : ";
-	auto time = GGame->Time();
 	if (R->IsReady())
 		{
 		for (auto enemy : GEntityList->GetAllHeros (false, true))
@@ -394,10 +402,6 @@ void Karthus::dmgdraw()
 					auto health = enemy->GetHealth() + enemy->HPRegenRate() * R->GetDelay();
 					if (health < rDmg (enemy))
 						{
-						if (enemy->IsVisible())
-							{
-							auto lastSeen = GGame->Time();
-							}
 						killable += enemy->ChampionName();
 						killable.append (" ");
 						}
@@ -407,7 +411,7 @@ void Karthus::dmgdraw()
 		if (killable != "Killable : ")
 			{
 			Vec2 pos;
-			(GGame->Projection (GEntityList->Player()->GetPosition(), &pos));
+			(GGame->Projection (Hero->GetPosition(), &pos));
 			static auto message = GRender->CreateFontW ("Impact", 30.f, kFontWeightNormal);
 			message->SetColor (Vec4 (255, 0, 0, 255));
 			message->SetOutline (true);
@@ -418,13 +422,13 @@ void Karthus::dmgdraw()
 
 void Karthus::LaneClear()
 {
-	auto player = GEntityList->Player();
-	if (Extensions::CountMinionsInTargetRange (player->GetPosition(), E->Range()) > 2)
+	auto player = Hero;
+	if (Extensions::CountMinionsInTargetRange (player->GetPosition(), E->Range()) > 2 && E->IsReady() && laneClearE->Enabled() && Hero->ManaPercent() >= laneClearEMana->GetFloat())
 		{
 		eToggle();
 		}
 	Q->SetOverrideRadius (160.f);
-	if (Q->IsReady())
+	if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() >= laneClearQMana->GetFloat())
 		{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
@@ -433,7 +437,7 @@ void Karthus::LaneClear()
 				if (!minion->IsDead())
 					{
 					auto health = minion->GetHealth();
-					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 650);
+					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 850);
 					if (hp < qDmg (minion) && hp > health - hp * 2)
 						{
 						Q->CastOnPosition (minion->GetPosition());
@@ -451,7 +455,7 @@ void Karthus::LaneClear()
 void Karthus::LastHit()
 {
 	Q->SetOverrideRadius (160.f);
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	if (Q->IsReady())
 		{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
@@ -461,7 +465,7 @@ void Karthus::LastHit()
 				if (!minion->IsDead())
 					{
 					auto health = minion->GetHealth();
-					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 650);
+					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 850);
 					if (hp < qDmg (minion) && hp > health - hp * 2)
 						{
 						Q->CastOnPosition (minion->GetPosition());
@@ -476,7 +480,7 @@ void Karthus::LastHit()
 
 void Karthus::Drawing()
 {
-	auto player = GEntityList->Player();
+	auto player = Hero;
 	if (DrawReady->Enabled())
 		{
 		if (Q->IsReady() && DrawQ->Enabled())

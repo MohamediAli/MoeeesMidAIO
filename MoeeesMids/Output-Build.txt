@@ -1,0 +1,68 @@
+﻿1>------ Build started: Project: MoeeesMids, Configuration: Release Win32 ------
+1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(368,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+1>  Orianna.cpp
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(44): warning C4091: 'static ': ignored on left of 'MecCircle' when no variable is declared
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(470): warning C4091: 'static ': ignored on left of 'MEC' when no variable is declared
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(64): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(66): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(69): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(89): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(91): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(93): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(150): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(162): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(192): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(212): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(295): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(411): warning C4018: '<': signed/unsigned mismatch
+1>c:\users\moe\documents\github\moeeesmidaio\moeeesmids\moeeesmids\MEC.h(453): warning C4018: '<': signed/unsigned mismatch
+1>Orianna.cpp(237): warning C4390: ';': empty controlled statement found; is this the intent?
+1>Orianna.cpp(246): warning C4305: 'argument': truncation from 'double' to 'float'
+1>Orianna.cpp(246): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(251): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(267): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(281): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(623): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+1>Orianna.cpp(624): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+1>Orianna.cpp(625): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+1>Orianna.cpp(626): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+1>Orianna.cpp(654): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(656): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(687): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(783): warning C4018: '<': signed/unsigned mismatch
+1>Orianna.cpp(839): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(910): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(950): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(955): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(960): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(1083): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+1>Orianna.cpp(1096): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1108): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1114): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1126): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1132): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1146): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1152): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1161): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1187): warning C4305: '+=': truncation from 'double' to 'float'
+1>Orianna.cpp(1192): warning C4305: 'initializing': truncation from 'double' to 'float'
+1>Orianna.cpp(1193): warning C4305: '+=': truncation from 'double' to 'float'
+1>Orianna.cpp(1205): warning C4305: 'argument': truncation from 'double' to 'const float'
+1>Orianna.cpp(1206): warning C4305: 'argument': truncation from 'double' to 'const float'
+1>Orianna.cpp(1208): warning C4305: 'initializing': truncation from 'double' to 'float'
+1>Orianna.cpp(1209): warning C4305: '+=': truncation from 'double' to 'float'
+1>Orianna.cpp(1273): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+1>Orianna.cpp(1296): warning C4305: 'initializing': truncation from 'double' to 'float'
+1>Orianna.cpp(1297): warning C4305: '+=': truncation from 'double' to 'float'
+1>Orianna.cpp(1309): warning C4305: 'argument': truncation from 'double' to 'const float'
+1>Orianna.cpp(1311): warning C4305: 'initializing': truncation from 'double' to 'float'
+1>Orianna.cpp(1312): warning C4305: '+=': truncation from 'double' to 'float'
+1>     Creating library ..\..\..\..\..\Desktop\L++ - Dev\Persistent\Plugins\MoeeesMids.lib and object ..\..\..\..\..\Desktop\L++ - Dev\Persistent\Plugins\MoeeesMids.exp
+1>  Generating code
+1>  11 of 1467 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+1>    0 functions were new in current compilation
+1>    12 functions had inline decision re-evaluated but remain unchanged
+1>  Finished generating code
+1>  MoeeesMids.vcxproj -> C:\Users\Moe\Documents\GitHub\MoeeesMidAIO\MoeeesMids\MoeeesMids\..\..\..\..\..\Desktop\L++ - Dev\Persistent\Plugins\MoeeesMids.dll
+1>  MoeeesMids.vcxproj -> ..\..\..\..\..\Desktop\L++ - Dev\Persistent\Plugins\MoeeesMids.pdb (Full PDB)
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
