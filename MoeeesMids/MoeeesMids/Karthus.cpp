@@ -77,7 +77,6 @@ void Karthus::OnGameUpdate()
 }
 void Karthus::OnRender()
 {
-	CastWallOfPain();
 	Drawing();
 	dmgdraw();
 }
@@ -111,8 +110,7 @@ void Karthus::automatic()
 		}
 	if (autoQ->Enabled() && Q->IsReady())
 		{
-		auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-		if (target1 == nullptr || !target1->IsHero() || !target1->IsValidTarget())
+		if (QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget())
 			{
 			return;
 			}
@@ -239,49 +237,59 @@ Vec3 Karthus::PredPos (IUnit* Hero, float Delay)    //credits sn karthus
 	return (path[path.size() - 1]).To3D();
 }
 
-float Karthus::WallOfPainWidth()
+float Karthus::WWidth()
 {
 	return 700 + 100 * GEntityList->Player()->GetSpellLevel (kSlotW);
 }
 
-float Karthus::WallOfPainMaxRangeSqr()
+float Karthus::WMaxRangeSqr()
 {
-	float WallOfPainHalfWidth = WallOfPainWidth() / 2.0f;
-	return W->Range() * W->Range() + WallOfPainHalfWidth*WallOfPainHalfWidth;
+	float WHalfWidth = WWidth() / 2.0f;
+	return W->Range() * W->Range() + WHalfWidth*WHalfWidth;
 }
 
-float Karthus::WallOfPainMaxRange()
+float Karthus::WMaxRange()
 {
-	return std::sqrt (WallOfPainMaxRangeSqr());
+	return std::sqrt (WMaxRangeSqr());
 }
 
-bool Karthus::IsInWallOfPainRange (Vec2 position)
+bool Karthus::IsInWRange (Vec2 position)
 {
-	return Extensions::GetDistanceSqr (GEntityList->Player()->GetPosition().To2D(), position) < WallOfPainMaxRangeSqr();
+	return Extensions::GetDistanceSqr (GEntityList->Player()->GetPosition().To2D(), position) < WMaxRangeSqr();
 }
 
-
-void  Karthus::CastWallOfPain()
+//Divine Nader[Sl]
+void  Karthus::CastW()
 {
-	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, WallOfPainMaxRange());
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, WMaxRange());
+	if (target == nullptr || !target->IsValidTarget() || target->IsDead())
+		{
+		return;
+		}
 	Vec3 futurePos;
 	GPrediction->GetFutureUnitPosition (target, W->GetDelay(), true, futurePos);
-	if (IsInWallOfPainRange (futurePos.To2D()))
-		{
-		GGame->PrintChat ("hi");
-		auto myPos = Hero->ServerPosition();
-		auto myPos2D = myPos.To2D();
-		auto targetPos = futurePos;
-		auto targetPos2D = targetPos.To2D();
-		float x = W->Range();
-		float y = std::sqrt (Extensions::GetDistanceSqr (myPos, targetPos) - x*x);
-		float z = Extensions::GetDistance (myPos, targetPos);
-		float angle = (std::acos ( (y*y + z*z - x*x) / (2.0f * y * z))); // *PI / 180; //convert to radian
-		auto direction = (myPos2D - targetPos2D).VectorNormalize().Rotated (angle);
-		auto castPosition = Extensions::To3D (targetPos2D + y * direction);
-		GRender->DrawOutlinedCircle (castPosition, Vec4 (0, 255, 0, 225), 300);
-		//(direction1);
-		}
+	if (IsInWRange (futurePos.To2D()))
+		if (Hero->IsValidTarget (target, W->Range()))
+			{
+			W->SetOverrideRadius (wWidthChange (target));
+			W->CastOnTarget (target);
+			return;
+			}
+		else
+			{
+			auto myPos = Hero->ServerPosition();
+			auto myPos2D = myPos.To2D();
+			auto targetPos = futurePos;
+			auto targetPos2D = targetPos.To2D();
+			float x = W->Range();
+			float y = std::sqrt (Extensions::GetDistanceSqr (myPos, targetPos) - x*x);
+			float z = Extensions::GetDistance (myPos, targetPos);
+			float angle = (std::acos ( (y*y + z*z - x*x) / (2.0f * y * z))); // *PI / 180; //convert to radian
+			auto direction = (myPos2D - targetPos2D).VectorNormalize().Rotated (angle);
+			auto castPosition = Extensions::To3D (targetPos2D + y * direction);
+			W->CastOnPosition (castPosition);
+			return;
+			}
 }
 
 
@@ -306,7 +314,7 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 			auto xPos = static_cast<float> (floor (pos.x + curRadius * cos (cRadians)));
 			auto zPos = static_cast<float> (floor (pos.z + curRadius * sin (cRadians)));
 			auto posFor2D = Vec2 (xPos, zPos);
-			auto count = Extensions::CountMinionsInTargetRange (Extensions::To3D (posFor2D), W->Radius());
+			auto count = Extensions::CountMinionsInTargetRange (Extensions::To3D (posFor2D), 160.f);
 			//GGame->PrintChat(std::to_string(count).c_str());
 			if (GNavMesh->IsPointWall (Extensions::To3D (posFor2D)))
 				{
@@ -357,7 +365,7 @@ void Karthus::Combo()
 		}
 	if (ComboW->Enabled() && W->IsReady())
 		{
-		CastWallOfPain();
+		CastW();
 		}
 }
 
@@ -442,30 +450,37 @@ void Karthus::dmgdraw()
 		{
 		for (auto enemy : GEntityList->GetAllHeros (false, true))
 			{
-			if (enemy != nullptr && enemy->IsValidTarget())
+			if (!enemy->IsDead())
 				{
-				if (!enemy->IsDead())
+				auto health = enemy->GetHealth() + enemy->HPRegenRate() * R->GetDelay();
+				if (enemy->IsVisible())
 					{
-					auto health = enemy->GetHealth() + enemy->HPRegenRate() * R->GetDelay();
-					if (health < rDmg (enemy))
+					LastSeen = GGame->Time();
+					}
+				if (health < rDmg (enemy) && GGame->Time()-LastSeen<15)
+					{
+					killable += enemy->ChampionName();
+					killable.append (" ");
+					if (GGame->Time() - LastPing > 1 && enemy->IsVisible())
 						{
-						killable += enemy->ChampionName();
-						killable.append (" ");
+						LastPing = GGame->Time();
+						GGame->ShowPing (kPingDanger, enemy, true);
 						}
 					}
 				}
 			}
-		if (killable != "Killable : ")
-			{
-			Vec2 pos;
-			(GGame->Projection (Hero->GetPosition(), &pos));
-			static auto message = GRender->CreateFontW ("Impact", 30.f, kFontWeightNormal);
-			message->SetColor (Vec4 (255, 0, 0, 255));
-			message->SetOutline (true);
-			message->Render (pos.x + 10 + 32, pos.y + 10, killable.c_str());
-			}
+		}
+	if (killable != "Killable : ")
+		{
+		Vec2 pos;
+		(GGame->Projection (Hero->GetPosition(), &pos));
+		static auto message = GRender->CreateFontW ("Impact", 30.f, kFontWeightNormal);
+		message->SetColor (Vec4 (255, 0, 0, 255));
+		message->SetOutline (true);
+		message->Render (pos.x + 10 + 32, pos.y + 10, killable.c_str());
 		}
 }
+
 
 void Karthus::LaneClear()
 {
@@ -484,7 +499,7 @@ void Karthus::LaneClear()
 				if (!minion->IsDead())
 					{
 					auto health = minion->GetHealth();
-					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 850);
+					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 950+GGame->Latency());
 					if (hp < qDmg (minion) && hp > health - hp * 2)
 						{
 						Q->CastOnPosition (minion->GetPosition());
@@ -512,7 +527,7 @@ void Karthus::LastHit()
 				if (!minion->IsDead())
 					{
 					auto health = minion->GetHealth();
-					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 850);
+					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 950 + GGame->Latency());
 					if (hp < qDmg (minion) && hp > health - hp * 2)
 						{
 						Q->CastOnPosition (minion->GetPosition());

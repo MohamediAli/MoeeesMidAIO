@@ -30,12 +30,14 @@ private:
 	void dmgdraw();
 	void LaneClear();
 	void LastHit();
-	float WallOfPainWidth();
-	float WallOfPainMaxRangeSqr();
-	float WallOfPainMaxRange();
-	bool IsInWallOfPainRange (Vec2 position);
-	void  CastWallOfPain();
+	float WWidth();
+	float WMaxRangeSqr();
+	float WMaxRange();
+	bool IsInWRange (Vec2 LastKarthus);
+	void  CastW();
+	int LastPing, LastSeen;
 	void Drawing();
+	std::vector<LastKarthus> LK;
 
 	float czx = 0, czy = 0, czx2 = 0, czy2 = 0;
 	bool cz = false;
