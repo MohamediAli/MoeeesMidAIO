@@ -65,7 +65,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
 	W->SetSkillshot (0.f, 220.f, FLT_MAX, 245.f);
 	E = GPluginSDK->CreateSpell2 (kSlotE, kTargetCast, false, true, kCollidesWithYasuoWall);
-	E->SetSkillshot (0.25f, 80.f, 1700.f, 1095.f);
+	E->SetSkillshot (0.25f, 80.f, 1900.f, 1095.f);
 	R = GPluginSDK->CreateSpell2 (kSlotR, kCircleCast, false, true, kCollidesWithNothing);
 	R->SetSkillshot (0.6f, 365.f, FLT_MAX, 325.f);
 	RFlash = GPluginSDK->CreateSpell2 (kSlotR, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithNothing));
@@ -128,6 +128,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
+	drawLC = Drawings->CheckBox ("Draw Lance Clear Status", true);
 	drawBall = Drawings->CheckBox ("Draw Ball Animation", true);
 	ballSelect = Drawings->AddSelection ("Choose Ball Style", 0, ballAnimation);
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
@@ -222,7 +223,7 @@ void Orianna::OnRender()
 {
 	Drawing();
 	dmgdraw();
-	if (Laneclear->Enabled())
+	if (Laneclear->Enabled() && drawLC->Enabled())
 		{
 		Vec2 pos;
 		if (GGame->Projection (GEntityList->Player()->GetPosition(), &pos));
@@ -816,6 +817,32 @@ void Orianna::CastQ (IUnit* target)
 		E->CastOnPlayer();
 		return;
 		}
+	Vec3 castOn;
+	BestCastPosition (target, Q, castOn, false);
+	/*
+	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance(target, StationaryBall) >= 250)
+	{
+		auto directTravelTime = Extensions::GetDistance(StationaryBall, castOn) / Q->Speed();
+		auto bestEqTravelTime = FLT_MAX;
+		auto bestAlly =
+			GameObjects.AllyHeroes.Where(h = > h.IsValidTarget(E.Range, false))
+			.OrderBy(h = > h.Distance(pred.CastPosition))
+			.FirstOrDefault();
+		if (bestAlly != nullptr)
+		{
+			auto t = Extensions::GetDistance(StationaryBall, bestAlly->ServerPosition()) / E->Speed() +
+				Extensions::GetDistance(bestAlly, castOn) / Q->Speed();
+			if (t < bestEqTravelTime)
+			{
+				bestEqTravelTime = t;
+			}
+		}
+		if (bestAlly != nullptr && bestEqTravelTime < directTravelTime * 1.3f)
+		{
+			CastE(bestAlly);
+			return;
+		}
+	}*/
 	if (PredictionType->GetInteger() == 2)
 		{
 		QCast (Q, target);
@@ -834,11 +861,10 @@ void Orianna::CastQ (IUnit* target)
 		}
 	else if (PredictionType->GetInteger() == 0)
 		{
-		Vec3 castOn;
-		BestCastPosition (target, Q, castOn, false);
 		Q->CastOnPosition (castOn);
 		}
 }
+
 
 
 
@@ -949,7 +975,7 @@ void Orianna::Harass()
 
 bool Orianna::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	if (mouseClear)
+	if (mouseClear->Enabled())
 		{
 		if (message != 0x20a)
 			{
