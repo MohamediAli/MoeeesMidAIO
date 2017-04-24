@@ -173,6 +173,10 @@ void Orianna::PerformFlashUlt()
 
 void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
+	if (isBallMoving())
+		{
+		return;
+		}
 	OnRunPath (Source, path_);
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || isBallMoving() || target->IsDead())
@@ -818,31 +822,31 @@ void Orianna::CastQ (IUnit* target)
 		return;
 		}
 	Vec3 castOn;
-	BestCastPosition (target, Q, castOn, false);
-	/*
-	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance(target, StationaryBall) >= 250)
-	{
-		auto directTravelTime = Extensions::GetDistance(StationaryBall, castOn) / Q->Speed();
+	BestCastPosition (target, Q, castOn, false);/*
+	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance (target, StationaryBall) >= 250)
+		{
+		auto directTravelTime = Extensions::GetDistance (StationaryBall, castOn) / Q->Speed();
 		auto bestEqTravelTime = FLT_MAX;
-		auto bestAlly =
-			GameObjects.AllyHeroes.Where(h = > h.IsValidTarget(E.Range, false))
-			.OrderBy(h = > h.Distance(pred.CastPosition))
-			.FirstOrDefault();
+		std::vector<std::pair<int, IUnit*>> bestAlly;
+		    GameObjects.AllyHeroes.Where (h = > h.IsValidTarget (E.Range, false))
+		    .OrderBy (h = > h.Distance (pred.CastPosition))
+		    .FirstOrDefault();
+
 		if (bestAlly != nullptr)
-		{
-			auto t = Extensions::GetDistance(StationaryBall, bestAlly->ServerPosition()) / E->Speed() +
-				Extensions::GetDistance(bestAlly, castOn) / Q->Speed();
-			if (t < bestEqTravelTime)
 			{
+			auto t = Extensions::GetDistance (StationaryBall, bestAlly->ServerPosition()) / E->Speed() +
+			         Extensions::GetDistance (bestAlly, castOn) / Q->Speed();
+			if (t < bestEqTravelTime)
+				{
 				bestEqTravelTime = t;
+				}
 			}
-		}
 		if (bestAlly != nullptr && bestEqTravelTime < directTravelTime * 1.3f)
-		{
-			CastE(bestAlly);
+			{
+			CastE (bestAlly);
 			return;
-		}
-	}*/
+			}
+		}*/
 	if (PredictionType->GetInteger() == 2)
 		{
 		QCast (Q, target);
@@ -907,7 +911,7 @@ void Orianna::Combo()
 		}
 	eLogic();
 	auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
-	if (target1 == nullptr || !target1->IsHero() || target1->IsDead())
+	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || isBallMoving())
 	{ return; }
 	if (R->IsReady() && ComboR->Enabled())
 		{
@@ -916,7 +920,7 @@ void Orianna::Combo()
 			R->CastOnPlayer();
 			return;
 			}
-		if (rDmg (target1) >= target1->GetHealth() && KillStealR->Enabled() && (SpellCheckKS (StationaryBall->GetPosition(), R->Range(), 0.45,target1)))
+		if (rDmg (target1) >= target1->GetHealth() && KillStealR->Enabled() && (SpellCheckKS (StationaryBall->GetPosition(), R->Range(), 0.5,target1)))
 			{
 			R->CastOnPlayer();
 			return;
