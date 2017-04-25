@@ -16,7 +16,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	W = GPluginSDK->CreateSpell2 (kSlotW, kTargetCast, false, false, kCollidesWithNothing);
 	W->SetOverrideRange (580);
 	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
-	E->SetSkillshot (0.25f, 60, 1550, 950);
+	E->SetSkillshot (0.25f, 80, 1550, 950);
 	EFlash = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
 	EFlash->SetSkillshot (0.25f, 60, 3100, 1350);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
@@ -226,10 +226,10 @@ void Ahri::CastE (IUnit* target)
 	W->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_outputs);
 	if (PredictionType->GetInteger() == 0)
 		{
-		if (prediction_outputs.HitChance != kHitChanceCollision)
+		if (prediction_outputs.HitChance > kHitChanceCollision)
 			{
 			Vec3 CastOn;
-			BestCastPosition (target, E, CastOn, true);
+			BestCastPosition (target, E, CastOn, false);
 			E->CastOnPosition (CastOn);
 			}
 		}

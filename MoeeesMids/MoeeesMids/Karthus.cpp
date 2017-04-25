@@ -14,7 +14,7 @@ Karthus::~Karthus()
 Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
 	Q = GPluginSDK->CreateSpell2 (kSlotQ, kLineCast, true, true, kCollidesWithNothing);
-	Q->SetSkillshot (1.f, 160.f, FLT_MAX, 875.f);
+	Q->SetSkillshot (1.f, 140.f, FLT_MAX, 890.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
 	W->SetSkillshot (1.0f, 200.f, FLT_MAX, 1000.f);
 	E = GPluginSDK->CreateSpell2 (kSlotE, kConeCast, false, true, kCollidesWithWalls);
@@ -25,7 +25,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	qMenu = Parent->AddMenu ("Q Settings");
 	wMenu = Parent->AddMenu ("W Settings");
 	eMenu = Parent->AddMenu ("E Settings");
-	Drawings = Parent->AddMenu ("Drawings");
+	Drawings = Parent->AddMenu ("All Drawings");
 	MiscMenu = Parent->AddMenu ("Miscs");
 	ComboQ = qMenu->CheckBox ("Use Q in Combo", true);
 	autoQ = qMenu->CheckBox ("Automatic Harass Q", true);
@@ -357,7 +357,7 @@ void Karthus::Combo()
 		}
 	if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()))
 		{
-		Q->SetOverrideRadius (qWidthChange (target));
+		//	Q->SetOverrideRadius (qWidthChange (target));
 		if (!cz)
 			{
 			Q->CastOnPosition (PredPos (QTarget, 0.75f));

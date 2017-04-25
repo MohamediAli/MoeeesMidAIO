@@ -53,10 +53,10 @@ int Extensions::EnemiesInRange (Vec3 Source, float range)
 	auto enemiesInRange = 0;
 	for (auto target : Targets)
 		{
-		if (target != nullptr && target->IsValidTarget() && !target->IsDead())
+		if (Extensions::Validate (target) && !target->IsDead())
 			{
 			auto flDistance = (target->GetPosition() - Source).Length();
-			if (flDistance < range)
+			if (flDistance <= range)
 				{
 				enemiesInRange++;
 				}
@@ -140,6 +140,11 @@ bool Extensions::IsValid (Vec3 p)
 	return p.x != 0 && p.z != 0;
 }
 
+//Divine's Divine Code.
+bool Extensions::Validate (IUnit * obj,IUnit * unit, float range)
+{
+	return obj != nullptr && ( (!unit && obj->IsValidObject()) || (unit ? obj->IsValidTarget (unit,range) :obj->IsValidTarget()));
+}
 
 Vec3 Extensions::To3D (Vec2 p, float height)
 {

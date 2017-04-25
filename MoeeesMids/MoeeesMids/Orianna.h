@@ -22,10 +22,10 @@ public:
 	void AntiGapclose (GapCloserSpell const& args);
 	std::vector<std::string> PredType;
 	std::vector<std::string> ballAnimation;
-	void unlooadMouse();
+
 
 private:
-
+	bool PriorityHit();
 	bool IsOneVsOne();
 	float rD1v1 (IUnit* Target);
 	bool isChasing (IUnit* Target);
@@ -50,6 +50,7 @@ private:
 	void CastE (IUnit* target);
 	void CastQ (IUnit* target);
 	void eLogic();
+	int enemyT;
 	void Combo();
 	void Harass();
 	void LaneClear();
@@ -152,5 +153,5 @@ private:
 	IMenuOption* gapCloserE;
 	IMenuOption* autoQ;
 	IMenuOption* autoW;
-	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1  ;
+	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin;
 };

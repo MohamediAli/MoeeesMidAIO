@@ -113,6 +113,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	FlashUlt = rMenu->AddKey ("Flash Ult key", 84);
 	InterruptR = rMenu->CheckBox ("Use Ult to Interrupt Spells", true);
 	KillStealR = rMenu->CheckBox ("Use Ult to Kill Steal", false);
+	priorityMin = rMenu->AddInteger ("Automatically R if Priority >=", 0, 5, 2);
 	onev1 = oneVerusOne->CheckBox ("Enable 1v1 Mode", true);
 	extraAutos = oneVerusOne->AddInteger ("Add Extra Autos in Ult Damage Calc", 0, 5, 2);
 	Laneclear = LaneClearMenu->CheckBox ("Use Spells in Lane Clear", true);
@@ -175,17 +176,14 @@ void Orianna::PerformFlashUlt()
 
 void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
-	if (isBallMoving())
-		{
-		return;
-		}
 	OnRunPath (Source, path_);
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || isBallMoving() || target->IsDead())
 	{ return; }
 	if (target == Source && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
-		if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range())  && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
 			{
+			TeamFightQ (target->GetPosition());
 			return;
 			}
 		else if (Q->IsReady() && target == Source && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
@@ -301,6 +299,29 @@ int Orianna::GetEHits()
 			}
 		}
 	return 0;
+}
+
+//Author Divine ( you should pay a lot of money , when this is done, i dont want profit % since prob you wont sell shit, i need static payment, ty <3 :*
+bool Orianna::PriorityHit()
+{
+	Vec3 futurePos;
+	auto Targets = GEntityList->GetAllHeros (false, true);
+	for (auto target : Targets)
+		{
+		if (Extensions::Validate (StationaryBall) && Extensions::Validate (target) && !target->IsDead())
+			{
+			GPrediction->GetFutureUnitPosition (target, 0.5f, true, futurePos);
+			auto flDistance = (futurePos - StationaryBall->GetPosition()).Length();
+			if (flDistance <= R->Range())
+				{
+				if (GTargetSelector->GetHeroPriority (target) >= priorityMin->GetInteger())
+					{
+					return true;
+					}
+				}
+			}
+		}
+	return false;
 }
 
 
@@ -520,14 +541,6 @@ void Orianna::TeamFightQ (Vec3 pos)
 		{
 		return left.first > right.first;
 		});
-	for (int i = 0; i < 15; i++)
-		{
-		CloseQPositions.push_back (possibleQPositions[i]);
-		}
-	std::sort (CloseQPositions.begin(), CloseQPositions.end(), [&] (auto &a, auto &b)
-		{
-		return Extensions::Dist2D (a.second, pos) < Extensions::Dist2D (b.second, pos);
-		});
 	//	for (auto entry : CloseQPositions) {
 	//		Q->CastOnPosition(To3D(entry.second));
 	//	}
@@ -700,10 +713,10 @@ int Orianna::SpellCheck (Vec3 pos, int range, float delay)
 	Vec3 futurePos;
 	for (auto target : GEntityList->GetAllHeros (false, true))
 		{
-		if (target != nullptr && target->IsValidTarget() && target->IsVisible() && !target->IsDead())
+		if (Extensions::Validate (target) && target->IsVisible() && !target->IsDead())
 			{
 			GPrediction->GetFutureUnitPosition (target, delay, true, futurePos);
-			if ( (futurePos - pos).Length() <= range)
+			if ( (futurePos - pos).LengthSqr() <= range*range)
 				{
 				count++;
 				}
@@ -937,7 +950,7 @@ void Orianna::eLogic()
 
 void Orianna::Combo()
 {
-	if (W->IsReady() && ComboW->Enabled() && ( (Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
+	if (W->IsReady() && ComboW->Enabled() && ( (Extensions::IsValid (GetMovingBallPosW()) && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
 		{
 		W->CastOnPlayer();
 		}
@@ -945,8 +958,13 @@ void Orianna::Combo()
 	auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || isBallMoving())
 	{ return; }
-	if (R->IsReady() && ComboR->Enabled())
+	if (R->IsReady() && ComboR->Enabled() && Extensions::Validate (StationaryBall))
 		{
+		if (PriorityHit())
+			{
+			R->CastOnPlayer();
+			return;
+			}
 		if (SpellCheck (StationaryBall->GetPosition(), R->Radius(), 0.5) >= ultMin->GetFloat())
 			{
 			R->CastOnPlayer();
@@ -962,13 +980,6 @@ void Orianna::Combo()
 			R->CastOnPlayer();
 			return;
 			}
-		}
-	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (target == nullptr || !target->IsHero() || isBallMoving() || target->IsDead())
-	{ return; }
-	if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()) && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
-		{
-		TeamFightQ (target->ServerPosition());
 		}
 	// check if more than X target to try aoe q position
 	if (E->IsReady() && ! (Hero->IsDead()))
@@ -1000,7 +1011,7 @@ void Orianna::Harass()
 		{
 		eLogic();
 		}
-	if (W->IsReady() && harassW->Enabled() && (Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()) || (Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius()))))
+	if (W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat() && ( (Extensions::IsValid (GetMovingBallPosW()) && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
 		{
 		W->CastOnPlayer();
 		}
@@ -1009,7 +1020,7 @@ void Orianna::Harass()
 	{ return; }
 	if (harassQ->Enabled() && Hero->ManaPercent() > harassQMana->GetFloat())
 		{
-		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, 900) && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, Q->Range()) && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
 			{ (TeamFightQ (target->ServerPosition())); }
 		else if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
 			{
@@ -1033,11 +1044,9 @@ bool Orianna::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam
 
 void Orianna::LaneClear()
 {
-	if (isBallMoving())
-	{ return; }
-	if (Laneclear->Enabled())
+	if (Laneclear->Enabled() && Extensions::Validate (StationaryBall))
 		{
-		if (Extensions::CountMinionsInTargetRange (StationaryBall->GetPosition(), W->Radius()) > 2 && laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && (!isBallMoving()))
+		if (Extensions::CountMinionsInTargetRange (StationaryBall->GetPosition(), W->Radius() +25) > 2 && laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && (!isBallMoving()))
 			{
 			W->CastOnPlayer();
 			}
@@ -1084,7 +1093,7 @@ void Orianna::Automatic()
 		}
 	if (isBallMoving())
 	{ return; }
-	if (autoW->Enabled() && W->IsReady() && Hero->ManaPercent() > harassWMana->GetFloat() && (SpellCheck (StationaryBall->GetPosition(), W->Radius(), W->GetDelay()) || (Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius()))))
+	if (autoW->Enabled() && W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat() && ( (Extensions::IsValid (GetMovingBallPosW()) && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
 		{
 		W->CastOnPlayer();
 		}

@@ -1,3 +1,4 @@
+#pragma once
 #include "PluginSDK.h"
 #include <regex>
 #include <cmath>
@@ -16,6 +17,7 @@ Vec3 lerp (float t, Vec3 a, Vec3 b);
 Vec3 Cross (Vec3 a, Vec3 b);
 Vec3 RotateZ (Vec3 target, Vec3 Origin, float deg);
 int EnemiesInRange (Vec3 Source, float range);
+bool Validate (IUnit * obj, IUnit * unit = nullptr, float range = FLT_MAX);
 float GetDistance (IUnit* Player, IUnit* target);
 float GetDistanceSqr (Vec3 from, Vec3 to);
 float GetDistanceSqr2D (Vec3 from, Vec3 to);
