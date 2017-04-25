@@ -920,7 +920,7 @@ bool Orianna::isChasing (IUnit* Target)
 void Orianna::eLogic()
 {
 	auto player = Hero;//sebby start
-	if (isBallMoving() || !E->IsReady() || W->IsReady() || SpellCheck (GetMovingBallPosW(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat() || SpellCheck (StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
+	if (isBallMoving() || !E->IsReady() || SpellCheck (GetMovingBallPosW(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat() || Extensions::Validate (StationaryBall) && SpellCheck (StationaryBall->GetPosition(), R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
 	{ return; }
 	auto ballEnemies = Extensions::EnemiesInRange (StationaryBall->GetPosition(), 600);
 	int playerEnemies = 0;
@@ -940,7 +940,7 @@ void Orianna::eLogic()
 		}
 	for (auto ally : GEntityList->GetAllHeros (true, false))
 		{
-		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && !isBallMoving() && Hero != ally)
+		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && R->IsReady() && !isBallMoving() && Hero != ally)
 			{
 			CastE (ally);
 			return;
