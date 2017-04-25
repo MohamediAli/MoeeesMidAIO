@@ -477,7 +477,7 @@ bool Orianna::pairCompare (const std::pair<int, Vec2>& firstElem, const std::pai
 }
 
 
-Vec3 Orianna::TeamFightQ (Vec3 pos)
+void Orianna::TeamFightQ (Vec3 pos)
 {
 	auto posChecked = 0;
 	auto maxPosChecked = 85;
@@ -504,7 +504,7 @@ Vec3 Orianna::TeamFightQ (Vec3 pos)
 				// dont push is wall
 				continue;
 				}
-			if (Extensions::Dist2D (posFor2D, Hero->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) > Q->Range())
 				{
 				// dont push to far away to cast;
 				continue;
@@ -533,9 +533,11 @@ Vec3 Orianna::TeamFightQ (Vec3 pos)
 	//	}
 	for (auto entry : possibleQPositions)
 		{
-		return (Extensions::To3D (entry.second));
+		Q->CastOnPosition (Extensions::To3D (entry.second));
+		return;
 		}
 }
+
 
 Vec3 Orianna::FarmQ (Vec3 pos)
 {
@@ -966,7 +968,7 @@ void Orianna::Combo()
 	{ return; }
 	if (Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()) && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
 		{
-		Q->CastOnPosition (TeamFightQ (target->ServerPosition()));
+		TeamFightQ (target->ServerPosition());
 		}
 	// check if more than X target to try aoe q position
 	if (E->IsReady() && ! (Hero->IsDead()))
@@ -1225,7 +1227,7 @@ void Orianna::DrawGagongReplicate (Vec3 BallPos)
 	int spiral_rad = 50;
 	Vec3 spiral_prev_vec (-1, -1, -1);
 	Vec2 currv2D (-1, -1), prev2D (-1, -1);
-	for (int i = 0; i < spiral_num_segments; i++)
+	/*for (int i = 0; i < spiral_num_segments; i++)
 		{
 		float theta = 10.0f * 3.1415926f * i / spiral_num_segments; //the current angle
 		float x = (spiral_rad / spiral_num_segments) *i * cosf (theta); //the x component
@@ -1244,10 +1246,10 @@ void Orianna::DrawGagongReplicate (Vec3 BallPos)
 					{
 					GRender->DrawTextW (currv2D, GagongColors[1], "*");
 					}
-				spiral_prev_vec = spiral_curr_vec;
-				}
-		}
+				spiral_prev_vec = spiral_curr_vec;*/
 }
+
+
 
 void Orianna::dmgdraw()
 {

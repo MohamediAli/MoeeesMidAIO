@@ -44,7 +44,7 @@ private:
 	Vec3 GetMovingBallPos();
 	Vec3 GetMovingBallPosW();
 	bool pairCompare (const std::pair<int, Vec2>& firstElem, const std::pair<int, Vec2>& secondElem);
-	Vec3 TeamFightQ (Vec3 pos);
+	void TeamFightQ (Vec3 pos);
 	Vec3 FarmQ (Vec3 pos);
 	int GetEHits();
 	void CastE (IUnit* target);
