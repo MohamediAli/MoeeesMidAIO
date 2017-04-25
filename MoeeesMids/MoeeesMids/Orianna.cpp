@@ -113,7 +113,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	FlashUlt = rMenu->AddKey ("Flash Ult key", 84);
 	InterruptR = rMenu->CheckBox ("Use Ult to Interrupt Spells", true);
 	KillStealR = rMenu->CheckBox ("Use Ult to Kill Steal", false);
-	priorityMin = rMenu->AddInteger ("Automatically R if Priority >=", 0, 5, 2);
+	priorityMin = rMenu->AddInteger ("Automatically R if Priority >=", 0, 5, 4);
 	onev1 = oneVerusOne->CheckBox ("Enable 1v1 Mode", true);
 	extraAutos = oneVerusOne->AddInteger ("Add Extra Autos in Ult Damage Calc", 0, 5, 2);
 	Laneclear = LaneClearMenu->CheckBox ("Use Spells in Lane Clear", true);
