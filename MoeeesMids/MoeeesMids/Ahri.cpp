@@ -391,6 +391,19 @@ void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 			return;
 			}
 		}
+	if (autoQ->Enabled() && Q->IsReady() && target == Source && Hero->IsValidTarget (target, Q->Range()) && Hero->GetMana() > (100 + W->ManaCost() + Q->ManaCost() * 2)) //magic number for r mana cost
+		{
+		if (Extensions::GetDistance (Hero, target) > 730)
+			{
+			IUnit *target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
+			AdvPredictionOutput result;
+			Q->RunPrediction (target, false, kCollidesWithNothing, &result);
+			if (result.HitChance >= kHitChanceVeryHigh)
+				{
+				Q->CastOnPosition (result.CastPosition);
+				}
+			}
+		}
 	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed && target == Source && Extensions::Validate (target))
 		{
 		if (target == nullptr || !target->IsHero() || ! (target->IsVisible()) || target->IsDead())
@@ -471,19 +484,6 @@ float GetDistance (IUnit* Player, IUnit* target)
 void Ahri::Automated()
 {
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
-	if (autoQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()) && Hero->GetMana() > (100 + W->ManaCost() + Q->ManaCost() * 2)) //magic number for r mana cost
-		{
-		if (GetDistance (Hero, target) > 730)
-			{
-			IUnit *target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-			AdvPredictionOutput result;
-			Q->RunPrediction (target, false, kCollidesWithNothing, &result);
-			if (result.HitChance >= kHitChanceVeryHigh)
-				{
-				Q->CastOnPosition (result.CastPosition);
-				}
-			}
-		}
 	if (GetAsyncKeyState (FlashCondemn->GetInteger()) && !GGame->IsChatOpen())
 		{
 		PerformFlashCharm();
