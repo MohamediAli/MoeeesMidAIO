@@ -15,10 +15,10 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Q->SetSkillshot (0.25f, 80, 1450, 840);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kTargetCast, false, false, kCollidesWithNothing);
 	W->SetOverrideRange (580);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
-	E->SetSkillshot (0.25f, 80, 1550, 950);
+	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
+	E->SetSkillshot (0.250f, 60.f, 1350, 975);
 	EFlash = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
-	EFlash->SetSkillshot (0.25f, 60, 3100, 1350);
+	EFlash->SetSkillshot (0.25f, 60.f, 3100, 1350);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
 		{
 		Flash = GPluginSDK->CreateSpell2 (kSummonerSlot1, kCircleCast, false, false, kCollidesWithNothing);
@@ -41,7 +41,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	ComboW = ComboMenu->CheckBox ("Use W", true);
 	ComboE = ComboMenu->CheckBox ("Use E", true);
 	HarassQ = HarassMenu->CheckBox ("Use Q", true);
-	autoQ = HarassMenu->CheckBox ("Use Q Automatically", false);
+	autoQ = HarassMenu->CheckBox ("Use Q Automatically", true);
 	HarassW = HarassMenu->CheckBox ("Use W", true);
 	HarassE = HarassMenu->CheckBox ("Use E", true);
 	LaneClearQ = LaneClearMenu->CheckBox ("Use Q", true);
@@ -65,7 +65,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
 	PredType = { "Oracle", "Core" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
 }
 
 void Ahri::OnGameUpdate()
@@ -223,13 +223,13 @@ bool Ahri::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition
 void Ahri::CastE (IUnit* target)
 {
 	AdvPredictionOutput prediction_outputs;
-	W->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_outputs);
+	E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_outputs);
 	if (PredictionType->GetInteger() == 0)
 		{
 		if (prediction_outputs.HitChance > kHitChanceCollision)
 			{
 			Vec3 CastOn;
-			BestCastPosition (target, E, CastOn, false);
+			BestCastPosition (target, E, CastOn, true);
 			E->CastOnPosition (CastOn);
 			}
 		}
@@ -237,7 +237,11 @@ void Ahri::CastE (IUnit* target)
 		{
 		AdvPredictionOutput prediction_output;
 		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
-		if (prediction_output.HitChance >= kHitChanceVeryHigh)
+		if (Extensions::GetDistance (Hero, target) > 320 && prediction_output.HitChance >= kHitChanceHigh)
+			{
+			E->CastOnPosition (prediction_output.CastPosition);
+			}
+		else if (Extensions::GetDistance (Hero, target) <= 320 && prediction_output.HitChance >= kHitChanceMedium)
 			{
 			E->CastOnPosition (prediction_output.CastPosition);
 			}
@@ -246,19 +250,19 @@ void Ahri::CastE (IUnit* target)
 
 void Ahri::CastQ (IUnit* target)
 {
-	if (PredictionType->GetInteger() == 0)
+	if (PredictionType->GetInteger() == 1)
 		{
 		Vec3 CastOn;
 		BestCastPosition (target, Q, CastOn, false);
 		Q->CastOnPosition (CastOn);
 		}
-	if (PredictionType->GetInteger() == 1)
+	if (PredictionType->GetInteger() == 0)
 		{
 		AdvPredictionOutput prediction_output;
 		Q->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
-		if (prediction_output.HitChance >= kHitChanceVeryHigh)
+		if (prediction_output.HitChance >= kHitChanceHigh)
 			{
-			E->CastOnPosition (prediction_output.CastPosition);
+			Q->CastOnPosition (prediction_output.CastPosition);
 			}
 		}
 }
@@ -370,36 +374,38 @@ void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
 	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
-	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && target == Source)
+	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && target == Source && Extensions::Validate (target))
 		{
-		if (target == nullptr || !target->IsHero())
+		if (target == nullptr || !target->IsHero() || ! (target->IsVisible()) || target->IsDead())
 			{
 			return;
 			}
-		if (ComboE->Enabled() && E->IsReady() && player->IsValidTarget (target, E->Range()) && Hero->GetMana() > 100 + E->ManaCost())
+		if (ComboE->Enabled() && E->IsReady() && player->IsValidTarget (target, E->Range()) && (Hero->GetMana() > 100 + E->ManaCost() || !R->IsReady()))
 			{
 			CastE (target);
+			return;
 			}
 		if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()))
 			{
 			CastQ (target);
+			return;
 			}
 		}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed && target == Source)
+	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed && target == Source && Extensions::Validate (target))
 		{
-		auto player = Hero;
-		auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
-		if (target == nullptr || !target->IsHero())
+		if (target == nullptr || !target->IsHero() || ! (target->IsVisible()) || target->IsDead())
 			{
 			return;
 			}
-		if (E->IsReady() && HarassE->Enabled() && player->IsValidTarget (target, E->Range()) && Hero->GetMana() > 100 + E->ManaCost())
+		if (HarassE->Enabled() && E->IsReady() && player->IsValidTarget (target, E->Range()) && (Hero->GetMana() > 100 + E->ManaCost() || !R->IsReady()))
 			{
 			CastE (target);
+			return;
 			}
-		if (Q->IsReady() && HarassQ->Enabled() && player->IsValidTarget (target, Q->Range()) && Hero->GetMana() > 100 + Q->ManaCost())
+		if (HarassQ->Enabled() && Q->IsReady() &&  player->IsValidTarget (target, Q->Range()))
 			{
 			CastQ (target);
+			return;
 			}
 		}
 }
