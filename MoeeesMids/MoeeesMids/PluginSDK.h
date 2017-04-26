@@ -1,3 +1,4 @@
+#pragma once
 #ifndef PluginSDK_h__
 #define PluginSDK_h__
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LPPConstants_h__
 #define LPPConstants_h__
 
@@ -154,7 +155,7 @@ enum eSpellState
 	NoMana = (1 << 6), // 64 (You do not have enough mana to cast the spell)
 	Unknown128 = (1 << 7), // 128 (Unsure, used in UnableToCast flags)
 
-						   // if (Spell.Flags == 0 || !(Spell.Flags & UnableToCast)) { Spell.Ready = true; }
+	// if (Spell.Flags == 0 || !(Spell.Flags & UnableToCast)) { Spell.Ready = true; }
 	UnableToCast = (Unknown128 | Cooldown | NotLearned | NotReady)
 };
 

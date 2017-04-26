@@ -250,13 +250,13 @@ void Ahri::CastE (IUnit* target)
 
 void Ahri::CastQ (IUnit* target)
 {
-	if (PredictionType->GetInteger() == 1)
+	if (PredictionType->GetInteger() == 0)
 		{
 		Vec3 CastOn;
 		BestCastPosition (target, Q, CastOn, false);
 		Q->CastOnPosition (CastOn);
 		}
-	if (PredictionType->GetInteger() == 0)
+	if (PredictionType->GetInteger() == 1)
 		{
 		AdvPredictionOutput prediction_output;
 		Q->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
@@ -442,7 +442,7 @@ void Ahri::LaneClear()
 	CastPos.push_back (Hero->GetPosition());
 	FarmLocation Farmlocation;
 	Rembrandt::FindBestLineCastPosition (CastPos, Q->Range(), Q->Range(), Q->Radius(), true, true, Farmlocation);
-	if (LaneClearQ->Enabled() && Hero->ManaPercent() >= LaneClearManaManager->GetFloat() && Farmlocation.HitCount >= LaneClearMin->GetInteger())
+	if (LaneClearQ->Enabled() && Hero->ManaPercent() >= LaneClearManaManager->GetFloat())
 		{
 		Q->CastOnPosition (Farmlocation.CastPosition);
 		}

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef PluginData_h__
 #define PluginData_h__
 
@@ -161,9 +162,9 @@ struct ItemData
 /// </summary>
 struct SpellParams
 {
-	SpellParams() { ZeroMemory(this, sizeof(*this)); }
+	SpellParams() { ZeroMemory (this, sizeof (*this)); }
 
-	SpellParams(float Delay, float Speed, float Width = 0, bool Collision = false, eSpellType Type = kLineCast)
+	SpellParams (float Delay, float Speed, float Width = 0, bool Collision = false, eSpellType Type = kLineCast)
 	{
 		Delay_ = Delay;
 		Speed_ = Speed;
@@ -277,14 +278,14 @@ public:
 	virtual float ManaPercent() = 0;
 	virtual float HealthPercent() = 0;
 	virtual int GetLevel() = 0;
-	virtual bool HasBuff(const char*) = 0;
-	virtual bool GetBounds(Vec3* Out_Min, Vec3* Out_Max) = 0;
-	virtual bool GetHitboxCenter(Vec3* Out_Hitbox) = 0;
+	virtual bool HasBuff (const char*) = 0;
+	virtual bool GetBounds (Vec3* Out_Min, Vec3* Out_Max) = 0;
+	virtual bool GetHitboxCenter (Vec3* Out_Hitbox) = 0;
 	virtual int GetNetworkId() = 0;
-	virtual bool HasItem(const char*) = 0;
+	virtual bool HasItem (const char*) = 0;
 	virtual const char* GetObjectName() = 0;
 	virtual int GetTeam() = 0;
-	virtual bool IsEnemy(IUnit* other) = 0;
+	virtual bool IsEnemy (IUnit* other) = 0;
 	virtual int UnitFlags() = 0;
 	virtual int GetType() = 0;
 	virtual bool IsCreep() = 0;
@@ -295,51 +296,51 @@ public:
 	virtual bool IsDead() = 0;
 	virtual float GetHealth() = 0;
 	virtual float GetMaxHealth() = 0;
-	virtual eSpellState GetSpellState(eSpellSlot) = 0;
+	virtual eSpellState GetSpellState (eSpellSlot) = 0;
 	virtual std::vector<ItemData> AllItems() = 0;
 	virtual float WindupTime() = 0;
 	virtual float AnimationTime() = 0;
-	virtual bool HasItemId(int) = 0;
+	virtual bool HasItemId (int) = 0;
 	virtual CastedSpell const& GetAutoAttack() = 0;
-	virtual bool IsValidTarget(IUnit*, float) = 0;
+	virtual bool IsValidTarget (IUnit*, float) = 0;
 	virtual bool IsVisible() = 0;
-	virtual eSpellSlot GetSpellSlot(const char*) = 0;
+	virtual eSpellSlot GetSpellSlot (const char*) = 0;
 	virtual std::vector<Vec3> GetWaypointList() = 0;
-	virtual int GetBuffCount(const char*) = 0;
-	virtual int GetSpellLevel(int) = 0;
+	virtual int GetBuffCount (const char*) = 0;
+	virtual int GetSpellLevel (int) = 0;
 	virtual const char* ChampionName() = 0;
-	virtual bool IsChasing(IUnit* Other) = 0;
+	virtual bool IsChasing (IUnit* Other) = 0;
 	virtual bool HasIncomingDamage() = 0;
 	virtual bool IsRecalling() = 0;
-	virtual bool HasBuffOfType(eBuffType Type) = 0;
+	virtual bool HasBuffOfType (eBuffType Type) = 0;
 	virtual int NumberOfDebuffs() = 0;
 	virtual float HPRegenRate() = 0;
-	virtual float GetRealAutoAttackRange(IUnit* Other) = 0;
-	virtual void SetSkinId(int Id) = 0;
+	virtual float GetRealAutoAttackRange (IUnit* Other) = 0;
+	virtual void SetSkinId (int Id) = 0;
 	virtual int GetSkinId() = 0;
 	virtual bool IsInvulnerable() = 0;
 	virtual bool IsTargetable() = 0;
 	virtual int MaxSpells() = 0;
-	virtual const char* GetSpellName(int Slot) = 0;
-	virtual float GetSpellRemainingCooldown(int Slot) = 0;
-	virtual float GetSpellTotalCooldown(int Slot) = 0;
-	virtual bool GetHPBarPosition(Vec2& Out) = 0;
-	virtual float GetBuffStartTime(const char* Name) = 0;
+	virtual const char* GetSpellName (int Slot) = 0;
+	virtual float GetSpellRemainingCooldown (int Slot) = 0;
+	virtual float GetSpellTotalCooldown (int Slot) = 0;
+	virtual bool GetHPBarPosition (Vec2& Out) = 0;
+	virtual float GetBuffStartTime (const char* Name) = 0;
 	virtual IUnit* GetClone() = 0;
 	virtual bool IsClone() = 0;
 	virtual Vec3 const Direction() = 0;
-	virtual bool IsFacing(IUnit* Other) = 0;
-	virtual void LevelUpSpell(int Slot) = 0;
+	virtual bool IsFacing (IUnit* Other) = 0;
+	virtual void LevelUpSpell (int Slot) = 0;
 	virtual int GetCharacterState() = 0;
 	virtual bool IsWindingUp() = 0;
 	virtual bool IsValidTarget() = 0;
-	virtual bool IsCastingImportantSpell(float* EndTime) = 0;
-	virtual void* GetBuffDataByName(const char* Name) = 0;
-	virtual void* GetBuffDataByIndex(int Idx) = 0;
+	virtual bool IsCastingImportantSpell (float* EndTime) = 0;
+	virtual void* GetBuffDataByName (const char* Name) = 0;
+	virtual void* GetBuffDataByIndex (int Idx) = 0;
 	virtual int GetNumberOfBuffs() = 0;
 	virtual ISpellBook* GetSpellBook() = 0;
-	virtual IUnit* GetBuffCaster(const char* Name) = 0;
-	virtual void GetAllBuffsData(std::vector<void*>& Out) = 0;
+	virtual IUnit* GetBuffCaster (const char* Name) = 0;
+	virtual void GetAllBuffsData (std::vector<void*>& Out) = 0;
 	virtual IUnit* GetPet() = 0;
 	virtual float BonusArmorPenetrationPercent() = 0;
 	virtual float Crit() = 0;
@@ -350,8 +351,8 @@ public:
 	virtual bool IsValidObject() = 0;
 	virtual const char* GetClassIdentifier() = 0;
 	virtual bool IsDashing() = 0;
-	virtual bool CreatePath(Vec3 const& EndPosition, std::vector<Vec3>& Out) = 0;
-	virtual bool CreatePath2D(Vec2 const& EndPosition, std::vector<Vec2>& Out) = 0;
+	virtual bool CreatePath (Vec3 const& EndPosition, std::vector<Vec3>& Out) = 0;
+	virtual bool CreatePath2D (Vec2 const& EndPosition, std::vector<Vec2>& Out) = 0;
 	virtual const char* GetBaseSkinName() = 0;
 	virtual float GetBonusMana() = 0;
 	virtual LastCastedSpellArgs* GetLastCastedSpell() = 0;
@@ -366,7 +367,7 @@ public:
 	/// </summary>
 	/// <param name="Out">Output showing all masteries.</param>
 	/// <returns>True if masteries were found and at least one exists.</returns>
-	virtual bool GetMasteries(std::vector<HeroMastery>& Out) = 0;
+	virtual bool GetMasteries (std::vector<HeroMastery>& Out) = 0;
 
 	/// <summary>
 	/// Determines whether this object [is in screen space].
@@ -391,7 +392,7 @@ public:
 	// <returns>
 	///   <c>true</c> if [is dashing]; otherwise, <c>false</c>.
 	/// </returns>
-	virtual bool GetDashData(UnitDash* Out) = 0;
+	virtual bool GetDashData (UnitDash* Out) = 0;
 
 	/// <summary>
 	/// Gets the unit class identifier.
