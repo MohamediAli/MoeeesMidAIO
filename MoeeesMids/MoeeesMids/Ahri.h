@@ -20,7 +20,6 @@ private:
 	std::string MissileName, MissileReturnName;
 	ISpell2* QWER;
 	IUnit* missileSource;
-	IMissileData* Missile;
 	Vec3 CalculateReturnPos();
 	Vec3 MissileEndPos;
 	void MissileReturn (std::string missile, std::string missileReturn, ISpell2* qwer);
@@ -32,6 +31,7 @@ private:
 	bool CheckForCollision (ISpell2* Skillshot, Vec3 CheckAtPosition);
 	bool BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision);
 	IMenuOption* HPBar;
+	IMenuOption* CatchQ;
 	void CastE (IUnit* target);
 	void CastQ (IUnit * target);
 	Vec3 getPosToEflash (Vec3 target);
