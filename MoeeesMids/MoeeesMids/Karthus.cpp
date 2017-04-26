@@ -494,7 +494,7 @@ void Karthus::LaneClear()
 		{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
-			if (minion != nullptr && !minion->IsWard() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
+			if (Extensions::Validate (minion) && !minion->IsWard() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
 				{
 				if (!minion->IsDead())
 					{
@@ -522,7 +522,7 @@ void Karthus::LastHit()
 		{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
-			if (minion != nullptr && !minion->IsWard() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
+			if (Extensions::Validate (minion) && !minion->IsWard() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
 				{
 				if (!minion->IsDead())
 					{

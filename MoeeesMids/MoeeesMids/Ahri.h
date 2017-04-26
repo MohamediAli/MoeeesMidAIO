@@ -16,6 +16,13 @@ public:
 	void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
 
 private:
+	std::string MissileName, MissileReturnName;
+	ISpell2* QWER;
+	IUnit* missileSource;
+	IMissileData* Missile;
+	Vec3 MissileEndPos;
+	void MissileReturn (std::string missile, std::string missileReturn, ISpell2* qwer);
+	void DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float width, Vec4 color);
 	Vec2 vect2d (Vec2 p1, Vec2 p2);
 	bool PointInRectangle (Vec2 A, Vec2 B, Vec2 C, Vec2 D, Vec2 m);
 	bool IsInRectangle (Vec3 Start, Vec3 End, Vec3 pointTest, int radius);

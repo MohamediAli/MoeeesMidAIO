@@ -133,7 +133,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	drawLC = Drawings->CheckBox ("Draw Lance Clear Status", true);
 	drawBall = Drawings->CheckBox ("Draw Ball Animation", true);
 	ballSelect = Drawings->AddSelection ("Choose Ball Style", 0, ballAnimation);
-	PredType = { "Oracle", "Core", "Lord's" };
+	PredType = { "Oracle", "Core", };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 }
 
