@@ -644,13 +644,13 @@ Vec3 Orianna::GetPredictedUnitPosition (IUnit* Unit, ISpell2* Skillshot, float& 
 {
 	if (Unit->GetWaypointList().size() < 2)
 	{ return Unit->GetPosition(); }
-	TravelTime = ( (Unit->GetPosition() - Hero->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency() / 2) / 1000;
+	TravelTime = ( (Unit->GetPosition() - Hero->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 	auto Path = Unit->GetWaypointList();
 	Vec3 EstimatedMaxPosition;
 	EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 	for (int i = 0; i < 10; i++)
 		{
-		TravelTime = ( (EstimatedMaxPosition - Hero->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency() / 2) / 1000;
+		TravelTime = ( (EstimatedMaxPosition - Hero->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 		EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 		}
 	return EstimatedMaxPosition;
@@ -686,7 +686,7 @@ bool Orianna::CheckForCollision (ISpell2* Skillshot, Vec3 CheckAtPosition)
 
 bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision)
 {
-	float TravelTime = ( (Unit->GetPosition() - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency() / 2) / 1000;
+	float TravelTime = ( (Unit->GetPosition() - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 	auto Path = Unit->GetWaypointList();
 	if (Path.size() > 1) //target is moving
 		{
@@ -694,7 +694,7 @@ bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosit
 		EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 		for (int i = 0; i < 10; i++)
 			{
-			TravelTime = ( (EstimatedMaxPosition - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency() / 2) / 1000;
+			TravelTime = ( (EstimatedMaxPosition - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 			EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 			}
 		CastPosition = EstimatedMaxPosition.Extend (Unit->GetPosition(), Unit->BoundingRadius() + Skillshot->Radius() * 0.8);

@@ -116,7 +116,7 @@ void Karthus::automatic()
 			}
 		if (!cz)
 			{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
 			}
 		}
 }
@@ -360,7 +360,7 @@ void Karthus::Combo()
 		//	Q->SetOverrideRadius (qWidthChange (target));
 		if (!cz)
 			{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
 			}
 		}
 	if (ComboW->Enabled() && W->IsReady())
@@ -386,7 +386,7 @@ void Karthus::Harass()
 		//Q->SetOverrideRadius(qWidthChange(target));
 		if (!cz)
 			{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
 			}
 		}
 	if (harassW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()))
@@ -499,7 +499,7 @@ void Karthus::LaneClear()
 				if (!minion->IsDead())
 					{
 					auto health = minion->GetHealth();
-					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 950+GGame->Latency());
+					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000, 950 + GGame->Latency());
 					if (hp < qDmg (minion) && hp > health - hp * 2)
 						{
 						Q->CastOnPosition (minion->GetPosition());
