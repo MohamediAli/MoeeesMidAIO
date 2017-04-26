@@ -385,7 +385,7 @@ void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 			CastE (target);
 			return;
 			}
-		if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()))
+		else if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()))
 			{
 			CastQ (target);
 			return;
@@ -414,7 +414,7 @@ void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 			CastE (target);
 			return;
 			}
-		if (HarassQ->Enabled() && Q->IsReady() &&  player->IsValidTarget (target, Q->Range()))
+		else if (HarassQ->Enabled() && Q->IsReady() &&  player->IsValidTarget (target, Q->Range()))
 			{
 			CastQ (target);
 			return;
