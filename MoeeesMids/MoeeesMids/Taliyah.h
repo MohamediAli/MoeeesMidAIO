@@ -41,7 +41,7 @@ private:
 	IUnit  *QTarget, *Qing;
 
 
-	IMenu*			TaliyahMenu;
+	IMenu* TaliyahMenu;
 	IMenu* ComboMenu;
 	IMenu* HarassMenu;
 	IMenu* LaneClearMenu;
@@ -82,6 +82,7 @@ private:
 	IMenuOption* harassFullQ;
 	IMenuOption* laneFullQ;
 	IMenuOption* jungleFullQ;
+	IMenuOption* LockQ;
 
 	IMenuOption* killStealW;
 	IMenuOption* EonlyW;

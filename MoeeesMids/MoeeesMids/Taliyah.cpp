@@ -24,6 +24,7 @@ Taliyah::Taliyah (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	eMenu = Parent->AddMenu ("E Settings");
 	Drawings = Parent->AddMenu ("Spell Drawings");
 	MiscMenu = Parent->AddMenu ("Miscs");
+	LockQ = qMenu->CheckBox ("Auto-Lock Q", true);
 	killStealQ = qMenu->CheckBox ("Kill Steal with Q", true);
 	ComboQ = qMenu->CheckBox ("Use Q in Combo", true);
 	comboFullQ = qMenu->CheckBox ("^-> Combo: Only with full Q", true);
@@ -79,7 +80,7 @@ void Taliyah::OnGameUpdate()
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 		{
 		Combo();
-		if (Extensions::GetDistance (Hero, walkPos) < 500 && !GNavMesh->IsPointWall (walkPos) && Extensions::GetDistance (Hero, walkPos) > 30)
+		if (Extensions::GetDistance (Hero, walkPos) < 500 && LockQ->Enabled() && !GNavMesh->IsPointWall (walkPos) && Extensions::GetDistance (Hero, walkPos) > 30)
 			{
 			GGame->IssueOrder (Hero, kMoveTo, walkPos);
 			}
@@ -87,7 +88,7 @@ void Taliyah::OnGameUpdate()
 	else if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
 		{
 		Harass();
-		if (Extensions::GetDistance (Hero, walkPos) < 500 && !GNavMesh->IsPointWall (walkPos) && Extensions::GetDistance (Hero, walkPos) > 30)
+		if (Extensions::GetDistance (Hero, walkPos) < 500 && LockQ->Enabled() && !GNavMesh->IsPointWall (walkPos) && Extensions::GetDistance (Hero, walkPos) > 30)
 			{
 			GGame->IssueOrder (Hero, kMoveTo, walkPos);
 			}

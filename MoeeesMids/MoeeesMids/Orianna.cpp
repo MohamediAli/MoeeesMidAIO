@@ -231,8 +231,10 @@ void Orianna::OnRender()
 	if (Laneclear->Enabled() && drawLC->Enabled())
 		{
 		Vec2 pos;
-		if (GGame->Projection (Hero->GetPosition(), &pos));
-		GRender->DrawTextW (Vec2 (pos.x + 72, pos.y + 10), Vec4 (0, 255, 0, 255), "LANE CLEAR ON");
+		if (GGame->Projection (Hero->GetPosition(), &pos))
+			{
+			GRender->DrawTextW (Vec2 (pos.x + 72, pos.y + 10), Vec4 (0, 255, 0, 255), "LANE CLEAR ON");
+			}
 		}
 }
 
