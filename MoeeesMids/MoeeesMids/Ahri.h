@@ -14,12 +14,14 @@ public:
 	void AntiGapclose (GapCloserSpell const& args);
 	void AntiInterrupt (InterruptibleSpell const& args);
 	void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
+	void OnCreate (IUnit* object);
 
 private:
 	std::string MissileName, MissileReturnName;
 	ISpell2* QWER;
 	IUnit* missileSource;
 	IMissileData* Missile;
+	Vec3 CalculateReturnPos();
 	Vec3 MissileEndPos;
 	void MissileReturn (std::string missile, std::string missileReturn, ISpell2* qwer);
 	void DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float width, Vec4 color);
