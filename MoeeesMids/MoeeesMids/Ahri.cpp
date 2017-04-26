@@ -115,14 +115,14 @@ void Ahri::OnRender()
 	if (CalculateReturnPos() != Vec3 (0, 0, 0))
 		{
 		GRender->DrawCircle (CalculateReturnPos(), 100, Vec4 (255, 0, 255, 255), 5, false);
-		if (Extensions::GetDistance (Hero, CalculateReturnPos()) < 500 && Extensions::GetDistance (Hero, CalculateReturnPos()) > 20 && CatchQ->Enabled())
+		if (Extensions::GetDistance (Hero, CalculateReturnPos()) < 500 && Extensions::GetDistance (Hero, CalculateReturnPos()) > 20 && CatchQ->Enabled() && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed) || autoQ->Enabled())
 			{
 			GGame->IssueOrder (Hero, kMoveTo, CalculateReturnPos());
 			}
 		}
 	if (Extensions::Validate (missileSource))
 		{
-		DrawLineRectangle (missileSource->GetPosition(), missileSource->GetPosition(), (int) QWER->Radius(), 1, Vec4 (255,0,255,255));
+		Extensions::DrawLineRectangle (Hero->GetPosition(), missileSource->GetPosition(), (int) QWER->Radius(), 1, Vec4 (255,0,255,255));
 		}
 	Drawing();
 	dmgdraw();
@@ -566,26 +566,7 @@ Vec3 Ahri::CalculateReturnPos() //credits 2 my nigga sebby
 		}
 	return Vec3 (0,0,0);
 }
-void Ahri::DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float width, Vec4 color)
-{
-	Vec2 start = Hero->GetPosition().To2D();
-	Vec2 end = end2.To2D();
-	auto dir = (end - start).VectorNormalize();
-	auto pDir = dir.Perpendicular();
-	auto rightStartPos = start + pDir * radius;
-	auto leftStartPos = start - pDir * radius;
-	auto rightEndPos = end + pDir * radius;
-	auto leftEndPos = end - pDir * radius;
-	Vec2 rStartPos, lStartPos, rEndPos, lEndPos;
-	GGame->Projection (Vec3 (rightStartPos.x, GEntityList->Player()->GetPosition().y, rightStartPos.y), &rStartPos);
-	GGame->Projection (Vec3 (leftStartPos.x, GEntityList->Player()->GetPosition().y, leftStartPos.y), &lStartPos);
-	GGame->Projection (Vec3 (rightEndPos.x, GEntityList->Player()->GetPosition().y, rightEndPos.y), &rEndPos);
-	GGame->Projection (Vec3 (leftEndPos.x, GEntityList->Player()->GetPosition().y, leftEndPos.y), &lEndPos);
-	GRender->DrawLine (rStartPos, rEndPos, color);
-	GRender->DrawLine (lStartPos, lEndPos, color);
-	GRender->DrawLine (rStartPos, lStartPos, color);
-	GRender->DrawLine (lEndPos, rEndPos, color);
-}
+
 
 void Ahri::Drawing()
 {

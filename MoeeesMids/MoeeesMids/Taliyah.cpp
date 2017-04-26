@@ -7,8 +7,6 @@ Taliyah::~Taliyah()
 	TaliyahMenu->Remove();
 }
 
-bool qFive = true;
-bool eOnGround = false;
 
 Taliyah::Taliyah (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
@@ -70,6 +68,7 @@ Taliyah::Taliyah (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 void Taliyah::OnGameUpdate()
 {
+	auto walkPos = CalculateReturnPos();
 	QTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
 	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused())
 		{
@@ -80,10 +79,18 @@ void Taliyah::OnGameUpdate()
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 		{
 		Combo();
+		if (Extensions::GetDistance (Hero, walkPos) < 500 && !GNavMesh->IsPointWall (walkPos) && Extensions::GetDistance (Hero, walkPos) > 30)
+			{
+			GGame->IssueOrder (Hero, kMoveTo, walkPos);
+			}
 		}
 	else if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
 		{
 		Harass();
+		if (Extensions::GetDistance (Hero, walkPos) < 500 && !GNavMesh->IsPointWall (walkPos) && Extensions::GetDistance (Hero, walkPos) > 30)
+			{
+			GGame->IssueOrder (Hero, kMoveTo, walkPos);
+			}
 		}
 	else if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
 		{
@@ -93,9 +100,48 @@ void Taliyah::OnGameUpdate()
 }
 void Taliyah::OnRender()
 {
+	if (Extensions::Validate (Qing))
+		{
+		Extensions::DrawLineRectangle (Hero->GetPosition(), GMissileData->GetEndPosition (Qing), Q->Radius(), 5, Vec4 (255, 255, 100, 255));
+		}
 	Drawing();
 	dmgdraw();
 	GRender->DrawCircle (Hero->GetPosition(), 30, Vec4 (255, 255, 0, 255), 2);
+	if (CalculateReturnPos() != Vec3 (0, 0, 0))
+		{
+		GRender->DrawCircle (CalculateReturnPos(), 100, Vec4 (255, 0, 255, 255), 5, false);
+		}
+}
+
+
+
+Vec3 Taliyah::CalculateReturnPos() //credits 2 my nigga sebby
+{
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
+	if (Extensions::Validate (Qing) && Extensions::Validate (target))
+		{
+		auto finishPosition = GMissileData->GetEndPosition (Qing);
+		/*if (GMissileData->GetName (missileSource) == MissileName)
+		{
+		finishPosition = MissileEndPos;
+		}*/
+		auto misToPlayer = Extensions::GetDistance (Hero, finishPosition);
+		auto tarToPlayer = Extensions::GetDistance (Hero, target);
+		if (misToPlayer > tarToPlayer)
+			{
+			auto misToTarget = Extensions::GetDistance (target, finishPosition);
+			if (misToTarget < Q->Range() && misToTarget > 50)
+				{
+				auto cursorToTarget = Extensions::GetDistance (target, (Hero->GetPosition().Extend (GGame->CursorPosition(), 100)));
+				auto ext = finishPosition.Extend (target->ServerPosition(), cursorToTarget + misToTarget);
+				if (Extensions::GetDistance (ext, Hero->GetPosition()) < 1000 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
+					{
+					return ext;
+					}
+				}
+			}
+		}
+	return Vec3 (0, 0, 0);
 }
 
 
@@ -225,7 +271,7 @@ void Taliyah::OnInterrupt (InterruptibleSpell const& args)
 		{
 		if (!cz)
 			{
-			W->CastFrom (PredPos (QTarget, 0.75f), player->GetPosition());
+			W->CastFrom (PredPos (QTarget, 0.75f+ (GGame->Latency() /1000) /2), player->GetPosition());
 			}
 		}
 }
@@ -233,8 +279,13 @@ void Taliyah::OnInterrupt (InterruptibleSpell const& args)
 void Taliyah::OnCreate (IUnit* object)
 {
 	auto objectName = object->GetObjectName();
-	//	GUtility->CreateDebugConsole();
-	//	GUtility->LogConsole(objectName);
+	if (object->IsMissile() && GMissileData->GetCaster (object) == GEntityList->Player())
+		{
+		if (strcmp (GMissileData->GetName (object), "TaliyahQMis") == 0)
+			{
+			Qing = object;
+			}
+		}
 	std::vector<IUnit*> result;
 	for (auto qaoe : GEntityList->GetAllUnits())
 		{
@@ -302,14 +353,14 @@ void Taliyah::Combo()
 				{
 				if (!cz)
 					{
-					W->CastFrom (PredPos (QTarget, 0.75f), player->GetPosition());
+					W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
 					}
 				}
 			if (E->IsReady() && W->IsReady() && Extensions::GetDistance (player, target) < 420)
 				{
 				if (!cz)
 					{
-					W->CastOnPosition (PredPos (QTarget, 0.75f));
+					W->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
 					}
 				}
 			}
@@ -319,14 +370,14 @@ void Taliyah::Combo()
 				{
 				if (!cz)
 					{
-					W->CastFrom (PredPos (QTarget, 0.75f), player->GetPosition());
+					W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
 					}
 				}
 			if ( (player->GetPosition() - target->GetPosition()).Length() < 420)
 				{
 				if (!cz)
 					{
-					W->CastOnPosition (PredPos (QTarget, 0.75f));
+					W->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
 					}
 				}
 			}
@@ -334,7 +385,7 @@ void Taliyah::Combo()
 			{
 			if (!cz)
 				{
-				W->CastFrom (PredPos (QTarget, 0.75f), player->GetPosition());
+				W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
 				}
 			}
 		}

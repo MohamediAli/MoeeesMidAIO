@@ -8,7 +8,7 @@
 
 namespace Extensions
 {
-
+void DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float width, Vec4 color);
 int RandInt (int min, int max);
 float GetDistanceVectors (Vec3 from, Vec3 to);
 bool InFountain (IUnit *unit);

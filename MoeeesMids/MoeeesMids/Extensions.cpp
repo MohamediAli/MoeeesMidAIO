@@ -215,3 +215,24 @@ double Extensions::distance_squared (double *a, double *b)
 	double dz = a[2] - b[2];
 	return dx*dx + dy*dy + dz*dz;
 }
+
+void Extensions::DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float width, Vec4 color)
+{
+	Vec2 start = start2.To2D();
+	Vec2 end = end2.To2D();
+	auto dir = (end - start).VectorNormalize();
+	auto pDir = dir.Perpendicular();
+	auto rightStartPos = start + pDir * radius;
+	auto leftStartPos = start - pDir * radius;
+	auto rightEndPos = end + pDir * radius;
+	auto leftEndPos = end - pDir * radius;
+	Vec2 rStartPos, lStartPos, rEndPos, lEndPos;
+	GGame->Projection (Vec3 (rightStartPos.x, GEntityList->Player()->GetPosition().y, rightStartPos.y), &rStartPos);
+	GGame->Projection (Vec3 (leftStartPos.x, GEntityList->Player()->GetPosition().y, leftStartPos.y), &lStartPos);
+	GGame->Projection (Vec3 (rightEndPos.x, GEntityList->Player()->GetPosition().y, rightEndPos.y), &rEndPos);
+	GGame->Projection (Vec3 (leftEndPos.x, GEntityList->Player()->GetPosition().y, leftEndPos.y), &lEndPos);
+	GRender->DrawLine (rStartPos, rEndPos, color);
+	GRender->DrawLine (lStartPos, lEndPos, color);
+	GRender->DrawLine (rStartPos, lStartPos, color);
+	GRender->DrawLine (lEndPos, rEndPos, color);
+}

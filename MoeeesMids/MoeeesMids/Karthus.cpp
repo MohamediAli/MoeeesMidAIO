@@ -116,7 +116,7 @@ void Karthus::automatic()
 			}
 		if (!cz)
 			{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f));
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
 			}
 		}
 }
@@ -360,7 +360,7 @@ void Karthus::Combo()
 		//	Q->SetOverrideRadius (qWidthChange (target));
 		if (!cz)
 			{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f));
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
 			}
 		}
 	if (ComboW->Enabled() && W->IsReady())
@@ -377,7 +377,7 @@ void Karthus::Harass()
 		eToggle();
 		}
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (target == nullptr || !target->IsHero() || !target->IsValidTarget())
+	if (!Extensions::Validate (target) && !target->IsHero() || !target->IsValidTarget())
 		{
 		return;
 		}
@@ -386,7 +386,7 @@ void Karthus::Harass()
 		//Q->SetOverrideRadius(qWidthChange(target));
 		if (!cz)
 			{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f));
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
 			}
 		}
 	if (harassW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()))
@@ -494,7 +494,7 @@ void Karthus::LaneClear()
 		{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
-			if (Extensions::Validate (minion) && !minion->IsWard() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
+			if (Extensions::Validate (minion) && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
 				{
 				if (!minion->IsDead())
 					{
@@ -522,7 +522,7 @@ void Karthus::LastHit()
 		{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
-			if (Extensions::Validate (minion) && !minion->IsWard() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
+			if (Extensions::Validate (minion) && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
 				{
 				if (!minion->IsDead())
 					{

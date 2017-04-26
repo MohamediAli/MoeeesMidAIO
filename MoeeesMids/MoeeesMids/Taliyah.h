@@ -18,6 +18,7 @@ public:
 	void OnSpellCast (CastedSpell const& args);
 
 private:
+	Vec3 CalculateReturnPos();
 	void CastE();
 	void Combo();
 	void Harass();
@@ -32,10 +33,12 @@ private:
 	void KillSteal();
 	void Drawing();
 	void zigzag();
+	bool qFive = true;
+	bool eOnGround = false;
 	Vec3 PredPos (IUnit* Hero, float Delay);
 	float czx = 0, czy = 0, czx2 = 0, czy2 = 0;
 	bool cz = false;
-	IUnit* QTarget;
+	IUnit  *QTarget, *Qing;
 
 
 	IMenu*			TaliyahMenu;
