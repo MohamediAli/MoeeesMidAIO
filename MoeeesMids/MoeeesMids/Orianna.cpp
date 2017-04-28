@@ -534,26 +534,24 @@ void Orianna::TeamFightQ (Vec3 pos)
 {
 	auto posChecked = 0;
 	auto maxRange = R->Radius() + Q->Range();
-	auto posRadius = 65;
+	auto posRadius = 35;
 	auto maxPosChecked = (int) (maxRange / posRadius);
 	auto radiusIndex = 0;
-	bool menu;
-	std::vector<std::pair<int, Vec2>> CloseQPositions;
 	std::vector<std::pair<int, Vec2>> possibleQPositions;
 	while (posChecked < maxPosChecked)
 	{
 		radiusIndex++;
-		auto curRadius = radiusIndex * (0x00002 * posRadius);
+		auto curRadius = radiusIndex * (0x2 * posRadius);
 		auto curCurcleChecks = static_cast<int> (ceil ( (0x2 * M_PI * curRadius) / (0x2 * static_cast<double> (posRadius))));
-		for (auto i = 0x1; i < curCurcleChecks; i++)
+		for (auto i = 1; i < curCurcleChecks; i++)
 		{
 			posChecked++;
-			auto cRadians = (0x2 * M_PI / (curCurcleChecks - 0x1)) * i;
+			auto cRadians = (0x2 * M_PI / (curCurcleChecks - 1)) * i;
 			auto xPos = static_cast<float> (floor (pos.x + curRadius * cos (cRadians)));
 			auto zPos = static_cast<float> (floor (pos.z + curRadius * sin (cRadians)));
 			auto posFor2D = Vec2 (xPos, zPos);
 			auto count = Extensions::EnemiesInRange (Extensions::To3D (posFor2D), R->Radius());
-			//GGame->PrintChat(std::to_string(count).c_str());
+			//GGame->PrintChat (std::to_string (count).c_str());
 			if (GNavMesh->IsPointWall (Extensions::To3D (posFor2D)))
 			{
 				// dont push is wall
@@ -564,9 +562,9 @@ void Orianna::TeamFightQ (Vec3 pos)
 				// dont push to far away to cast;
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, pos) <= R->Radius() - 15)
+			if (Extensions::Dist2D (posFor2D, pos) <= R->Radius() - 20)
 			{
-				//	GGame->ShowPing(kPingAssistMe, To3D(posFor2D), false);
+				//	GGame->ShowPing (kPingAssistMe, Extensions::To3D (posFor2D), false);
 				possibleQPositions.push_back (std::make_pair (count, posFor2D));
 			}
 		}
@@ -575,14 +573,11 @@ void Orianna::TeamFightQ (Vec3 pos)
 	{
 		return left.first > right.first;
 	});
-	//	for (auto entry : CloseQPositions) {
-	//		Q->CastOnPosition(To3D(entry.second));
-	//	}
 	for (auto entry : possibleQPositions)
 	{
 		Q->CastOnPosition (Extensions::To3D (entry.second));
-		return;
 	}
+	return;
 }
 
 void Orianna::FarmQ (Vec3 pos)

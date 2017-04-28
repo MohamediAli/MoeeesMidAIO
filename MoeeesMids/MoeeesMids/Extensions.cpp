@@ -52,16 +52,16 @@ int Extensions::EnemiesInRange (Vec3 Source, float range)
 	auto Targets = GEntityList->GetAllHeros (false, true);
 	auto enemiesInRange = 0;
 	for (auto target : Targets)
-		{
+	{
 		if (Extensions::Validate (target) && !target->IsDead())
-			{
+		{
 			auto flDistance = (target->GetPosition() - Source).Length();
 			if (flDistance <= range)
-				{
+			{
 				enemiesInRange++;
-				}
 			}
 		}
+	}
 	return enemiesInRange;
 }
 
@@ -70,16 +70,16 @@ int Extensions::AlliesInRange (Vec3 Source, float range)
 	auto Targets = GEntityList->GetAllHeros (true, false);
 	auto alliesInRange = 0;
 	for (auto target : Targets)
-		{
+	{
 		if (target != nullptr && target->IsValidTarget() && !target->IsDead())
-			{
+		{
 			auto flDistance = (target->GetPosition() - Source).Length();
 			if (flDistance < range)
-				{
+			{
 				alliesInRange++;
-				}
 			}
 		}
+	}
 	return alliesInRange;
 }
 
@@ -121,12 +121,12 @@ int Extensions::CountEnemiesInRange (float range)
 {
 	int enemies = 0;
 	for (auto enemy : GEntityList->GetAllHeros (false, true))
-		{
+	{
 		if (enemy != nullptr && GetDistance (GEntityList->Player(), enemy) <= range)
-			{
+		{
 			enemies++;
-			}
 		}
+	}
 	return enemies;
 }
 
@@ -196,15 +196,15 @@ int Extensions::CountMinionsInTargetRange (Vec3 target, float range)
 {
 	auto minions = 0;
 	for (auto minion : GEntityList->GetAllMinions (false, true, true))
-		{
+	{
 		if (minion != nullptr && !minion->IsWard() && GetDistance (target, minion->GetPosition()) <= range)
-			{
+		{
 			if (!minion->IsDead())
-				{
+			{
 				minions++;
-				}
 			}
 		}
+	}
 	return minions;
 }
 

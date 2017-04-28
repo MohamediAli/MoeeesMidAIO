@@ -2,21 +2,21 @@
 
 Champion::~Champion()
 {
-    ParentMenu->Remove();
-    if (Q) { delete Q; }
-    if (W) { delete W; }
-    if (E) { delete E; }
-    if (R) { delete R; }
+	ParentMenu->Remove();
+	if (Q) { delete Q; }
+	if (W) { delete W; }
+	if (E) { delete E; }
+	if (R) { delete R; }
 }
 
 IUnit* Champion::GetHero()
 {
-    return Hero;
+	return Hero;
 }
 
 IMenu* Champion::GetMenu()
 {
-    return ParentMenu;
+	return ParentMenu;
 }
 
 //ADD NEW PLUGIN EVENTS HERE
@@ -46,12 +46,12 @@ void Champion::AntiGapclose (GapCloserSpell const& args)
 
 bool Champion::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-    return true;
+	return true;
 }
 
 bool Champion::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition)
 {
-    return true;
+	return true;
 }
 
 void Champion::OnDelete (IUnit* object)

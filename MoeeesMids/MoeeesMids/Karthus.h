@@ -15,6 +15,10 @@ public:
 	void AntiGapclose (GapCloserSpell const& args);
 
 private:
+	IMenuOption* ComboAA;
+	IMenuOption* ComboAAkey;
+	IMenuOption* ComboAALevel;
+
 
 	void automatic();
 	void eToggle();
