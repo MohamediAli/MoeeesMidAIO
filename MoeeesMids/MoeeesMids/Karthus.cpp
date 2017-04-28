@@ -345,13 +345,10 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 
 void Karthus::Combo()
 {
-	if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && ComboE->Enabled())
-		{
-		eToggle();
-		}
+
 	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (target == nullptr || !target->IsHero() || !target->IsValidTarget())
+	if (target == nullptr || !target->IsHero() || target->IsDead())
 		{
 		return;
 		}
@@ -367,17 +364,18 @@ void Karthus::Combo()
 		{
 		CastW();
 		}
+	if (Extensions::EnemiesInRange(Hero->GetPosition(), E->Range()) && ComboE->Enabled())
+	{
+		eToggle();
+	}
 }
 
 void Karthus::Harass()
 {
 	auto player = Hero;
-	if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && harassE->Enabled() && Hero->ManaPercent() >= harassEMana->GetFloat())
-		{
-		eToggle();
-		}
+
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (!Extensions::Validate (target) && !target->IsHero() || !target->IsValidTarget())
+	if (!Extensions::Validate (target) || !target->IsHero() || target->IsDead() )
 		{
 		return;
 		}
@@ -394,6 +392,10 @@ void Karthus::Harass()
 		W->SetOverrideRadius (wWidthChange (target));
 		W->CastOnTarget (target);
 		}
+	if (Extensions::EnemiesInRange(Hero->GetPosition(), E->Range()) && harassE->Enabled() && Hero->ManaPercent() >= harassEMana->GetFloat())
+	{
+		eToggle();
+	}
 }
 
 
