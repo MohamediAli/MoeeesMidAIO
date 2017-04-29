@@ -4,6 +4,9 @@
 #include "Rembrandt.h"
 #include "MEC.h"
 #include <tuple>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+
 
 
 #define M_PI 3.14159265358979323846
@@ -15,19 +18,11 @@ auto VecG = std::vector<Vec3>();
 float BallRad = 75;
 Vec4 BallIndicatorColor (52, 152, 219, 255);
 Vec4 BallIndicatorMovingColor (255, 0, 255, 255);
-Vec4 GagongColors[9] =
-{
-	Vec4 (255,255,26,255),Vec4 (242,56,90,255),Vec4 (245,165,3,255),
-	Vec4 (167,197,32,255),Vec4 (73,63,11	,255),Vec4 (247,233,103,255)
-	,Vec4 (169,207,84,255),Vec4 (255,133,52,255),Vec4 (201,215,135,255)
-};
 
-Vec4 GagongColorsMove[9] =
-{
-	Vec4 (65,115,120,255),Vec4 (255,53,139,255),Vec4 (1,176,240,255),
-	Vec4 (174,238,0,255),Vec4 (217,4,43,255),Vec4 (44,29,255,255)
-	,Vec4 (183,0,0,255),Vec4 (255,202,61,255),Vec4 (0,146,178,255)
-};
+
+
+
+Vec4 GagongColorsMove[9];
 
 Vec3 UpVec (0, 1, 0);
 
@@ -89,6 +84,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Prediction = Parent->AddMenu ("Prediction");
 	MiscMenu = Parent->AddMenu ("Miscs");
 	Drawings = Parent->AddMenu ("All Drawings");
+	DivineBall = Parent->AddMenu ("Divine Ball Colors");
 	killStealQ = qMenu->CheckBox ("Kill Steal with Q", true);
 	ComboQ = qMenu->CheckBox ("Use Q in Combo", true);
 	autoQ = qMenu->CheckBox ("Automatic Harass Q", false);
@@ -124,6 +120,8 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	laneClearW = LaneClearMenu->CheckBox ("Wave Clear with W", true);
 	laneClearWMana = LaneClearMenu->AddFloat ("^-> Only Wave Clear W if Mana >", 0, 100, 50);
 	mouseClear = LaneClearMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
+	PredType = { "Oracle", "Core", };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
@@ -135,8 +133,16 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	drawLC = Drawings->CheckBox ("Draw Lance Clear Status", true);
 	drawBall = Drawings->CheckBox ("Draw Ball Animation", true);
 	ballSelect = Drawings->AddSelection ("Choose Ball Style", 0, ballAnimation);
-	PredType = { "Oracle", "Core", };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	ballColor = { "Normal", "Random", "DISCO" };
+	RandomMode = DivineBall->AddSelection ("Choose Color Pattern", 0, ballColor);
+	DivineColor1 = DivineBall->AddColor ("Divine Ball Color Line 1", 138, 195, 202, 100);
+	DivineColor2 = DivineBall->AddColor ("Divine Ball Color Line 2", 69, 29, 195, 100);
+	DivineColor3 = DivineBall->AddColor ("Divine Ball Color Line 3", 127, 140, 185, 100);
+	DivineColor4 = DivineBall->AddColor ("Divine Ball Color Line 4", 60, 169, 185, 100);
+	DivineColor5 = DivineBall->AddColor ("Divine Ball Color Line 5", 49, 64, 255, 100);
+	DivineColor6 = DivineBall->AddColor ("Divine Ball Color Line 6", 104, 94, 240, 100);
+	DivineColor7 = DivineBall->AddColor ("Divine Ball Color Line 7", 71, 131, 170, 100);
+	DivineColor8 = DivineBall->AddColor ("Divine Ball Color Line 8", 122, 171, 255, 100);
 }
 
 Vec3 Orianna::getPosToRflash (Vec3 target)
@@ -248,6 +254,41 @@ void Orianna::eAssist()
 
 void Orianna::OnGameUpdate()
 {
+	if (RandomMode->GetInteger() == 2)
+	{
+		srand ( (GGame->TickCount()));
+		Color1 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color2 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color3 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color4 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color5 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color6 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color7 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color8 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+	}
+	else if (RandomMode->GetInteger() == 1)
+	{
+		srand (time (NULL));
+		Color1 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color2 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color3 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color4 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color5 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color6 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color7 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+		Color8 = Vec4 (rand() % 255, rand() % 255, rand() % 255, 255);
+	}
+	else if (RandomMode->GetInteger() == 0)
+	{
+		DivineColor1->GetColor (&Color1);
+		DivineColor2->GetColor (&Color2);
+		DivineColor3->GetColor (&Color3);
+		DivineColor4->GetColor (&Color4);
+		DivineColor5->GetColor (&Color5);
+		DivineColor6->GetColor (&Color6);
+		DivineColor7->GetColor (&Color7);
+		DivineColor8->GetColor (&Color8);
+	}
 	//debug key
 	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused() || Hero->IsDead())
 	{
@@ -1389,10 +1430,10 @@ void Orianna::DrawGagongReplicate (Vec3 BallPos)
 			UpperRight += Vec2 (i * width, - (i * width));
 			BottomLeft += Vec2 (-i * width, i * width);
 			BottomRight += Vec2 (i * width, i * width);
-			GRender->DrawLine (UpperLeft, UpperRight, GagongColorsMove[1]);
-			GRender->DrawLine (UpperLeft, BottomLeft, GagongColorsMove[2]);
-			GRender->DrawLine (UpperRight, BottomRight, GagongColorsMove[3]);
-			GRender->DrawLine (BottomLeft, BottomRight, GagongColorsMove[4]);
+			GRender->DrawLine (UpperLeft, UpperRight, Color1);
+			GRender->DrawLine (UpperLeft, BottomLeft, Color2);
+			GRender->DrawLine (UpperRight, BottomRight, Color3);
+			GRender->DrawLine (BottomLeft, BottomRight, Color4);
 		}
 	}
 	if (GGame->Projection (BallPosNoY + Extensions::RotateZ (perp1*0.73 + v3Left*0.8 + BallPos, BallPos, -gagongAngle), &Left) && GGame->Projection (BallPosNoY + Extensions::RotateZ (perp1*0.73 - v3Left*0.8 + BallPos, BallPos, -gagongAngle),
@@ -1405,10 +1446,10 @@ void Orianna::DrawGagongReplicate (Vec3 BallPos)
 			Right.x += i * width;
 			Up.y -= i*width;
 			Bottom.y += i*width;
-			GRender->DrawLine (Left, Up, GagongColorsMove[5]);
-			GRender->DrawLine (Left, Bottom, GagongColorsMove[6]);
-			GRender->DrawLine (Right, Up, GagongColorsMove[7]);
-			GRender->DrawLine (Right, Bottom, GagongColorsMove[8]);
+			GRender->DrawLine (Left, Up, Color5);
+			GRender->DrawLine (Left, Bottom, Color6);
+			GRender->DrawLine (Right, Up, Color7);
+			GRender->DrawLine (Right, Bottom, Color8);
 		}
 	}
 	//GRender->DrawOutlinedCircle(BallPos, GagongColors[0], 83);

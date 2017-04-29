@@ -36,7 +36,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	JungleClearQ = qMenu->CheckBox ("Jungle Clear with Q", true);
 	JungleClearQMana = qMenu->AddFloat ("^-> Only Jungle Clear Q if Mana >", 0, 100, 50);
 	ComboW = wMenu->CheckBox ("Use W in Combo", true);
-	harassW = qMenu->CheckBox ("Harass with W", false);
+	harassW = wMenu->CheckBox ("Harass with W", false);
 	gapCloserW = wMenu->CheckBox ("W on Gap Closer", true);
 	ComboE = eMenu->CheckBox ("Use E in Combo", true);
 	harassE = eMenu->CheckBox ("Harass with E", true);
@@ -116,7 +116,7 @@ void Karthus::automatic()
 {
 	if (E->IsReady() && Hero->HasBuff ("KarthusDefile") && (EAutoOff->Enabled() || GOrbwalking->GetOrbwalkingMode() == kModeCombo))
 	{
-		if (Extensions::CountMinionsInTargetRange (Hero->GetPosition(), E->Range()) && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
+		if (Extensions::CountMinionsInTargetRange (Hero->GetPosition(), E->Range()) > 2 && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
 		{
 			return;
 		}
@@ -227,7 +227,7 @@ void Karthus::zigzag()   //credits sn karthus
 
 Vec3 Karthus::PredPos (IUnit* Hero, float Delay)    //credits sn karthus
 {
-	float value = 0.f;
+	float value;
 	if (Hero->IsFacing (Hero))
 	{
 		value = (50.f - Hero->BoundingRadius());

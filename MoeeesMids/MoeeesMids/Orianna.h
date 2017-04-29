@@ -22,6 +22,8 @@ public:
 	void AntiGapclose (GapCloserSpell const& args);
 	std::vector<std::string> PredType;
 	std::vector<std::string> ballAnimation;
+	std::vector<std::string> ballColor;
+
 
 
 private:
@@ -84,13 +86,6 @@ private:
 		,Vec4 (169,207,84,255),Vec4 (255,133,52,255),Vec4 (201,215,135,255)
 	};
 
-	Vec4 GagongColorsMove[9] =
-	{
-		Vec4 (65,115,120,255),Vec4 (255,53,139,255),Vec4 (1,176,240,255),
-		Vec4 (174,238,0,255),Vec4 (217,4,43,255),Vec4 (44,29,255,255)
-		,Vec4 (183,0,0,255),Vec4 (255,202,61,255),Vec4 (0,146,178,255)
-	};
-
 	IMenu* rMenu;
 	IMenu* HarassMenu;
 	IMenu* LaneClearMenu;
@@ -101,7 +96,7 @@ private:
 	IMenu* qMenu;
 	IMenu* wMenu;
 	IMenu* eMenu;
-	IMenu* oneVerusOne;
+	IMenu *oneVerusOne, *DivineBall ;
 	IMenuOption* HPBarColor;
 
 	IMenuOption* ComboQ;
@@ -142,7 +137,9 @@ private:
 	IMenuOption* gapCloserW;
 	IMenuOption* interrupterW;
 	IMenuOption* comboFullW;
-	IMenuOption* FlashUlt;
+	IMenuOption *FlashUlt, *DiscoMode, *RandomMode;
+	Vec4 Color1, Color2, Color3, Color4, Color5, Color6, Color7, Color8;
+
 
 	IMenuOption* killStealE;
 	IMenuOption* harassE;
@@ -155,5 +152,6 @@ private:
 	IMenuOption* gapCloserE;
 	IMenuOption* autoQ;
 	IMenuOption* autoW;
-	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin, *eHelper, *eHelperKey;
+	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin, *eHelper, *eHelperKey,
+	            *DivineColor1, *DivineColor2, *DivineColor3, *DivineColor4, *DivineColor5, *DivineColor6, *DivineColor7, *DivineColor8 ;
 };
