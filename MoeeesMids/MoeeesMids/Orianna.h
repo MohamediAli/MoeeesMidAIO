@@ -25,6 +25,7 @@ public:
 
 
 private:
+	void eAssist();
 	IUnit* BallMissile;
 	bool PriorityHit();
 	bool IsOneVsOne();
@@ -154,5 +155,5 @@ private:
 	IMenuOption* gapCloserE;
 	IMenuOption* autoQ;
 	IMenuOption* autoW;
-	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin;
+	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin, *eHelper, *eHelperKey;
 };

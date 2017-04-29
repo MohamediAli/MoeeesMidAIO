@@ -45,6 +45,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	laneClearEMana = eMenu->AddFloat ("^-> Only Wave Clear E if Mana >", 0, 100, 70);
 	JungleClearE = eMenu->CheckBox ("Jungle Clear with E", true);
 	JungleClearEMana = eMenu->AddFloat ("^-> Only Jungle Clear E if Mana >", 0, 100, 50);
+	EAutoOff = eMenu->CheckBox ("Automaticlly Turn Off E (Doesn't include combo) ", true);
 	ComboAALevel = MiscMenu->AddInteger ("At what level disable AA", 1, 18, 6);
 	ComboAA = MiscMenu->CheckBox ("Disable AA", false);
 	ComboAAkey = MiscMenu->AddKey ("Disable key", 32);
@@ -113,9 +114,9 @@ void Karthus::AntiGapclose (GapCloserSpell const& args)
 
 void Karthus::automatic()
 {
-	if (E->IsReady() && Hero->HasBuff ("KarthusDefile"))
+	if (E->IsReady() && Hero->HasBuff ("KarthusDefile") && (EAutoOff->Enabled() || GOrbwalking->GetOrbwalkingMode() == kModeCombo))
 	{
-		if (Extensions::CountMinionsInTargetRange (Hero->GetPosition(), E->Range()) > 2 && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
+		if (Extensions::CountMinionsInTargetRange (Hero->GetPosition(), E->Range()) && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
 		{
 			return;
 		}

@@ -107,6 +107,8 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	ShieldTeamate = eMenu->CheckBox ("Shield Teammates", true);
 	ShieldTeamatePercent = eMenu->AddFloat ("^->Shield Teammate if Health Percent Below: ", 0, 100, 30);
 	autoEiniti = eMenu->CheckBox ("Automatically Shield Initiating Teammates", true);
+	eHelper = eMenu->CheckBox ("E Assist", true);
+	eHelperKey = eMenu->AddKey ("E Assist Key", 69);
 	ComboR = rMenu->CheckBox ("Use Ult in Combo", true);
 	ultMin = rMenu->AddFloat ("Only Ult if it will hit atleast: ", 0, 5, 2);
 	BlockR = rMenu->CheckBox ("Block R on no hits", true);
@@ -211,6 +213,39 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 	}
 }
 
+void Orianna::eAssist()
+{
+	if (ComboE->Enabled() && E->IsReady())
+	{
+		auto bestEqTravelTime = FLT_MAX;
+		std::vector<std::pair<int, IUnit*>> bestAlly;
+		for (auto ally : GEntityList->GetAllHeros (true, false))
+		{
+			if (!ally->IsDead() && ally != nullptr)
+			{
+				int distanceA = Extensions::GetDistance (Hero, ally);
+				int distanceB = Extensions::GetDistance (ally, GGame->CursorPosition());
+				if (distanceA < E->Range())
+				{
+					bestAlly.push_back (std::make_pair (distanceB, ally));
+				}
+			}
+			std::sort (bestAlly.begin(), bestAlly.end(), [] (auto &left, auto &right)
+			{
+				return left.first < right.first;
+			});
+		}
+		for (auto entry : bestAlly)
+		{
+			if (entry.second != nullptr)
+			{
+				CastE (entry.second);
+				return;
+			}
+		}
+	}
+}
+
 void Orianna::OnGameUpdate()
 {
 	//debug key
@@ -219,6 +254,10 @@ void Orianna::OnGameUpdate()
 		return;
 	}
 	Automatic();
+	if (GetAsyncKeyState (eHelperKey->GetInteger()))
+	{
+		eAssist();
+	}
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		Combo();
@@ -299,6 +338,7 @@ void Orianna::AntiGapclose (GapCloserSpell const& args)
 		}
 	}
 }
+
 
 int Orianna::GetEHits()
 {

@@ -103,7 +103,7 @@ void Taliyah::OnRender()
 {
 	if (Extensions::Validate (Qing))
 	{
-		Extensions::DrawLineRectangle (Hero->GetPosition(), GMissileData->GetEndPosition (Qing), Q->Radius(), 5, Vec4 (255, 255, 100, 255));
+		Extensions::DrawLineRectangle (Hero->GetPosition(), GMissileData->GetEndPosition (Qing), Q->Radius(), laneClearWMana->GetFloat(), Vec4 (255, 255, 100, 255));
 	}
 	Drawing();
 	dmgdraw();

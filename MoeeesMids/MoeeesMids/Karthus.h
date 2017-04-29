@@ -18,6 +18,7 @@ private:
 	IMenuOption* ComboAA;
 	IMenuOption* ComboAAkey;
 	IMenuOption* ComboAALevel;
+	IMenuOption* EAutoOff;
 
 
 	void automatic();
