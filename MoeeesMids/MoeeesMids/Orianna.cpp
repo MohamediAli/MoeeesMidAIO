@@ -18,14 +18,8 @@ auto VecG = std::vector<Vec3>();
 float BallRad = 75;
 Vec4 BallIndicatorColor (52, 152, 219, 255);
 Vec4 BallIndicatorMovingColor (255, 0, 255, 255);
-
-
-
-
 Vec4 GagongColorsMove[9];
-
 Vec3 UpVec (0, 1, 0);
-
 float lastTimeStamp;
 float gagongAngle;
 
@@ -221,7 +215,7 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 
 void Orianna::eAssist()
 {
-	if (ComboE->Enabled() && E->IsReady())
+	if (eHelper->Enabled() && E->IsReady())
 	{
 		auto bestEqTravelTime = FLT_MAX;
 		std::vector<std::pair<int, IUnit*>> bestAlly;
@@ -231,7 +225,7 @@ void Orianna::eAssist()
 			{
 				int distanceA = Extensions::GetDistance (Hero, ally);
 				int distanceB = Extensions::GetDistance (ally, GGame->CursorPosition());
-				if (distanceA < E->Range())
+				if (distanceA < 2000 && distanceB < 420)
 				{
 					bestAlly.push_back (std::make_pair (distanceB, ally));
 				}
@@ -807,7 +801,7 @@ bool Orianna::CheckForCollision (ISpell2* Skillshot, Vec3 CheckAtPosition)
 
 bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision)
 {
-	if (Extensions::Validate (StationaryBall) && Extensions::Validate (Unit))
+	if (Extensions::Validate (StationaryBall) && Extensions::Validate (Unit) && Unit->IsVisible() && Unit->IsHero())
 	{
 		float TravelTime = ( (Unit->GetPosition() - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 		auto Path = Unit->GetWaypointList();
@@ -821,22 +815,16 @@ bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosit
 				EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 			}
 			CastPosition = EstimatedMaxPosition.Extend (Unit->GetPosition(), Unit->BoundingRadius() + Skillshot->Radius() * 0.8);
+			return true;
 		}
-		else if (Extensions::Validate (Unit))
+		else if (Extensions::Validate (Unit) && Unit->IsVisible() && Unit->IsHero() && !Unit->IsClone())
 		{
 			CastPosition = Unit->GetPosition();
-		}
-		else
-		{
-			return false;
+			return true;
 		}
 		if (CheckCollision)
 		{
 			return CheckForCollision (Skillshot, CastPosition);
-		}
-		else
-		{
-			return true;
 		}
 	}
 	return false;
@@ -1071,9 +1059,12 @@ void Orianna::CastQ (IUnit* target)
 			Q->CastOnTarget (target, kHitChanceVeryHigh);
 		}
 	}
-	else if (PredictionType->GetInteger() == 0)
+	else if (PredictionType->GetInteger() == 0 && Extensions::Validate (target))
 	{
-		Q->CastOnPosition (castOn);
+		Vec3 castOn2;
+		BestCastPosition (target, Q, castOn2, false);
+		if (Extensions::GetDistance (castOn2, target->ServerPosition()) <150)
+		{ Q->CastOnPosition (castOn2); }
 	}
 }
 

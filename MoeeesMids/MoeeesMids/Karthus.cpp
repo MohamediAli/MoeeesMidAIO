@@ -128,11 +128,11 @@ void Karthus::automatic()
 	}
 	if (autoQ->Enabled() && Q->IsReady())
 	{
-		if (QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget())
+		if (QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget() ||!Extensions::Validate (QTarget))
 		{
 			return;
 		}
-		if (!cz)
+		else if (!cz)
 		{
 			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
 		}
@@ -160,7 +160,7 @@ float Karthus::wWidthChange (IUnit* target)
 
 void Karthus::zigzag()   //credits sn karthus
 {
-	if (QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget())
+	if (QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget() || !Extensions::Validate (QTarget) ||  ! (QTarget->IsVisible()))
 	{
 		return;
 	}
@@ -365,7 +365,7 @@ void Karthus::Combo()
 {
 	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (target == nullptr || !target->IsHero() || target->IsDead())
+	if (target == nullptr || !target->IsHero() || target->IsDead() || !Extensions::Validate (QTarget) || ! (QTarget->IsVisible()))
 	{
 		return;
 	}
@@ -391,7 +391,7 @@ void Karthus::Harass()
 {
 	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (!Extensions::Validate (target) || !target->IsHero() || target->IsDead())
+	if (!Extensions::Validate (target) || !target->IsHero() || target->IsDead() || !Extensions::Validate (QTarget) || ! (QTarget->IsVisible()))
 	{
 		return;
 	}
