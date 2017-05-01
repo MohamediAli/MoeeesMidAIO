@@ -498,7 +498,7 @@ void Karthus::dmgdraw()
 			}
 		}
 	}
-//	if (killable != "Killable : ")
+	if (killable != "Killable : ")
 	{
 		//Vec2 pos;
 		static Vec2 Resoution = GRender->ScreenSize();

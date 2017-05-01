@@ -65,7 +65,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
 	PredType = { "Oracle", "Core" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
 }
 
 void Ahri::OnGameUpdate()
@@ -247,12 +247,13 @@ void Ahri::CastE (IUnit* target)
 	}
 	if (PredictionType->GetInteger() == 1)
 	{
-		AdvPredictionOutput prediction_output;
+		E->CastOnTarget (target);
+		/*AdvPredictionOutput prediction_output;
 		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
 		if (prediction_output.HitChance >= kHitChanceVeryHigh)
-		{
+		{/
 			E->CastOnPosition (prediction_output.CastPosition);
-		}
+		}*/
 	}
 }
 
@@ -268,9 +269,9 @@ void Ahri::CastQ (IUnit* target)
 	{
 		AdvPredictionOutput prediction_output;
 		Q->RunPrediction (target, false, kCollidesWithYasuoWall, &prediction_output);
-		if (prediction_output.HitChance >= kHitChanceVeryHigh)
+		if (prediction_output.HitChance >= kHitChanceHigh)
 		{
-			E->CastOnPosition (prediction_output.CastPosition);
+			Q->CastOnPosition (prediction_output.CastPosition);
 		}
 	}
 }
