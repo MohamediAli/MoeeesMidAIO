@@ -15,6 +15,7 @@ public:
 	void AntiGapclose (GapCloserSpell const& args);
 
 private:
+	std::vector<std::string> Ping;
 	IMenuOption* ComboAA;
 	IMenuOption* ComboAAkey;
 	IMenuOption* ComboAALevel;
@@ -60,6 +61,7 @@ private:
 	IMenu* qMenu;
 	IMenu* wMenu;
 	IMenu* eMenu;
+	IMenu* rMenu;
 
 	IMenuOption* ComboQ;
 	IMenuOption* ComboQWorked;
@@ -113,5 +115,5 @@ private:
 	IMenuOption* JungleClearEMana;
 	IMenuOption* seperator2;
 	IMenuOption* gapCloserE;
-	IMenuOption* autoQ;
+	IMenuOption *autoQ, *PingOption, *PingDelay, *Ping0;
 };

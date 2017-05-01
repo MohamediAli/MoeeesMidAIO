@@ -25,6 +25,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	qMenu = Parent->AddMenu ("Q Settings");
 	wMenu = Parent->AddMenu ("W Settings");
 	eMenu = Parent->AddMenu ("E Settings");
+	rMenu = Parent->AddMenu ("R Settings");
 	Drawings = Parent->AddMenu ("All Drawings");
 	MiscMenu = Parent->AddMenu ("Miscs");
 	ComboQ = qMenu->CheckBox ("Use Q in Combo", true);
@@ -40,12 +41,16 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	gapCloserW = wMenu->CheckBox ("W on Gap Closer", true);
 	ComboE = eMenu->CheckBox ("Use E in Combo", true);
 	harassE = eMenu->CheckBox ("Harass with E", true);
-	harassEMana = eMenu->AddFloat ("^-> Only Harras E if Mana >", 0, 100, 50);
+	harassEMana = eMenu->AddFloat ("^-> Only Harras E if Mana >", -1000, 1000, 50);
 	laneClearE = eMenu->CheckBox ("Wave Clear with E", true);
 	laneClearEMana = eMenu->AddFloat ("^-> Only Wave Clear E if Mana >", 0, 100, 70);
 	JungleClearE = eMenu->CheckBox ("Jungle Clear with E", true);
 	JungleClearEMana = eMenu->AddFloat ("^-> Only Jungle Clear E if Mana >", 0, 100, 50);
 	EAutoOff = eMenu->CheckBox ("Automaticlly Turn Off E (Doesn't include combo) ", true);
+	Ping0 = rMenu->CheckBox ("Ping on Killiable on Ult", true);
+	Ping = { "Normal", "Danger", "Enemy Missing","OMW","Fall Back","Assist" };
+	PingOption = rMenu->AddSelection ("Ping Selection", 1, Ping);
+	PingDelay = rMenu->AddInteger ("Ping Delay in 100ms", 1, 10, 4);
 	ComboAALevel = MiscMenu->AddInteger ("At what level disable AA", 1, 18, 6);
 	ComboAA = MiscMenu->CheckBox ("Disable AA", false);
 	ComboAAkey = MiscMenu->AddKey ("Disable key", 32);
@@ -135,6 +140,7 @@ void Karthus::automatic()
 		else if (!cz)
 		{
 			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
+			return;
 		}
 	}
 }
@@ -376,6 +382,10 @@ void Karthus::Combo()
 		{
 			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
 		}
+		else
+		{
+			Q->CastOnTarget (QTarget);
+		}
 	}
 	if (ComboW->Enabled() && W->IsReady())
 	{
@@ -464,7 +474,7 @@ float Karthus::rDmg (IUnit* Target)
 void Karthus::dmgdraw()
 {
 	std::string killable = "Killable : ";
-	if (R->IsReady())
+	if (R->IsReady() && !Hero->IsDead())
 	{
 		for (auto enemy : GEntityList->GetAllHeros (false, true))
 		{
@@ -479,25 +489,29 @@ void Karthus::dmgdraw()
 				{
 					killable += enemy->ChampionName();
 					killable.append (" ");
-					if (GGame->Time() - LastPing > 1 && enemy->IsVisible())
+					if (GGame->TickCount() - LastPing > 1 && enemy->IsVisible() && Ping0->Enabled())
 					{
-						LastPing = GGame->Time();
-						GGame->ShowPing (kPingDanger, enemy, true);
+						LastPing = GGame->TickCount() + PingDelay->GetInteger() *100;
+						GGame->ShowPing (PingOption->GetInteger()+1, enemy, true);
 					}
 				}
 			}
 		}
 	}
-	if (killable != "Killable : ")
+//	if (killable != "Killable : ")
 	{
-		Vec2 pos;
-		(GGame->Projection (Hero->GetPosition(), &pos));
-		static auto message = GRender->CreateFontW ("Impact", 30.f, kFontWeightNormal);
+		//Vec2 pos;
+		static Vec2 Resoution = GRender->ScreenSize();
+		static Vec2 ScreenCenter = Vec2 (Resoution.x / 3.0f, (Resoution.y / 4.7f));
+		//if (GGame->Projection(Hero->GetPosition(), &pos)) {
+		static auto message = GRender->CreateFontW ("Impact", 60.f, kFontWeightNormal);
 		message->SetColor (Vec4 (255, 0, 0, 255));
 		message->SetOutline (true);
-		message->Render (pos.x + 10 + 32, pos.y + 10, killable.c_str());
+		message->Render (ScreenCenter.x, ScreenCenter.y, killable.c_str());
+		//	message->Render(pos.x + 10 + 32, pos.y + 10, killable.c_str());
 	}
 }
+
 
 
 void Karthus::LaneClear()
