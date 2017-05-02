@@ -1093,7 +1093,7 @@ bool Orianna::isChasing (IUnit* Target)
 void Orianna::eLogic()
 {
 	auto player = Hero;//sebby start
-	if (isBallMoving() || !E->IsReady() || SpellCheck (BallMissile, R->Radius(), R->GetDelay() + 50) || Extensions::Validate (StationaryBall) && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
+	if (isBallMoving() || PriorityHit() || !E->IsReady() || SpellCheck (BallMissile, R->Radius(), R->GetDelay() + 0.5) >= ultMin->GetFloat() || Extensions::Validate (StationaryBall) && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
 	{
 		return;
 	}
@@ -1120,6 +1120,11 @@ void Orianna::eLogic()
 			CastE (ally);
 			return;
 		}
+	}
+	if (!Hero->IsDead() && Hero->HealthPercent() <= HealthPercentage->GetInteger() && Extensions::EnemiesInRange (Hero->GetPosition(), 600) > 0)
+	{
+		E->CastOnPlayer();
+		return;
 	}
 }
 
@@ -1159,26 +1164,21 @@ void Orianna::Combo()
 		}
 	}
 	// check if more than X target to try aoe q position
-	if (E->IsReady() && ! (Hero->IsDead()))
+	//Cast on self
+	/*	if (ShieldTeamate->Enabled())
 	{
-		if (Hero->HealthPercent() <= HealthPercentage->GetInteger() && Extensions::EnemiesInRange (Hero->GetPosition(), 600) > 0)
-		{
-			E->CastOnPlayer();
-		} //Cast on self
-		/*	if (ShieldTeamate->Enabled())
-		{
-		auto Teamates = GEntityList->GetAllHeros(true, false);
-		for (IUnit* Teamate : Teamates)
-		{
-		if (Extensions::GetDistance(Hero, Teamate->GetPosition()) <= E->Range()) {
-		if (!(Teamate->IsDead()) && Teamate->HealthPercent() <= ShieldTeamatePercent->GetInteger() && Extensions::EnemiesInRange(Teamate->GetPosition(), 600) > 0) {
-		E->CastOnUnit(Teamate);
-		} //Cast on injured teamate
-		}
-		}
-		}*/
+	auto Teamates = GEntityList->GetAllHeros(true, false);
+	for (IUnit* Teamate : Teamates)
+	{
+	if (Extensions::GetDistance(Hero, Teamate->GetPosition()) <= E->Range()) {
+	if (!(Teamate->IsDead()) && Teamate->HealthPercent() <= ShieldTeamatePercent->GetInteger() && Extensions::EnemiesInRange(Teamate->GetPosition(), 600) > 0) {
+	E->CastOnUnit(Teamate);
+	} //Cast on injured teamate
 	}
+	}
+	}*/
 }
+
 
 
 

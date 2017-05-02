@@ -64,8 +64,8 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
-	PredType = { "Oracle", "Core" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
+	PredType = { "Core" };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 }
 
 void Ahri::OnGameUpdate()
@@ -234,7 +234,7 @@ bool Ahri::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition
 
 void Ahri::CastE (IUnit* target)
 {
-	if (PredictionType->GetInteger() == 0)
+	if (PredictionType->GetInteger() == 1)
 	{
 		Vec3 CastOn;
 		BestCastPosition (target, E, CastOn, false);
@@ -245,7 +245,7 @@ void Ahri::CastE (IUnit* target)
 			E->CastOnPosition (CastOn);
 		}
 	}
-	if (PredictionType->GetInteger() == 1)
+	if (PredictionType->GetInteger() == 0)
 	{
 		E->CastOnTarget (target);
 		/*AdvPredictionOutput prediction_output;
@@ -259,13 +259,13 @@ void Ahri::CastE (IUnit* target)
 
 void Ahri::CastQ (IUnit* target)
 {
-	if (PredictionType->GetInteger() == 0)
+	if (PredictionType->GetInteger() == 1)
 	{
 		Vec3 CastOn;
 		BestCastPosition (target, Q, CastOn, false);
 		Q->CastOnPosition (CastOn);
 	}
-	if (PredictionType->GetInteger() == 1)
+	if (PredictionType->GetInteger() == 0)
 	{
 		AdvPredictionOutput prediction_output;
 		Q->RunPrediction (target, false, kCollidesWithYasuoWall, &prediction_output);
