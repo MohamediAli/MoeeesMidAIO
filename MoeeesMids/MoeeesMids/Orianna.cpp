@@ -330,11 +330,11 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 		{
 			return false;
 		}
-	}/*
+	}
 	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetInteger())
 	{
 		return false;
-	}*/
+	}
 	return true;
 }
 
