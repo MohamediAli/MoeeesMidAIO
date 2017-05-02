@@ -141,7 +141,7 @@ bool Extensions::IsValid (Vec3 p)
 }
 
 //Divine's Divine Code.
-bool Extensions::Validate (IUnit * obj,IUnit * unit, float range)
+bool Extensions::Validate (IUnit * obj, IUnit * unit, float range)
 {
 	return obj != nullptr && ( (!unit && obj->IsValidObject()) || (unit ? obj->IsValidTarget (unit,range) :obj->IsValidTarget()));
 }

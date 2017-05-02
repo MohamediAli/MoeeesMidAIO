@@ -100,7 +100,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	eHelper = eMenu->CheckBox ("E Assist", true);
 	eHelperKey = eMenu->AddKey ("E Assist Key", 69);
 	ComboR = rMenu->CheckBox ("Use Ult in Combo", true);
-	ultMin = rMenu->AddFloat ("Only Ult if it will hit atleast: ", 0, 5, 2);
+	ultMin = rMenu->AddInteger ("Only Ult if it will hit atleast: ", 0, 5, 2);
 	BlockR = rMenu->CheckBox ("Block R on no hits", true);
 	FlashUlt = rMenu->AddKey ("Flash Ult key", 84);
 	InterruptR = rMenu->CheckBox ("Use Ult to Interrupt Spells", true);
@@ -331,7 +331,7 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 			return false;
 		}
 	}/*
-	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
+	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetInteger())
 	{
 		return false;
 	}*/
@@ -688,7 +688,7 @@ void Orianna::FarmQ (Vec3 pos)
 				// dont push to far away to cast;
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, pos) <= Q->Radius() * 2)
+			if (Extensions::Dist2D (posFor2D, pos) <= Q->Radius() * 4)
 			{
 				//	GGame->ShowPing(kPingAssistMe, To3D(posFor2D), false);
 				possibleQPositions.push_back (std::make_pair (count, posFor2D));
@@ -1092,7 +1092,7 @@ bool Orianna::isChasing (IUnit* Target)
 void Orianna::eLogic()
 {
 	auto player = Hero;//sebby start
-	if (isBallMoving() || PriorityHit() || !E->IsReady() || SpellCheck (BallMissile, R->Radius(), R->GetDelay() + 0.5) >= ultMin->GetFloat() || Extensions::Validate (StationaryBall) && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetFloat())
+	if (isBallMoving() || PriorityHit() || !E->IsReady() || SpellCheck (BallMissile, R->Radius(), R->GetDelay() + 0.5) >= ultMin->GetInteger() || Extensions::Validate (StationaryBall) && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetInteger())
 	{
 		return;
 	}
@@ -1146,7 +1146,7 @@ void Orianna::Combo()
 			R->CastOnPlayer();
 			return;
 		}
-		if (SpellCheck (StationaryBall, R->Radius(), 0.5) >= ultMin->GetFloat())
+		else if (SpellCheck (StationaryBall, R->Radius(), 0.5) >= ultMin->GetInteger())
 		{
 			R->CastOnPlayer();
 			return;
@@ -1240,12 +1240,13 @@ void Orianna::LaneClear()
 				{
 					if (!minion->IsDead())
 					{
+						/*
 						auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 350, 350);
 						if (hp < qDmg (minion))
 						{
 							Q->CastOnPosition (minion->GetPosition());
 							return;
-						}
+						}*/
 						FarmQ (minion->GetPosition());
 						return;
 					}
