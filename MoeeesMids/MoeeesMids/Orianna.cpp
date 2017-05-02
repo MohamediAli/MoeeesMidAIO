@@ -800,7 +800,7 @@ bool Orianna::CheckForCollision (ISpell2* Skillshot, Vec3 CheckAtPosition)
 
 bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision)
 {
-	if (Extensions::Validate (StationaryBall) && Extensions::Validate (Unit) && Unit->IsVisible() && Unit->IsHero())
+	if (Extensions::Validate (StationaryBall) && Extensions::Validate (Unit))
 	{
 		float TravelTime = ( (Unit->GetPosition() - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 		auto Path = Unit->GetWaypointList();
@@ -814,16 +814,22 @@ bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosit
 				EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 			}
 			CastPosition = EstimatedMaxPosition.Extend (Unit->GetPosition(), Unit->BoundingRadius() + Skillshot->Radius() * 0.8);
-			return true;
 		}
-		else if (Extensions::Validate (Unit) && Unit->IsVisible() && Unit->IsHero() && !Unit->IsClone())
+		else if (Extensions::Validate (Unit))
 		{
 			CastPosition = Unit->GetPosition();
-			return true;
+		}
+		else
+		{
+			return false;
 		}
 		if (CheckCollision)
 		{
 			return CheckForCollision (Skillshot, CastPosition);
+		}
+		else
+		{
+			return true;
 		}
 	}
 	return false;
