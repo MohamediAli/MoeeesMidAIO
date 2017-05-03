@@ -42,7 +42,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	eMin = eMenu->AddInteger (":: Minimum Minions Hit", 1, 10, 3);
 	laneClearEMana = eMenu->AddFloat (":: Only Wave Clear E if Mana >", 0, 100, 30);
 	ComboR = rMenu->CheckBox ("Use R", true);
-	ultMin = rMenu->AddInteger ("Ult if can hit more than: ", 1, 5, 2);
+	ultMin = rMenu->AddInteger ("Ult if can hit more than: ", 1, 5, 3);
 	RInterveral = rMenu->AddInteger ("Interval to Follow R in 100ms", 1, 10, 5);
 	killStealR = rMenu->CheckBox ("KillSteal with R", true);
 	rInterrupt = rMenu->CheckBox ("Interrupt Spells with R", true);
