@@ -296,7 +296,7 @@ bool myfunctionHP (IUnit* i, IUnit* j) { return (i->GetHealth() >= j->GetHealth(
 void Viktor::eCast (IUnit* target)
 {
 	{
-		auto in_range = (target->GetPosition().To2D() - Hero->GetPosition().To2D()).LengthSqr() <= E->Range() * E->Range();
+		auto in_range = Extensions::GetDistanceSqr (target->GetPosition().To2D(), Hero->GetPosition().To2D()) <= E->Range() * E->Range();
 		auto casted = false;
 		Vec3 source1;
 		std::vector<IUnit*> closeHero;
@@ -307,7 +307,7 @@ void Viktor::eCast (IUnit* target)
 			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistance (Hero, targets->GetPosition()) <= 1225)
 			{
 				closeHero.push_back (targets);
-				if ( (targets->GetPosition().To2D() - Hero->GetPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
+				if (Extensions::GetDistanceSqr (targets->GetPosition().To2D(), Hero->GetPosition().To2D()) <= E->Range() * E->Range())
 				{
 					closerHero.push_back (targets);
 				}
@@ -327,7 +327,7 @@ void Viktor::eCast (IUnit* target)
 				if (!minion->IsDead())
 				{
 					closeMinions.push_back (minion);
-					if ( (minion->GetPosition().To2D() - Hero->GetPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
+					if (Extensions::GetDistanceSqr (minion->GetPosition().To2D(), Hero->GetPosition().To2D()) <= E->Range() * E->Range())
 					{
 						closerMinions.push_back (minion);
 					}
@@ -365,7 +365,7 @@ void Viktor::eCast (IUnit* target)
 					AdvPredictionOutput output;
 					E->RunPrediction (enemies, true, kCollidesWithNothing, &output);
 					E->SetFrom (Hero->GetPosition());
-					if (output.HitChance >= kHitChanceHigh && Extensions::GetDistance (source1.To2D(), output.CastPosition.To2D()) < (E->Range() * E->Range()) * 0.8)
+					if (output.HitChance > kHitChanceMedium && Extensions::GetDistanceSqr (source1.To2D(), output.CastPosition.To2D()) < (E->Range() * E->Range()) * 0.8)
 					{
 						closeToPrediction.push_back (enemies);
 					}
