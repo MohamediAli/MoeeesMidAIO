@@ -53,7 +53,7 @@ int Extensions::EnemiesInRange (Vec3 Source, float range)
 	auto enemiesInRange = 0;
 	for (auto target : Targets)
 	{
-		if (Extensions::Validate (target) && !target->IsDead())
+		if (Extensions::Validate (target) && !target->IsDead() && target->IsHero())
 		{
 			auto flDistance = (target->GetPosition() - Source).Length();
 			if (flDistance <= range)
@@ -71,7 +71,7 @@ int Extensions::AlliesInRange (Vec3 Source, float range)
 	auto alliesInRange = 0;
 	for (auto target : Targets)
 	{
-		if (target != nullptr && target->IsValidTarget() && !target->IsDead())
+		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && target->IsHero())
 		{
 			auto flDistance = (target->GetPosition() - Source).Length();
 			if (flDistance < range)
@@ -157,18 +157,18 @@ Vec3 Extensions::To3D (Vec2 p)
 }
 float Extensions::Dist2D (IUnit * to)
 {
-	return (GEntityList->Player()->ServerPosition() - to->ServerPosition()).Length2D() -
+	return (GEntityList->Player()->GetPosition() - to->GetPosition()).Length2D() -
 	       (GEntityList->Player()->BoundingRadius() + to->BoundingRadius());
 }
 
 float Extensions::Dist (IUnit * from, IUnit * to)
 {
-	return (from->ServerPosition() - to->ServerPosition()).Length();
+	return (from->GetPosition() - to->GetPosition()).Length();
 }
 
 float Extensions::Dist2D (IUnit * from, IUnit * to)
 {
-	return (from->ServerPosition() - to->ServerPosition()).Length2D();
+	return (from->GetPosition() - to->GetPosition()).Length2D();
 }
 
 Vec2 Extensions::To2D (Vec3 p)

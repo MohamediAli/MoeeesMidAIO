@@ -134,7 +134,7 @@ Vec3 Taliyah::CalculateReturnPos() //credits 2 my nigga sebby
 			if (misToTarget < Q->Range() && misToTarget > 50)
 			{
 				auto cursorToTarget = Extensions::GetDistance (target, (Hero->GetPosition().Extend (GGame->CursorPosition(), 100)));
-				auto ext = finishPosition.Extend (target->ServerPosition(), cursorToTarget + misToTarget);
+				auto ext = finishPosition.Extend (target->GetPosition(), cursorToTarget + misToTarget);
 				if (Extensions::GetDistance (ext, Hero->GetPosition()) < 1000 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
 				{
 					return ext;
@@ -246,11 +246,11 @@ Vec3 Taliyah::PredPos (IUnit* Hero, float Delay)  //credits sn karthus
 
 void  Taliyah::AntiGapclose (GapCloserSpell const& args)
 {
-	if (E->IsReady() && gapCloserE->Enabled() && Extensions::GetDistance (GEntityList->Player(), args.Source) <250 && args.Source->IsValidTarget() && args.Source->IsEnemy (Hero))
+	if (E->IsReady() && gapCloserE->Enabled() && Extensions::GetDistance (GEntityList->Player(), args.Source) <150 && args.Source->IsValidTarget() && args.Source->IsEnemy (Hero))
 	{
-		E->CastOnPosition (args.Source->ServerPosition());
+		E->CastOnPosition (args.Source->GetPosition());
 	}
-	if (W->IsReady() && gapCloserW->Enabled() && Extensions::GetDistance (GEntityList->Player(), args.Source) <250 && args.Source->IsEnemy (Hero))
+	if (W->IsReady() && gapCloserW->Enabled() && Extensions::GetDistance (GEntityList->Player(), args.Source) <150 && args.Source->IsEnemy (Hero))
 	{
 		AdvPredictionOutput outputfam;
 		W->RunPrediction (args.Source, false, kCollidesWithMinions, &outputfam);
@@ -335,7 +335,7 @@ void Taliyah::CastE()
 	}
 	if (ComboE->Enabled())
 	{
-		E->CastOnPosition (target->ServerPosition());
+		E->CastOnPosition (target->GetPosition());
 	}
 }
 
@@ -499,7 +499,7 @@ void Taliyah::autoE()
 				E->RunPrediction (target, false, kCollidesWithNothing, &outputfam);
 				if (outputfam.HitChance == kHitChanceDashing)
 				{
-					E->CastOnPosition (target->ServerPosition());
+					E->CastOnPosition (target->GetPosition());
 				}
 			}
 		}

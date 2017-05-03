@@ -301,7 +301,7 @@ void  Karthus::CastW()
 		}
 		else
 		{
-			auto myPos = Hero->ServerPosition();
+			auto myPos = Hero->GetPosition();
 			auto myPos2D = myPos.To2D();
 			auto targetPos = futurePos;
 			auto targetPos2D = targetPos.To2D();
@@ -345,7 +345,7 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 				// dont push is wall
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, Hero->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, Hero->GetPosition()) > Q->Range())
 			{
 				// dont push to far away to cast;
 				continue;

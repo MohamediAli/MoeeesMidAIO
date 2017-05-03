@@ -301,7 +301,7 @@ void Ahri::AntiInterrupt (InterruptibleSpell const& args)
 
 Vec3 Ahri::getPosToEflash (Vec3 target)
 {
-	return  Hero->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
+	return  Hero->GetPosition().Extend (GGame->CursorPosition(), Flash->Range());
 }
 
 void Ahri::CastFlash()
@@ -324,7 +324,7 @@ void Ahri::PerformFlashCharm()
 		{
 			return;
 		}
-		auto flashPosition = Hero->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
+		auto flashPosition = Hero->GetPosition().Extend (GGame->CursorPosition(), Flash->Range());
 		AdvPredictionOutput result;
 		EFlash->RunPrediction (target, false, kCollidesWithMinions, &result);
 		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && !target->IsInvulnerable() && result.HitChance >= kHitChanceVeryHigh && E->IsReady())

@@ -141,7 +141,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 Vec3 Orianna::getPosToRflash (Vec3 target)
 {
-	return  Hero->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
+	return  Hero->GetPosition().Extend (GGame->CursorPosition(), Flash->Range());
 }
 
 void Orianna::CastFlash()
@@ -165,7 +165,7 @@ void Orianna::PerformFlashUlt()
 		auto target = GTargetSelector->GetFocusedTarget() != nullptr
 		              ? GTargetSelector->GetFocusedTarget()
 		              : GTargetSelector->FindTarget (QuickestKill, SpellDamage, RFlash->Range());
-		//auto flashPosition = Hero->ServerPosition().Extend (GGame->CursorPosition(), Flash->Range());
+		//auto flashPosition = Hero->GetPosition().Extend (GGame->CursorPosition(), Flash->Range());
 		AdvPredictionOutput result;
 		RFlash->RunPrediction (target, false, kCollidesWithNothing, &result);
 		if (target != nullptr && target->IsValidTarget() && !target->IsDead() && !target->IsInvulnerable() && result.HitChance >= kHitChanceVeryHigh)
@@ -191,7 +191,7 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 		return;
 	}
 	if (target == Source && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
-		if (Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->GetPosition(), R->Radius() * 2) > 1)
 		{
 			TeamFightQ (target->GetPosition());
 			return;
@@ -349,7 +349,7 @@ void Orianna::OnInterrupt (InterruptibleSpell const& Args)
 	}
 	if (Q->IsReady() && player->IsValidTarget (Args.Source, Q->Range()) && Args.Source != nullptr && Args.Source != Hero && Args.Source->IsEnemy (Hero))
 	{
-		Q->CastOnPosition (Args.Source->ServerPosition());
+		Q->CastOnPosition (Args.Source->GetPosition());
 	}
 	if (R->IsReady() && InterruptR->Enabled() && SpellCheckKS (StationaryBall, R->Range(), 0.5, Args.Source))
 	{
@@ -631,7 +631,7 @@ void Orianna::TeamFightQ (Vec3 pos)
 				// dont push is wall
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->GetPosition()) > Q->Range())
 			{
 				// dont push to far away to cast;
 				continue;
@@ -683,7 +683,7 @@ void Orianna::FarmQ (Vec3 pos)
 				// dont push is wall
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->GetPosition()) > Q->Range())
 			{
 				// dont push to far away to cast;
 				continue;
@@ -997,9 +997,9 @@ void Orianna::CastQ (IUnit* target)
 	{
 		return;
 	}
-	float distance = Extensions::GetDistance (StationaryBall->GetPosition(), target->ServerPosition());
+	float distance = Extensions::GetDistance (StationaryBall->GetPosition(), target->GetPosition());
 	auto player = Hero;
-	if (E->IsReady() && player->GetMana() > R->ManaCost() + Q->ManaCost() + W->ManaCost() + E->ManaCost() && distance > Extensions::GetDistance (player->GetPosition(), target->ServerPosition()) + 330)
+	if (E->IsReady() && player->GetMana() > R->ManaCost() + Q->ManaCost() + W->ManaCost() + E->ManaCost() && distance > Extensions::GetDistance (player->GetPosition(), target->GetPosition()) + 330)
 	{
 		E->CastOnPlayer();
 		return;
@@ -1030,7 +1030,7 @@ void Orianna::CastQ (IUnit* target)
 		{
 			if (entry.second != nullptr)
 			{
-				auto t = Extensions::GetDistance (StationaryBall, entry.second->ServerPosition()) / E->Speed() +
+				auto t = Extensions::GetDistance (StationaryBall, entry.second->GetPosition()) / E->Speed() +
 				         Extensions::GetDistance (entry.second, castOn) / Q->Speed();
 				if (t < bestEqTravelTime)
 				{
@@ -1068,7 +1068,7 @@ void Orianna::CastQ (IUnit* target)
 	{
 		Vec3 castOn2;
 		BestCastPosition (target, Q, castOn2, false);
-		if (Extensions::GetDistance (castOn2, target->ServerPosition()) <150)
+		if (Extensions::GetDistance (castOn2, target->GetPosition()) < 150)
 		{ Q->CastOnPosition (castOn2); }
 	}
 }
@@ -1204,9 +1204,9 @@ void Orianna::Harass()
 	}
 	if (harassQ->Enabled() && Hero->ManaPercent() > harassQMana->GetFloat())
 	{
-		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, Q->Range()) && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, Q->Range()) && Extensions::EnemiesInRange (target->GetPosition(), R->Radius() * 2) > 1)
 		{
-			(TeamFightQ (target->ServerPosition()));
+			(TeamFightQ (target->GetPosition()));
 		}
 		else if (Q->IsReady() && harassQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
 		{
