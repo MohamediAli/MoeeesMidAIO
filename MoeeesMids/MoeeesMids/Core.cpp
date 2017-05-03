@@ -21,6 +21,16 @@ PLUGIN_EVENT (void) OnSpellCast (CastedSpell const& args)
 	ChampHandler->OnSpellCast (args);
 }
 
+PLUGIN_EVENT (void) OnDoCast (CastedSpell const& args)
+{
+	ChampHandler->OnSpellCast (args);
+}
+
+PLUGIN_EVENT (void) OnOrbwalkPreAttack (IUnit* Target)
+{
+	ChampHandler->OnCreate (Target);
+}
+
 PLUGIN_EVENT (void) OnCreate (IUnit* object)
 {
 	ChampHandler->OnCreate (object);
@@ -63,6 +73,8 @@ void  LoadEvents()
 	GEventManager->AddEventHandler (kEventOnWndProc, onMouseWheel);
 	GEventManager->AddEventHandler (kEventOnDestroyObject, OnDelete);
 	GEventManager->AddEventHandler (kEventOnNewPath, OnNewPath);
+	GEventManager->AddEventHandler (kEventOnDoCast, OnDoCast);
+	GEventManager->AddEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
 	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO</b></font><b><font color=\"#FFFFFF\"> Loaded!</font></b>");
 }
 
@@ -78,6 +90,8 @@ void  UnloadEvents()
 	GEventManager->RemoveEventHandler (kEventOnWndProc, onMouseWheel);
 	GEventManager->RemoveEventHandler (kEventOnDestroyObject, OnDelete);
 	GEventManager->RemoveEventHandler (kEventOnNewPath, OnNewPath);
+	GEventManager->RemoveEventHandler (kEventOnDoCast, OnDoCast);
+	GEventManager->RemoveEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
 }
 
 // Called when plugin is first loaded
@@ -109,6 +123,11 @@ PLUGIN_API void OnLoad (IPluginSDK* PluginSDK)
 	{
 		ChampMenu = MainMenu->AddMenu ("Karthus");
 		ChampHandler = new Karthus (ChampMenu, Player);
+	}
+	else if (strstr (Player->ChampionName(), "Viktor"))
+	{
+		ChampMenu = MainMenu->AddMenu ("Viktor");
+		ChampHandler = new Viktor (ChampMenu, Player);
 	}
 	else
 	{ ChampHandler = new Champion (ChampMenu, Player); }

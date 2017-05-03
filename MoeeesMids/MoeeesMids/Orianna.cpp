@@ -119,7 +119,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
-	HPBarColor = Drawings->AddColor ("Change Health Bar", 69, 64, 185, 100);
+	HPBarColor = Drawings->AddColor ("Change Health Bar", 125, 0, 250, 200);
 	DrawQ = Drawings->CheckBox ("Draw Q", true);
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
@@ -1449,7 +1449,7 @@ void Orianna::DrawGagongReplicate (Vec3 BallPos)
 			GRender->DrawLine (Right, Bottom, Color8);
 		}
 	}
-	//GRender->DrawOutlinedCircle(BallPos, GagongColors[0], 83);
+	//GRender->DrawCircle(BallPos, GagongColors[0], 83);
 	int spiral_num_segments = 50;
 	int spiral_rad = 50;
 	Vec3 spiral_prev_vec (-1, -1, -1);
@@ -1552,7 +1552,7 @@ void Orianna::DrawGagonDix (Vec3 BallPos, Vec4 Color)
 			GRender->DrawLine (Right, Bottom, Color);
 		}
 	}
-	GRender->DrawOutlinedCircle (BallPos, Color, 83);
+	GRender->DrawCircle (BallPos, 83, Color);
 }
 
 void Orianna::Drawing()
@@ -1586,30 +1586,30 @@ void Orianna::Drawing()
 	{
 		if (Q->IsReady() && DrawQ->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (225, 225, 0, 225), 1, false);
+			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (W->IsReady() && DrawW->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (225, 225, 0, 225), 1, false);
+			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (225, 225, 0, 225), 1, false);
+			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 	else
 	{
 		if (DrawQ->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (225, 225, 0, 225), 1, false);
+			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawW->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (225, 225, 0, 225), 1, false);
+			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawE->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (225, 225, 0, 225), 1, false);
+			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 }

@@ -6,8 +6,87 @@
 #define PI 3.14159265
 #define TO_RAD(deg) deg*PI/180;
 
+struct ProjectionInfo
+{
+	ProjectionInfo() { }
+
+	/// <summary>
+	/// The is on segment
+	/// </summary>
+	bool IsOnSegment;
+
+	/// <summary>
+	/// The line point
+	/// </summary>
+	Vec2 LinePoint;
+
+	/// <summary>
+	/// The segment point
+	/// </summary>
+	Vec2 SegmentPoint;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ProjectionInfo"/> struct.
+	/// </summary>
+	/// <param name="isOnSegment">if set to <c>true</c> [is on segment].</param>
+	/// <param name="segmentPoint">The segment point.</param>
+	/// <param name="linePoint">The line point.</param>
+	ProjectionInfo (bool isOnSegment, Vec2 segmentPoint, Vec2 linePoint)
+	{
+		this->IsOnSegment = isOnSegment;
+		this->SegmentPoint = segmentPoint;
+		this->LinePoint = linePoint;
+	}
+};
+
+enum eMinionType
+{
+	kMinionUnknown = 0,
+	kMinionWard = (1 << 0),
+	kMinionNormal = (1 << 1),
+	kMinionSiege = (1 << 2),
+	kMinionSuper = (1 << 3),
+	kMinionJungleSmall = (1 << 4),
+	kMinionJungleBig = (1 << 5),
+	kMinionJungleEpic = (1 << 6)
+};
+
+struct FarmLocationVik
+{
+	/// <summary>
+	/// The minions hit
+	/// </summary>
+	int MinionsHit;
+
+	/// <summary>
+	/// The start position
+	/// </summary>
+	Vec2 Position1;
+
+
+	/// <summary>
+	/// The end position
+	/// </summary>
+	Vec2 Position2;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FarmLocation"/> struct.
+	/// </summary>
+	/// <param name="position">The position.</param>
+	/// <param name="minionsHit">The minions hit.</param>
+	FarmLocationVik (Vec2 startpos, Vec2 endpos, int minionsHit)
+	{
+		Position1 = startpos;
+		Position2 = endpos;
+		MinionsHit = minionsHit;
+	}
+};
+
 namespace Extensions
 {
+eMinionType GetMinionType (IUnit* minion);
+ProjectionInfo ProjectOn (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd);
+bool isOnSegment (Vec2 * seg1, Vec2 * seg2, Vec2 * point);
 void DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float width, Vec4 color);
 int RandInt (int min, int max);
 float GetDistanceVectors (Vec3 from, Vec3 to);

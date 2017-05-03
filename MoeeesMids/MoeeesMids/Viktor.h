@@ -1,55 +1,52 @@
 #pragma once
 #include "PluginSDK.h"
 #include "Champion.h"
+#include "Extensions.h"
 
 
-
-class Karthus : public virtual Champion
+class Viktor : public virtual Champion
 {
 public:
-	Karthus (IMenu* Parent, IUnit* Hero);
-	~Karthus();
+	Viktor (IMenu* Parent, IUnit* Hero);
+	~Viktor();
 
 	void OnGameUpdate();
 	void OnRender();
+	void OnInterrupt (InterruptibleSpell const& Args);
+//	void OnSpellCast (CastedSpell const& args);
+	void OnCreate (IUnit* object);
 	void AntiGapclose (GapCloserSpell const& args);
+	bool onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
+//	bool OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition);
+	void OnDoCast (CastedSpell const& args);
+	void OnOrbwalkPreAttack (IUnit* Target);
 
 private:
-	std::vector<std::string> Ping;
-	IMenuOption* ComboAA;
-	IMenuOption* ComboAAkey;
-	IMenuOption* ComboAALevel;
-	IMenuOption* EAutoOff;
-
-
-	void automatic();
-	void eToggle();
-	float qWidthChange (IUnit* target);
-	float wWidthChange (IUnit* target);
-	void zigzag();
-	Vec3 PredPos (IUnit* Hero, float Delay);
-	Vec3 FarmQ (Vec3 pos);
+	void WLogic (IUnit* target);
+	FarmLocationVik FindBestLaserLineFarm (bool jg);
+	float LaserDistance (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd, bool onlyIfOnSegment = false, bool squared = false);
+	float qDmg (IUnit* Target, bool stage);
+	float eDmg (IUnit* Target, bool augment);
+	float rDmg (IUnit* Target, int ticks);
+	float DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR);
+	//bool myfunctionHP (IUnit* i, IUnit* j);
+	bool jgLaser();
+	bool minionLaser();
+	void eCast (IUnit* target);
 	void Combo();
 	void Harass();
-	float qDmg (IUnit* Target);
-	float rDmg (IUnit* Target);
-	void dmgdraw();
 	void LaneClear();
-	void LastHit();
-	float WWidth();
-	float WMaxRangeSqr();
-	float WMaxRange();
-	bool IsInWRange (Vec2 LastKarthus);
-	void  CastW();
-	int LastPing, LastSeen;
+	void JungleClear();
+	void KillSteal();
+	void autoE();
+	void Automatic();
+	void RFollowLogic (IUnit* target);
+	void dmgdraw();
 	void Drawing();
-	std::vector<LastKarthus> LK;
 
-	float czx = 0, czy = 0, czx2 = 0, czy2 = 0;
-	bool cz = false;
-	IUnit* QTarget;
 
-	IMenu*			KarthusMenu;
+	Vec3 TeamFightR (IUnit* pos);
+	IMenu* ViktorMenu;
 	IMenu* MainMenu;
 	IMenu* ComboMenu;
 	IMenu* HarassMenu;
@@ -69,7 +66,7 @@ private:
 	IMenuOption* ComboWManager;
 	IMenuOption* ComboE;
 	IMenuOption* ComboR;
-	IMenuOption* RideR;
+	IMenuOption* rInterrupt;
 
 
 	IMenuOption* DrawReady;
@@ -91,6 +88,7 @@ private:
 	IMenuOption* harassFullQ;
 	IMenuOption* laneFullQ;
 	IMenuOption* jungleFullQ;
+
 
 	IMenuOption* killStealW;
 	IMenuOption* EonlyW;
@@ -115,5 +113,16 @@ private:
 	IMenuOption* JungleClearEMana;
 	IMenuOption* seperator2;
 	IMenuOption* gapCloserE;
-	IMenuOption *autoQ, *PingOption, *PingDelay, *Ping0, *lastHitQ;
+	Vec3 position;
+
+	IUnit *rFollow, *rObject;
+	IMenuOption *RInterveral, *ultMin, *eMin, *automaticE, *killStealR, *mouseClear, *Laneclear, *drawLC, *HPBarColor;
+
+	float lastRMoveTick;
+	IUnit* QMis;
+	ISpell2* Q;
+	ISpell2* W;
+	ISpell2* E;
+	ISpell2* R;
+
 };

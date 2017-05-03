@@ -1,5 +1,144 @@
 #include "Extensions.h"
 
+eMinionType Extensions::GetMinionType (IUnit* minion)
+{
+	static std::vector<std::string> normalMinions =
+	{
+		"sru_chaosminionmelee", "sru_chaosminionranged",
+		"sru_orderminionmelee", "sru_orderminionranged",
+		"ha_chaosminionmelee", "ha_chaosminionranged",
+		"ha_orderminionmelee", "ha_orderminionranged"
+	};
+	static std::vector<std::string> siegeMinions =
+	{
+		"sru_chaosminionsiege", "sru_orderminionsiege",
+		"ha_chaosminionsiege", "ha_orderminionsiege"
+	};
+	static std::vector<std::string> superMinions =
+	{
+		"sru_chaosminionsuper", "sru_orderminionsuper",
+		"ha_chaosminionsuper", "ha_orderminionsuper"
+	};
+	static std::vector<std::string> smallJungleCreeps =
+	{
+		"sru_razorbeakmini", "sru_murkwolfmini",
+		"sru_krugmini", "sru_krugminimini"
+	};
+	static std::vector<std::string> bigJungleCreeps =
+	{
+		"sru_razorbeak", "sru_murkwolf", "sru_gromp",
+		"sru_krug", "sru_red", "sru_blue", "sru_crab"
+	};
+	static std::vector<std::string> epicJungleCreeps =
+	{
+		"sru_dragon_air", "sru_dragon_earth", "sru_dragon_fire",
+		"sru_dragon_water", "sru_dragon_elder", "sru_riftherald",
+		"sru_baron"
+	};
+	if (minion == nullptr)
+	{
+		return kMinionUnknown;
+	}
+	auto baseSkinName = regex_replace (std::string (minion->GetBaseSkinName()), std::regex ("[^a-zA-Z_]+"), "");
+	transform (baseSkinName.begin(), baseSkinName.end(), baseSkinName.begin(), ::tolower);
+	if (std::string (baseSkinName).find ("ward") != std::string::npos || std::string (baseSkinName).find ("trinket") != std::string::npos)
+	{
+		return kMinionWard;
+	}
+	if (find (normalMinions.begin(), normalMinions.end(), baseSkinName) != normalMinions.end())
+	{
+		return kMinionNormal;
+	}
+	if (find (siegeMinions.begin(), siegeMinions.end(), baseSkinName) != siegeMinions.end())
+	{
+		return kMinionSiege;
+	}
+	if (find (superMinions.begin(), superMinions.end(), baseSkinName) != superMinions.end())
+	{
+		return kMinionSuper;
+	}
+	if (find (smallJungleCreeps.begin(), smallJungleCreeps.end(), baseSkinName) != smallJungleCreeps.end())
+	{
+		return kMinionJungleSmall;
+	}
+	if (find (bigJungleCreeps.begin(), bigJungleCreeps.end(), baseSkinName) != bigJungleCreeps.end())
+	{
+		return kMinionJungleBig;
+	}
+	if (find (epicJungleCreeps.begin(), epicJungleCreeps.end(), baseSkinName) != epicJungleCreeps.end())
+	{
+		return kMinionJungleEpic;
+	}
+	return kMinionUnknown;
+}
+
+bool Extensions::isOnSegment (Vec2 * seg1, Vec2 * seg2, Vec2 * point)
+{
+	double maxX;
+	double maxY;
+	double minX;
+	double minY;
+	if (seg1->x > seg2->x)
+	{
+		maxX = seg1->x;
+		minX = seg2->x;
+	}
+	else
+	{
+		maxX = seg2->x;
+		minX = seg1->x;
+	}
+	if (seg1->y > seg2->y)
+	{
+		maxY = seg1->y;
+		minY = seg2->y;
+	}
+	else
+	{
+		maxY = seg2->y;
+		minY = seg1->y;
+	}
+	if (maxX < point->x || minX > point->x)
+	{
+		//POSTGIS_DEBUGF (3, "X value %.8f falls outside the range %.8f-%.8f", point->x, minX, maxX);
+		return false;
+	}
+	else if (maxY < point->y || minY > point->y)
+	{
+		//POSTGIS_DEBUGF (3, "Y value %.8f falls outside the range %.8f-%.8f", point->y, minY, maxY);
+		return false;
+	}
+	return true;
+}
+
+ProjectionInfo Extensions::ProjectOn (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd)
+{
+	auto cx = point.x;
+	auto cy = point.y;
+	auto ax = segmentStart.x;
+	auto ay = segmentStart.y;
+	auto bx = segmentEnd.x;
+	auto by = segmentEnd.y;
+	auto rL = ( (cx - ax) * (bx - ax) + (cy - ay) * (by - ay))
+	          / ( (float) pow (bx - ax, 2) + (float) pow (by - ay, 2));
+	auto pointLine = Vec2 (ax + rL * (bx - ax), ay + rL * (by - ay));
+	float rS;
+	if (rL < 0)
+	{
+		rS = 0;
+	}
+	else if (rL > 1)
+	{
+		rS = 1;
+	}
+	else
+	{
+		rS = rL;
+	}
+	auto isOnSegment = rS == (rL) == 0;
+	auto pointSegment = isOnSegment ? pointLine : Vec2 (ax + rS * (bx - ax), ay + rS * (by - ay));
+	return  ProjectionInfo (isOnSegment, pointSegment, pointLine);
+}
 int Extensions::RandInt (int min, int max)
 {
 	return min + (rand() * (int) (max - min) / RAND_MAX);

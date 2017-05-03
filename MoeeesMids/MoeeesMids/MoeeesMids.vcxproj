@@ -162,6 +162,7 @@
     <ClInclude Include="Rembrandt.h" />
     <ClInclude Include="Taliyah.h" />
     <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Viktor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ahri.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="PluginSDK.cpp" />
     <ClCompile Include="Rembrandt.cpp" />
     <ClCompile Include="Taliyah.cpp" />
+    <ClCompile Include="Viktor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

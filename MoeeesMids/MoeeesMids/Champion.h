@@ -28,6 +28,8 @@ public:
 	virtual bool OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition);
 	virtual void OnDelete (IUnit* object);
 	virtual void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
+	virtual void OnDoCast (CastedSpell const& args);
+	virtual void OnOrbwalkPreAttack (IUnit* Target);
 	/*virtual void OnRealSpellCast(CastedSpell const& Args);
 	virtual void OnOrbwalkAttack(IUnit* Source, IUnit* Target);
 	virtual void BeforeAttack(IUnit* Target);

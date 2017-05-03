@@ -59,7 +59,7 @@ Taliyah::Taliyah (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	RideR = MiscMenu->CheckBox ("Automatically Mount on R", true);
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", false);
-	HPBar = Drawings->AddColor ("Change Health Bar", 69, 64, 185, 100);
+	HPBar = Drawings->AddColor ("Change Health Bar", 125, 0, 250, 200);
 	DrawQ = Drawings->CheckBox ("Draw Q", true);
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
@@ -716,30 +716,30 @@ void Taliyah::Drawing()
 	{
 		if (Q->IsReady() && DrawQ->Enabled())
 		{
-			GRender->DrawOutlinedCircle (player->GetPosition(), Vec4 (225, 225, 0, 225), Q->Range());
+			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (W->IsReady() && DrawW->Enabled())
 		{
-			GRender->DrawOutlinedCircle (player->GetPosition(), Vec4 (225, 225, 0, 225), W->Range());
+			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
-			GRender->DrawOutlinedCircle (player->GetPosition(), Vec4 (225, 225, 0, 225), E->Range());
+			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 	else
 	{
 		if (DrawQ->Enabled())
 		{
-			GRender->DrawOutlinedCircle (player->GetPosition(), Vec4 (225, 225, 0, 225), Q->Range());
+			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawW->Enabled())
 		{
-			GRender->DrawOutlinedCircle (player->GetPosition(), Vec4 (225, 225, 0, 225), W->Range());
+			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawE->Enabled())
 		{
-			GRender->DrawOutlinedCircle (player->GetPosition(), Vec4 (225, 225, 0, 225), E->Range());
+			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 }

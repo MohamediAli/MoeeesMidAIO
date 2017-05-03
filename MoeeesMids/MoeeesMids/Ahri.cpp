@@ -525,30 +525,30 @@ void Ahri::Drawing()
 	{
 		if (Q->IsReady() && DrawQ->Enabled())
 		{
-			GRender->DrawOutlinedCircle (Hero->GetPosition(), Vec4 (225, 225, 0, 225), Q->Range());
+			GRender->DrawCircle (Hero->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (W->IsReady() && DrawW->Enabled())
 		{
-			GRender->DrawOutlinedCircle (Hero->GetPosition(), Vec4 (225, 225, 0, 225), W->Range());
+			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
-			GRender->DrawOutlinedCircle (Hero->GetPosition(), Vec4 (225, 225, 0, 225), E->Range());
+			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 	else
 	{
 		if (DrawQ->Enabled())
 		{
-			GRender->DrawOutlinedCircle (Hero->GetPosition(), Vec4 (225, 225, 0, 225), Q->Range());
+			GRender->DrawCircle (Hero->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawW->Enabled())
 		{
-			GRender->DrawOutlinedCircle (Hero->GetPosition(), Vec4 (225, 225, 0, 225), W->Range());
+			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawE->Enabled())
 		{
-			GRender->DrawOutlinedCircle (Hero->GetPosition(), Vec4 (225, 225, 0, 225), E->Range());
+			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 }

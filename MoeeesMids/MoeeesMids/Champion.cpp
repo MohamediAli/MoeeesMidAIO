@@ -61,3 +61,11 @@ void Champion::OnDelete (IUnit* object)
 void Champion::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
 }
+
+void Champion::OnDoCast (CastedSpell const& args)
+{
+}
+
+void Champion::OnOrbwalkPreAttack (IUnit* Target)
+{
+}
