@@ -22,9 +22,13 @@ public:
 	void OnOrbwalkPreAttack (IUnit* Target);
 
 private:
+	IMenuOption* ComboAA;
+	IMenuOption* ComboAAkey;
+	IMenuOption* ComboAALevel;
 	std::vector<std::string> PredType;
 	IMenuOption* PredictionType;
 	IMenu* Prediction;
+	void FleeMode();
 	void WLogic (IUnit* target);
 	FarmLocationVik FindBestLaserLineFarm (bool jg);
 	float LaserDistance (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd, bool onlyIfOnSegment = false, bool squared = false);
@@ -119,7 +123,7 @@ private:
 	Vec3 position;
 
 	IUnit *rFollow, *rObject;
-	IMenuOption *RInterveral, *ultMin, *eMin, *automaticE, *killStealR, *mouseClear, *Laneclear, *drawLC, *HPBarColor;
+	IMenuOption *RInterveral, *ultMin, *eMin, *automaticE, *killStealR, *mouseClear, *Laneclear, *drawLC, *HPBarColor, *Fleemode;
 
 	float lastRMoveTick;
 	IUnit* QMis;

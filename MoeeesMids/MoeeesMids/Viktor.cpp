@@ -49,9 +49,13 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	killStealR = rMenu->CheckBox ("KillSteal with R", true);
 	rInterrupt = rMenu->CheckBox ("Interrupt Spells with R", true);
 	PredType = { "Core", "Future", };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
 	Laneclear = MiscMenu->CheckBox ("Use Spells in Lane Clear", true);
 	mouseClear = MiscMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
+	Fleemode = MiscMenu->AddKey ("Flee Mode Key", 75);
+	ComboAALevel = MiscMenu->AddInteger ("At what level disable AA", 1, 18, 6);
+	ComboAA = MiscMenu->CheckBox ("Disable AA", false);
+	ComboAAkey = MiscMenu->AddKey ("Disable key", 32);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
 	HPBarColor = Drawings->AddColor ("Change Health Bar Color", 125, 0, 250, 200);
 	drawLC = Drawings->CheckBox ("Draw Lance Clear Status", true);
@@ -89,6 +93,43 @@ void Viktor::OnGameUpdate()
 	{
 		LaneClear();
 		JungleClear();
+	}
+	if (GetAsyncKeyState (ComboAAkey->GetInteger()))
+	{
+		auto level = Hero->GetLevel();
+		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
+		{
+			GOrbwalking->SetAttacksAllowed (false);
+		}
+	}
+	if (!GetAsyncKeyState (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
+	{
+		{
+			GOrbwalking->SetAttacksAllowed (true);
+		}
+	}
+	if (GetAsyncKeyState (Fleemode->GetInteger()))
+	{
+		FleeMode();
+	}
+}
+
+void Viktor::FleeMode()
+{
+	GGame->IssueOrder (Hero, kMoveTo, GGame->CursorPosition());
+	if (Q->IsReady())
+	{
+		for (auto minion : GEntityList->GetAllMinions (false, true, true))
+		{
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
+			{
+				if (!minion->IsDead())
+				{
+					Q->CastOnTarget (minion);
+					break;
+				}
+			}
+		}
 	}
 }
 void Viktor::OnRender()
@@ -869,9 +910,11 @@ void Viktor::LaneClear()
 				{
 					if (Extensions::GetMinionType (minion) == kMinionSiege)
 					{
-						if (GDamage->GetSpellDamage (GEntityList->Player(), minion, kSlotQ) >= GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 0.2, 0))
+						if (GDamage->GetSpellDamage (GEntityList->Player(), minion, kSlotQ) + GDamage->GetAutoAttackDamage (Hero, minion, true) >= GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 0.2, 0))
 						{
+							GOrbwalking->SetAttacksAllowed (false);
 							Q->CastOnTarget (minion);
+							GOrbwalking->SetAttacksAllowed (true);
 							break;
 						}
 					}

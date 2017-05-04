@@ -75,7 +75,8 @@ void  LoadEvents()
 	GEventManager->AddEventHandler (kEventOnNewPath, OnNewPath);
 	GEventManager->AddEventHandler (kEventOnDoCast, OnDoCast);
 	GEventManager->AddEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
-	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO</b></font><b><font color=\"#FFFFFF\"> Loaded!</font></b>");
+	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO (Ahri, Orianna, Karthus, Taliyah, Viktor) </b></font><b><font color=\"#FFFFFF\"> Loaded!</font></b>");
+	GGame->PrintChat ("<b><font color=\"#FF0000\"> DELETE Config if you are having errors!</font></b>");
 }
 
 void  UnloadEvents()
