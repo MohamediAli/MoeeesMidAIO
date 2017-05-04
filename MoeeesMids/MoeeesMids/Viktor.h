@@ -35,7 +35,7 @@ private:
 	float qDmg (IUnit* Target, bool stage);
 	float eDmg (IUnit* Target, bool augment);
 	float rDmg (IUnit* Target, int ticks);
-	float DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR);
+	float DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR, int rTicks = 2);
 	//bool myfunctionHP (IUnit* i, IUnit* j);
 	bool jgLaser();
 	bool minionLaser();

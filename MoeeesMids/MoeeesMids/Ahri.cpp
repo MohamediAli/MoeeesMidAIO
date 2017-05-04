@@ -281,11 +281,15 @@ void Ahri::CastQ (IUnit* target)
 
 void Ahri::AntiGapclose (GapCloserSpell const& args)
 {
-	if (E->IsReady() && gapcloseE->Enabled() && args.Source->IsValidTarget() && args.Source->IsEnemy (Hero))
+	if (E->IsReady() && gapcloseE->Enabled() && args.Source->IsValidTarget() && !GEntityList->Player()->IsDead() && args.Source->IsEnemy (GEntityList->Player()))
 	{
-		if (args.Source->IsValidTarget (Hero, E->Range()))
+		if (Extensions::GetDistance (GEntityList->Player(), args.EndPosition) <= 300)
 		{
-			CastE (args.Source);
+			auto delay = (GBuffData->GetEndTime (args.Data) - GGame->Time() - E->GetDelay());
+			GPluginSDK->DelayFunctionCall (delay * 1000, [=]()
+			{
+				E->CastOnPosition (args.EndPosition);
+			});
 		}
 	}
 }
@@ -294,7 +298,7 @@ void Ahri::AntiInterrupt (InterruptibleSpell const& args)
 {
 	if (interruptE->Enabled() && E->IsReady() && Hero->IsValidTarget (args.Source, E->Range()) && args.Source != nullptr && args.Source != Hero && args.Source->IsEnemy (Hero))
 	{
-		CastE (args.Source);
+		E->CastOnTarget (args.Source);
 	}
 }
 

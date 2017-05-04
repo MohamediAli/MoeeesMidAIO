@@ -37,7 +37,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	interrupterW = wMenu->CheckBox ("W on Interruptable Spells", true);
 	ComboE = eMenu->CheckBox ("Use E in Combo", true);
 	killStealE = eMenu->CheckBox ("Kill Steal with E", true);
-	automaticE = eMenu->CheckBox ("Automatic Harass with E", true);
+	automaticE = eMenu->CheckBox ("Automatic Harass with E", false);
 	harassE = eMenu->CheckBox ("Harass with E", true);
 	harassEMana = eMenu->AddFloat (":: Only Harras E if Mana >", 0, 100, 40);
 	laneClearE = eMenu->CheckBox ("Wave Clear with E", true);
@@ -46,7 +46,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	ComboR = rMenu->CheckBox ("Use R", true);
 	ultMin = rMenu->AddInteger ("Ult if can hit more than: ", 1, 5, 3);
 	RInterveral = rMenu->AddInteger ("Interval to Follow R in 100ms", 1, 10, 5);
-	killStealR = rMenu->CheckBox ("KillSteal with R", true);
+	killStealR = rMenu->CheckBox ("Only ult if killable", true);
 	rInterrupt = rMenu->CheckBox ("Interrupt Spells with R", true);
 	PredType = { "Core", "Future", };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
@@ -77,6 +77,7 @@ void Viktor::OnGameUpdate()
 	}
 	KillSteal();
 	Automatic();
+	autoE();
 	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused() || Hero->IsDead())
 	{
 		return;
@@ -612,10 +613,10 @@ float Viktor::rDmg (IUnit* Target, int ticks)
 	return GDamage->CalcMagicDamage (GEntityList->Player(), Target, init + tick*ticks);
 }
 
-float Viktor::DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR)
+float Viktor::DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR, int rTicks)
 {
 	auto total = 0.f;
-	auto ticks = 2; //Max ticks is 3 anyway zzz
+	auto ticks = rTicks;
 	auto inQRange = checkQ && Extensions::GetDistance (GEntityList->Player(), target) <= GOrbwalking->GetAutoAttackRange (GEntityList->Player()) || checkQ == false;
 	if (dpsQ && Q->IsReady() && inQRange)
 	{
@@ -743,7 +744,8 @@ void Viktor::Combo()
 	auto q = ComboQ->Enabled() && Q->IsReady();
 	auto w = ComboW->Enabled() && W->IsReady();
 	auto e = ComboE->Enabled() && E->IsReady();
-	auto r = ComboR->Enabled() && R->IsReady();
+	auto rKS = ComboR->Enabled() && R->IsReady() && killStealR->Enabled();
+	auto r = ComboR->Enabled() && R->IsReady() && !killStealR->Enabled();
 	auto qTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	auto eTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1225);
 	auto rTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, R->Range());
@@ -751,9 +753,9 @@ void Viktor::Combo()
 	{
 		eTarget = qTarget;
 	}
-	if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead() && killStealR->Enabled() && r)
+	if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead() && rKS)
 	{
-		if (DPS (rTarget, true, false, true, false) < rTarget->GetHealth() && DPS (rTarget, true, false, true, true) > rTarget->GetHealth())
+		if (DPS (rTarget, true, false, true, false) < rTarget->GetHealth() && DPS (rTarget, true, false, true, true, 3) > rTarget->GetHealth())
 		{
 			R->CastOnPosition (rTarget->ServerPosition());
 			return;
