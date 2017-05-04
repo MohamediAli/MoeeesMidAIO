@@ -122,11 +122,11 @@ void Karthus::automatic()
 {
 	if (E->IsReady() && Hero->HasBuff ("KarthusDefile") && (EAutoOff->Enabled() || GOrbwalking->GetOrbwalkingMode() == kModeCombo))
 	{
-		if (Extensions::CountMinionsInTargetRange (Hero->GetPosition(), E->Range()) > 2 && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
+		if (Extensions::CountMinionsInTargetRange (Hero->ServerPosition(), E->Range()) > 2 && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear))
 		{
 			return;
 		}
-		if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
+		if (Extensions::EnemiesInRange (Hero->ServerPosition(), E->Range()) && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
 		{
 			return;
 		}
@@ -157,12 +157,12 @@ void Karthus::eToggle()
 
 float Karthus::qWidthChange (IUnit* target)
 {
-	return 	std::max (30.f, (1.f - (Extensions::GetDistance (Hero, target->GetPosition())) / Q->Range()) * 160.f);
+	return 	std::max (30.f, (1.f - (Extensions::GetDistance (Hero, target->ServerPosition())) / Q->Range()) * 160.f);
 }
 
 float Karthus::wWidthChange (IUnit* target)
 {
-	return 	std::max (70.f, (1.f - (Extensions::GetDistance (Hero, target->GetPosition())) / W->Range()) * 160.f);
+	return 	std::max (70.f, (1.f - (Extensions::GetDistance (Hero, target->ServerPosition())) / W->Range()) * 160.f);
 }
 
 void Karthus::zigzag()   //credits sn karthus
@@ -173,7 +173,7 @@ void Karthus::zigzag()   //credits sn karthus
 	}
 	if (czx < czx2)
 	{
-		if (czx2 >= QTarget->GetPosition().x)
+		if (czx2 >= QTarget->ServerPosition().x)
 		{
 			cz = true;
 		}
@@ -186,12 +186,12 @@ void Karthus::zigzag()   //credits sn karthus
 	{
 		cz = false;
 		czx = czx2;
-		czx2 = (QTarget->GetPosition().x);
+		czx2 = (QTarget->ServerPosition().x);
 		return;
 	}
 	else
 	{
-		if (czx2 <= QTarget->GetPosition().x)
+		if (czx2 <= QTarget->ServerPosition().x)
 		{
 			cz = true;
 		}
@@ -201,10 +201,10 @@ void Karthus::zigzag()   //credits sn karthus
 		}
 	}
 	czx = czx2;
-	czx2 = QTarget->GetPosition().x;
+	czx2 = QTarget->ServerPosition().x;
 	if (czy < czy2)
 	{
-		if (czy2 >= QTarget->GetPosition().z)
+		if (czy2 >= QTarget->ServerPosition().z)
 		{
 			cz = true;
 		}
@@ -219,7 +219,7 @@ void Karthus::zigzag()   //credits sn karthus
 	}
 	else
 	{
-		if (czy2 <= QTarget->GetPosition().z)
+		if (czy2 <= QTarget->ServerPosition().z)
 		{
 			cz = true;
 		}
@@ -229,7 +229,7 @@ void Karthus::zigzag()   //credits sn karthus
 		}
 	}
 	czy = czy2;
-	czy2 = QTarget->GetPosition().z;
+	czy2 = QTarget->ServerPosition().z;
 }
 
 Vec3 Karthus::PredPos (IUnit* Hero, float Delay)    //credits sn karthus
@@ -280,7 +280,7 @@ float Karthus::WMaxRange()
 
 bool Karthus::IsInWRange (Vec2 position)
 {
-	return Extensions::GetDistanceSqr (GEntityList->Player()->GetPosition().To2D(), position) < WMaxRangeSqr();
+	return Extensions::GetDistanceSqr (GEntityList->Player()->ServerPosition().To2D(), position) < WMaxRangeSqr();
 }
 
 //Divine Nader[Sl]
@@ -302,7 +302,7 @@ void  Karthus::CastW()
 		}
 		else
 		{
-			auto myPos = Hero->GetPosition();
+			auto myPos = Hero->ServerPosition();
 			auto myPos2D = myPos.To2D();
 			auto targetPos = futurePos;
 			auto targetPos2D = targetPos.To2D();
@@ -346,7 +346,7 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 				// dont push is wall
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, Hero->GetPosition()) > Q->Range())
+			if (Extensions::Dist2D (posFor2D, Hero->ServerPosition()) > Q->Range())
 			{
 				// dont push to far away to cast;
 				continue;
@@ -370,13 +370,12 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 
 void Karthus::Combo()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || target->IsDead() || !Extensions::Validate (QTarget) || ! (QTarget->IsVisible()))
 	{
 		return;
 	}
-	if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()))
+	if (ComboQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()))
 	{
 		//	Q->SetOverrideRadius (qWidthChange (target));
 		if (!cz)
@@ -392,7 +391,7 @@ void Karthus::Combo()
 	{
 		CastW();
 	}
-	if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && ComboE->Enabled())
+	if (Extensions::EnemiesInRange (Hero->ServerPosition(), E->Range()) && ComboE->Enabled())
 	{
 		eToggle();
 	}
@@ -400,13 +399,12 @@ void Karthus::Combo()
 
 void Karthus::Harass()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (!Extensions::Validate (target) || !target->IsHero() || target->IsDead() || !Extensions::Validate (QTarget) || ! (QTarget->IsVisible()))
 	{
 		return;
 	}
-	if (harassQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()) && Hero->ManaPercent() >= harassQMana->GetFloat())
+	if (harassQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()) && Hero->ManaPercent() >= harassQMana->GetFloat())
 	{
 		//Q->SetOverrideRadius(qWidthChange(target));
 		if (!cz)
@@ -414,12 +412,12 @@ void Karthus::Harass()
 			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
 		}
 	}
-	if (harassW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()))
+	if (harassW->Enabled() && W->IsReady() && Hero->IsValidTarget (target, W->Range()))
 	{
 		W->SetOverrideRadius (wWidthChange (target));
 		W->CastOnTarget (target);
 	}
-	if (Extensions::EnemiesInRange (Hero->GetPosition(), E->Range()) && harassE->Enabled() && Hero->ManaPercent() >= harassEMana->GetFloat())
+	if (Extensions::EnemiesInRange (Hero->ServerPosition(), E->Range()) && harassE->Enabled() && Hero->ManaPercent() >= harassEMana->GetFloat())
 	{
 		eToggle();
 	}
@@ -504,7 +502,7 @@ void Karthus::dmgdraw()
 		//Vec2 pos;
 		static Vec2 Resoution = GRender->ScreenSize();
 		static Vec2 ScreenCenter = Vec2 (Resoution.x / 3.0f, (Resoution.y / 4.7f));
-		//if (GGame->Projection(Hero->GetPosition(), &pos)) {
+		//if (GGame->Projection(Hero->ServerPosition(), &pos)) {
 		static auto message = GRender->CreateFontW ("Impact", 60.f, kFontWeightNormal);
 		message->SetColor (Vec4 (255, 0, 0, 255));
 		message->SetOutline (true);
@@ -517,8 +515,7 @@ void Karthus::dmgdraw()
 
 void Karthus::LaneClear()
 {
-	auto player = Hero;
-	if (Extensions::CountMinionsInTargetRange (player->GetPosition(), E->Range()) > 2 && E->IsReady() && laneClearE->Enabled() && Hero->ManaPercent() >= laneClearEMana->GetFloat())
+	if (Extensions::CountMinionsInTargetRange (Hero->ServerPosition(), E->Range()) > 2 && E->IsReady() && laneClearE->Enabled() && Hero->ManaPercent() >= laneClearEMana->GetFloat())
 	{
 		eToggle();
 	}
@@ -527,7 +524,7 @@ void Karthus::LaneClear()
 	{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 		{
-			if (Extensions::Validate (minion) && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (player, minion->GetPosition()) <= 1000)
+			if (Extensions::Validate (minion) && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->ServerPosition()) <= 1000)
 			{
 				if (!minion->IsDead())
 				{
@@ -535,10 +532,10 @@ void Karthus::LaneClear()
 					auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 1000 + GGame->Latency(), 0);
 					if (hp < qDmg (minion) && hp > health - hp * 2)
 					{
-						Q->CastOnPosition (minion->GetPosition());
+						Q->CastOnPosition (minion->ServerPosition());
 						return;
 					}
-					Q->CastOnPosition (FarmQ (minion->GetPosition()));
+					Q->CastOnPosition (FarmQ (minion->ServerPosition()));
 					return;
 				}
 			}
@@ -550,7 +547,6 @@ void Karthus::LaneClear()
 void Karthus::LastHit()
 {
 	Q->SetOverrideRadius (160.f);
-	auto player = Hero;
 	if (Q->IsReady())
 	{
 		std::vector<IUnit*> allMinions;
@@ -559,7 +555,7 @@ void Karthus::LastHit()
 		{
 			for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
-				if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) <= Q->Range())
+				if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
 				{
 					if (!minion->IsDead())
 					{
@@ -572,7 +568,7 @@ void Karthus::LastHit()
 		{
 			for (auto minion : GEntityList->GetAllMinions (false, true, true))
 			{
-				if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) <= Q->Range() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) > Hero->AttackRange())
+				if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) > Hero->AttackRange())
 				{
 					if (!minion->IsDead())
 					{
@@ -583,7 +579,7 @@ void Karthus::LastHit()
 		}
 		for (auto minion : GEntityList->GetAllMinions (false, true, false))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) <= Q->Range())
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
 			{
 				if (!minion->IsDead())
 				{
@@ -633,35 +629,34 @@ void Karthus::LastHit()
 
 void Karthus::Drawing()
 {
-	auto player = Hero;
 	if (DrawReady->Enabled())
 	{
 		if (Q->IsReady() && DrawQ->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 255, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), Q->Range(), Vec4 (0, 255, 0, 225));
 		}
 		if (W->IsReady() && DrawW->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 255, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 255, 0, 225));
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 255, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 255, 0, 225));
 		}
 	}
 	else
 	{
 		if (DrawQ->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 255, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), Q->Range(), Vec4 (0, 255, 0, 225));
 		}
 		if (DrawW->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 255, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 255, 0, 225));
 		}
 		if (DrawE->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 255, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 255, 0, 225));
 		}
 	}
 }

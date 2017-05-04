@@ -20,13 +20,14 @@ public:
 	bool onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
 	bool OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition);
 	void AntiGapclose (GapCloserSpell const& args);
-	std::vector<std::string> PredType;
-	std::vector<std::string> ballAnimation;
-	std::vector<std::string> ballColor;
 
 
 
 private:
+	std::vector<std::string> PredType;
+	std::vector<std::string> ballAnimation;
+	std::vector<std::string> ballColor;
+
 	void eAssist();
 	IUnit* BallMissile;
 	bool PriorityHit();

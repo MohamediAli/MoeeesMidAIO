@@ -22,6 +22,9 @@ public:
 	void OnOrbwalkPreAttack (IUnit* Target);
 
 private:
+	std::vector<std::string> PredType;
+	IMenuOption* PredictionType;
+	IMenu* Prediction;
 	void WLogic (IUnit* target);
 	FarmLocationVik FindBestLaserLineFarm (bool jg);
 	float LaserDistance (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd, bool onlyIfOnSegment = false, bool squared = false);

@@ -133,9 +133,9 @@ Vec3 Taliyah::CalculateReturnPos() //credits 2 my nigga sebby
 			auto misToTarget = Extensions::GetDistance (target, finishPosition);
 			if (misToTarget < Q->Range() && misToTarget > 50)
 			{
-				auto cursorToTarget = Extensions::GetDistance (target, (Hero->GetPosition().Extend (GGame->CursorPosition(), 100)));
-				auto ext = finishPosition.Extend (target->GetPosition(), cursorToTarget + misToTarget);
-				if (Extensions::GetDistance (ext, Hero->GetPosition()) < 1000 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
+				auto cursorToTarget = Extensions::GetDistance (target, (Hero->ServerPosition().Extend (GGame->CursorPosition(), 100)));
+				auto ext = finishPosition.Extend (target->ServerPosition(), cursorToTarget + misToTarget);
+				if (Extensions::GetDistance (ext, Hero->ServerPosition()) < 1000 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
 				{
 					return ext;
 				}
@@ -155,7 +155,7 @@ void Taliyah::zigzag()   //credits sn karthus
 	}
 	if (czx < czx2)
 	{
-		if (czx2 >= QTarget->GetPosition().x)
+		if (czx2 >= QTarget->ServerPosition().x)
 		{
 			cz = true;
 		}
@@ -168,12 +168,12 @@ void Taliyah::zigzag()   //credits sn karthus
 	{
 		cz = false;
 		czx = czx2;
-		czx2 = (QTarget->GetPosition().x);
+		czx2 = (QTarget->ServerPosition().x);
 		return;
 	}
 	else
 	{
-		if (czx2 <= QTarget->GetPosition().x)
+		if (czx2 <= QTarget->ServerPosition().x)
 		{
 			cz = true;
 		}
@@ -183,10 +183,10 @@ void Taliyah::zigzag()   //credits sn karthus
 		}
 	}
 	czx = czx2;
-	czx2 = QTarget->GetPosition().x;
+	czx2 = QTarget->ServerPosition().x;
 	if (czy < czy2)
 	{
-		if (czy2 >= QTarget->GetPosition().z)
+		if (czy2 >= QTarget->ServerPosition().z)
 		{
 			cz = true;
 		}
@@ -201,7 +201,7 @@ void Taliyah::zigzag()   //credits sn karthus
 	}
 	else
 	{
-		if (czy2 <= QTarget->GetPosition().z)
+		if (czy2 <= QTarget->ServerPosition().z)
 		{
 			cz = true;
 		}
@@ -211,7 +211,7 @@ void Taliyah::zigzag()   //credits sn karthus
 		}
 	}
 	czy = czy2;
-	czy2 = QTarget->GetPosition().z;
+	czy2 = QTarget->ServerPosition().z;
 }
 
 Vec3 Taliyah::PredPos (IUnit* Hero, float Delay)  //credits sn karthus
@@ -248,7 +248,7 @@ void  Taliyah::AntiGapclose (GapCloserSpell const& args)
 {
 	if (E->IsReady() && gapCloserE->Enabled() && Extensions::GetDistance (GEntityList->Player(), args.Source) <150 && args.Source->IsValidTarget() && args.Source->IsEnemy (Hero))
 	{
-		E->CastOnPosition (args.Source->GetPosition());
+		E->CastOnPosition (args.Source->ServerPosition());
 	}
 	if (W->IsReady() && gapCloserW->Enabled() && Extensions::GetDistance (GEntityList->Player(), args.Source) <150 && args.Source->IsEnemy (Hero))
 	{
@@ -263,13 +263,12 @@ void  Taliyah::AntiGapclose (GapCloserSpell const& args)
 
 void Taliyah::OnInterrupt (InterruptibleSpell const& args)
 {
-	auto player = Hero;
 	if (args.Source == nullptr || args.Source->IsDead()) { return; }
-	if (W->IsReady() && interrupterW->Enabled() && player->IsValidTarget (args.Source, W->Range()) && args.Source != nullptr && args.Source != Hero && args.Source->IsEnemy (Hero))
+	if (W->IsReady() && interrupterW->Enabled() && Hero->IsValidTarget (args.Source, W->Range()) && args.Source != nullptr && args.Source != Hero && args.Source->IsEnemy (Hero))
 	{
 		if (!cz)
 		{
-			W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
+			W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
 		}
 	}
 }
@@ -313,7 +312,7 @@ void Taliyah::OnDelete (IUnit* object)
 			qFive = true;
 			/*	GPluginSDK->DelayFunctionCall(300,
 			[]() { for (auto ground : GEntityList->GetAllUnits())
-			if ((Hero->GetPosition() - ground->GetPosition()).Length() < 412.5f && strcmp(ground->GetObjectName(), "Taliyah_Base_Q_aoe_bright.troy") == 0 && ground->IsValidObject())
+			if ((Hero->ServerPosition() - ground->ServerPosition()).Length() < 412.5f && strcmp(ground->GetObjectName(), "Taliyah_Base_Q_aoe_bright.troy") == 0 && ground->IsValidObject())
 
 			}); */
 		}
@@ -335,30 +334,29 @@ void Taliyah::CastE()
 	}
 	if (ComboE->Enabled())
 	{
-		E->CastOnPosition (target->GetPosition());
+		E->CastOnPosition (target->ServerPosition());
 	}
 }
 
 void Taliyah::Combo()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
 	if (target == nullptr || !target->IsHero() || !Extensions::Validate (target) || !target->IsVisible())
 	{
 		return;
 	}
-	if (ComboW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()))
+	if (ComboW->Enabled() && W->IsReady() && Hero->IsValidTarget (target, W->Range()))
 	{
 		if (EonlyW->Enabled())
 		{
-			if (E->IsReady() && (player->GetPosition() - target->GetPosition()).Length() > 420)
+			if (E->IsReady() && (Hero->ServerPosition() - target->ServerPosition()).Length() > 420)
 			{
 				if (!cz)
 				{
-					W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
+					W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
 				}
 			}
-			if (E->IsReady() && W->IsReady() && Extensions::GetDistance (player, target) < 420)
+			if (E->IsReady() && W->IsReady() && Extensions::GetDistance (Hero, target) < 420)
 			{
 				if (!cz)
 				{
@@ -368,14 +366,14 @@ void Taliyah::Combo()
 		}
 		if (eOnGround)
 		{
-			if ( (player->GetPosition() - target->GetPosition()).Length() > 420)
+			if ( (Hero->ServerPosition() - target->ServerPosition()).Length() > 420)
 			{
 				if (!cz)
 				{
-					W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
+					W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
 				}
 			}
-			if ( (player->GetPosition() - target->GetPosition()).Length() < 420)
+			if ( (Hero->ServerPosition() - target->ServerPosition()).Length() < 420)
 			{
 				if (!cz)
 				{
@@ -387,16 +385,16 @@ void Taliyah::Combo()
 		{
 			if (!cz)
 			{
-				W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), player->GetPosition());
+				W->CastFrom (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
 			}
 		}
 	}
-	if (ComboE->Enabled() && E->IsReady() && !W->IsReady() && player->IsValidTarget (target, E->Range()))
+	if (ComboE->Enabled() && E->IsReady() && !W->IsReady() && Hero->IsValidTarget (target, E->Range()))
 	{
 		//GPluginSDK->DelayFunctionCall(400, []() { CastE(); });
 		CastE();
 	}
-	if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range() + 50))
+	if (ComboQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range() + 50))
 	{
 		if (comboFullQ->Enabled() && qFive == true)
 		{
@@ -415,13 +413,12 @@ void Taliyah::Combo()
 
 void Taliyah::Harass()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
-	if (harassE->Enabled() && E->IsReady() && player->IsValidTarget (target, E->Range()) && player->ManaPercent() >= harassEMana->GetFloat())
+	if (harassE->Enabled() && E->IsReady() && Hero->IsValidTarget (target, E->Range()) && Hero->ManaPercent() >= harassEMana->GetFloat())
 	{
 		E->CastOnTarget (target);
 	}
-	if (harassQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range() + 50) && player->ManaPercent() >= harassQMana->GetFloat())
+	if (harassQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range() + 50) && Hero->ManaPercent() >= harassQMana->GetFloat())
 	{
 		if (harassFullQ->Enabled() && qFive == true)
 		{
@@ -436,52 +433,50 @@ void Taliyah::Harass()
 
 void Taliyah::LaneClear()
 {
-	auto player = Hero;
 	for (auto minions : GEntityList->GetAllMinions (false, true, false))
 	{
-		if (laneClearQ->Enabled() && Q->IsReady() && Hero->ManaPercent() > laneClearQMana->GetFloat() && player->IsValidTarget (minions, W->Range()))
+		if (laneClearQ->Enabled() && Q->IsReady() && Hero->ManaPercent() > laneClearQMana->GetFloat() && Hero->IsValidTarget (minions, W->Range()))
 		{
 			if (laneFullQ->Enabled() && qFive == true)
 			{
-				Q->CastOnPosition (minions->GetPosition());
+				Q->CastOnPosition (minions->ServerPosition());
 			}
 			if (!laneFullQ->Enabled())
 			{
-				Q->CastOnPosition (minions->GetPosition());
+				Q->CastOnPosition (minions->ServerPosition());
 			}
 		}
-		if (laneClearE->Enabled() && Hero->ManaPercent() > laneClearEMana->GetFloat() && E->IsReady() && player->IsValidTarget (minions, E->Range()))
+		if (laneClearE->Enabled() && Hero->ManaPercent() > laneClearEMana->GetFloat() && E->IsReady() && Hero->IsValidTarget (minions, E->Range()))
 		{
 			E->CastOnUnit (minions);
 		}
-		if (laneClearW->Enabled() && Hero->ManaPercent() > laneClearWMana->GetFloat() && W->IsReady() && player->IsValidTarget (minions, W->Range()))
+		if (laneClearW->Enabled() && Hero->ManaPercent() > laneClearWMana->GetFloat() && W->IsReady() && Hero->IsValidTarget (minions, W->Range()))
 		{
-			W->CastFrom (minions->GetPosition(), player->GetPosition());
+			W->CastFrom (minions->ServerPosition(), Hero->ServerPosition());
 		}
 	}
 }
 
 void Taliyah::JungleClear()
 {
-	auto player = Hero;
 	for (auto minions : GEntityList->GetAllMinions (false, false, true))
 	{
-		if (JungleClearQ->Enabled() && Q->IsReady() && Hero->ManaPercent() > JungleClearQMana->GetFloat() && player->IsValidTarget (minions, W->Range()))
+		if (JungleClearQ->Enabled() && Q->IsReady() && Hero->ManaPercent() > JungleClearQMana->GetFloat() && Hero->IsValidTarget (minions, W->Range()))
 		{
 			if (jungleFullQ->Enabled() && qFive == true)
 			{
-				Q->CastOnPosition (minions->GetPosition());
+				Q->CastOnPosition (minions->ServerPosition());
 			}
 			if (!jungleFullQ->Enabled())
 			{
-				Q->CastOnPosition (minions->GetPosition());
+				Q->CastOnPosition (minions->ServerPosition());
 			}
 		}
-		if (JungleClearE->Enabled() && Hero->ManaPercent() > JungleClearEMana->GetFloat() && E->IsReady() && player->IsValidTarget (minions, W->Range()))
+		if (JungleClearE->Enabled() && Hero->ManaPercent() > JungleClearEMana->GetFloat() && E->IsReady() && Hero->IsValidTarget (minions, W->Range()))
 		{
 			E->CastOnUnit (minions);
 		}
-		if (JungleClearW->Enabled() && Hero->ManaPercent() > JungleClearWMana->GetFloat() && W->IsReady() && player->IsValidTarget (minions, W->Range()))
+		if (JungleClearW->Enabled() && Hero->ManaPercent() > JungleClearWMana->GetFloat() && W->IsReady() && Hero->IsValidTarget (minions, W->Range()))
 		{
 			W->CastOnUnit (minions);
 		}
@@ -499,7 +494,7 @@ void Taliyah::autoE()
 				E->RunPrediction (target, false, kCollidesWithNothing, &outputfam);
 				if (outputfam.HitChance == kHitChanceDashing)
 				{
-					E->CastOnPosition (target->GetPosition());
+					E->CastOnPosition (target->ServerPosition());
 				}
 			}
 		}
@@ -507,16 +502,15 @@ void Taliyah::autoE()
 
 void Taliyah::Automatic()
 {
-	auto player = Hero;
 	for (auto target : GEntityList->GetAllHeros (false, true))
 	{
-		if (player->IsValidTarget (target, W->Range()) && target != nullptr && !target->IsDead())
+		if (Hero->IsValidTarget (target, W->Range()) && target != nullptr && !target->IsDead())
 		{
 			AdvPredictionOutput prediction_output;
 			W->RunPrediction (target, true, kCollidesWithNothing, &prediction_output);
 			if (prediction_output.HitChance == kHitChanceImmobile)
 			{
-				W->CastFrom (prediction_output.CastPosition, player->GetPosition());
+				W->CastFrom (prediction_output.CastPosition, Hero->ServerPosition());
 			}
 		}
 	}
@@ -689,21 +683,20 @@ void Taliyah::dmgdraw()
 
 void Taliyah::KillSteal()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
 	if (target == nullptr || !target->IsHero())
 	{
 		return;
 	}
-	if (killStealE->Enabled() && E->IsReady() && player->IsValidTarget (target, E->Range()) && eDmg (target) > target->GetHealth())
+	if (killStealE->Enabled() && E->IsReady() && Hero->IsValidTarget (target, E->Range()) && eDmg (target) > target->GetHealth())
 	{
 		E->CastOnTarget (target, kHitChanceVeryHigh);
 	}
-	if (killStealQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()) && qDmg (target) > target->GetHealth())
+	if (killStealQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()) && qDmg (target) > target->GetHealth())
 	{
 		Q->CastOnTarget (target, kHitChanceVeryHigh);
 	}
-	if (killStealW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()) && wDmg (target) > target->GetHealth())
+	if (killStealW->Enabled() && W->IsReady() && Hero->IsValidTarget (target, W->Range()) && wDmg (target) > target->GetHealth())
 	{
 		W->CastOnTarget (target, kHitChanceHigh);
 	}
@@ -711,35 +704,34 @@ void Taliyah::KillSteal()
 
 void Taliyah::Drawing()
 {
-	auto player = Hero;
 	if (DrawReady->Enabled())
 	{
 		if (Q->IsReady() && DrawQ->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (W->IsReady() && DrawW->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 	else
 	{
 		if (DrawQ->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), Q->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawW->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
 		}
 		if (DrawE->Enabled())
 		{
-			GRender->DrawCircle (player->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
 		}
 	}
 }

@@ -292,8 +292,7 @@ void Ahri::AntiGapclose (GapCloserSpell const& args)
 
 void Ahri::AntiInterrupt (InterruptibleSpell const& args)
 {
-	auto player = Hero;
-	if (interruptE->Enabled() && E->IsReady() && player->IsValidTarget (args.Source, E->Range()) && args.Source != nullptr && args.Source != Hero && args.Source->IsEnemy (Hero))
+	if (interruptE->Enabled() && E->IsReady() && Hero->IsValidTarget (args.Source, E->Range()) && args.Source != nullptr && args.Source != Hero && args.Source->IsEnemy (Hero))
 	{
 		CastE (args.Source);
 	}
@@ -372,20 +371,18 @@ void Ahri::dmgdraw()
 
 void Ahri::Combo()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	if (target == nullptr || !target->IsHero())
 	{
 		return;
 	}
-	if (ComboW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()) && Hero->GetMana() > 100 + W->ManaCost())
+	if (ComboW->Enabled() && W->IsReady() && Hero->IsValidTarget (target, W->Range()) && Hero->GetMana() > 100 + W->ManaCost())
 	{
 		W->CastOnPlayer();
 	}
 }
 void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && target == Source)
 	{
@@ -393,28 +390,27 @@ void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 		{
 			return;
 		}
-		if (ComboE->Enabled() && E->IsReady() && player->IsValidTarget (target, E->Range()) && Hero->GetMana() > 100 + E->ManaCost())
+		if (ComboE->Enabled() && E->IsReady() && Hero->IsValidTarget (target, E->Range()) && Hero->GetMana() > 100 + E->ManaCost())
 		{
 			CastE (target);
 		}
-		if (ComboQ->Enabled() && Q->IsReady() && player->IsValidTarget (target, Q->Range()))
+		if (ComboQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()))
 		{
 			CastQ (target);
 		}
 	}
 	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed && target == Source)
 	{
-		auto player = Hero;
 		auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 		if (target == nullptr || !target->IsHero())
 		{
 			return;
 		}
-		if (E->IsReady() && HarassE->Enabled() && player->IsValidTarget (target, E->Range()) && Hero->GetMana() > 100 + E->ManaCost())
+		if (E->IsReady() && HarassE->Enabled() && Hero->IsValidTarget (target, E->Range()) && Hero->GetMana() > 100 + E->ManaCost())
 		{
 			CastE (target);
 		}
-		if (Q->IsReady() && HarassQ->Enabled() && player->IsValidTarget (target, Q->Range()) && Hero->GetMana() > 100 + Q->ManaCost())
+		if (Q->IsReady() && HarassQ->Enabled() && Hero->IsValidTarget (target, Q->Range()) && Hero->GetMana() > 100 + Q->ManaCost())
 		{
 			CastQ (target);
 		}
@@ -423,13 +419,12 @@ void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 
 void Ahri::Harass()
 {
-	auto player = Hero;
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	if (target == nullptr || !target->IsHero())
 	{
 		return;
 	}
-	if (HarassW->Enabled() && HarassW->Enabled() && W->IsReady() && player->IsValidTarget (target, W->Range()) && Hero->GetMana() > 100 + W->ManaCost())
+	if (HarassW->Enabled() && HarassW->Enabled() && W->IsReady() && Hero->IsValidTarget (target, W->Range()) && Hero->GetMana() > 100 + W->ManaCost())
 	{
 		W->CastOnPlayer();
 	}

@@ -1,5 +1,6 @@
 #include "Viktor.h"
 #include "Rembrandt.h"
+#include "Ahri.h"
 #define M_PI 3.14159265358979323846
 
 Viktor::~Viktor()
@@ -22,8 +23,9 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	wMenu = Parent->AddMenu ("W Settings");
 	eMenu = Parent->AddMenu ("E Settings");
 	rMenu = Parent->AddMenu ("R Settings");
-	Drawings = Parent->AddMenu ("All Drawings");
+	Prediction = Parent->AddMenu ("Prediction");
 	MiscMenu = Parent->AddMenu ("Miscs");
+	Drawings = Parent->AddMenu ("All Drawings");
 	ComboQ = qMenu->CheckBox ("Use Q in Combo", true);
 	harassQ = qMenu->CheckBox ("Harass with Q", true);
 	harassQMana = qMenu->AddFloat (":: Only Harras Q if Mana >", 0, 100, 50);
@@ -46,6 +48,8 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	RInterveral = rMenu->AddInteger ("Interval to Follow R in 100ms", 1, 10, 5);
 	killStealR = rMenu->CheckBox ("KillSteal with R", true);
 	rInterrupt = rMenu->CheckBox ("Interrupt Spells with R", true);
+	PredType = { "Core", "Future", };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 	Laneclear = MiscMenu->CheckBox ("Use Spells in Lane Clear", true);
 	mouseClear = MiscMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
@@ -60,7 +64,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 void Viktor::OnGameUpdate()
 {
-	position = GEntityList->Player()->GetPosition();
+	position = GEntityList->Player()->ServerPosition();
 	srand (time (NULL));
 	rFollow = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1300);
 	if (Extensions::Validate (rFollow) && rFollow->IsHero() && !rFollow->IsDead() && rFollow->IsVisible())
@@ -154,12 +158,12 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 	{
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) <= 1225)
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= 1225)
 			{
 				if (!minion->IsDead())
 				{
 					allMinions.push_back (minion);
-					if ( (minion->GetPosition().To2D() - GEntityList->Player()->GetPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
+					if ( (minion->ServerPosition().To2D() - GEntityList->Player()->ServerPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
 					{
 						sourceMinion.push_back (minion);
 					}
@@ -171,12 +175,12 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 	{
 		for (auto minion : GEntityList->GetAllMinions (false, false, true))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsJungleCreep() && Extensions::GetDistance (GEntityList->Player(), minion->GetPosition()) <= 1225)
+			if (minion != nullptr && !minion->IsWard() && minion->IsJungleCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= 1225)
 			{
 				if (!minion->IsDead())
 				{
 					allMinions.push_back (minion);
-					if ( (minion->GetPosition().To2D() - GEntityList->Player()->GetPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
+					if ( (minion->ServerPosition().To2D() - GEntityList->Player()->ServerPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
 					{
 						sourceMinion.push_back (minion);
 					}
@@ -188,7 +192,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 	std::vector<Vec2>  posibleSources;
 	for (auto minionsOne : allMinions)
 	{
-		minionSources.push_back (minionsOne->GetPosition().To2D());
+		minionSources.push_back (minionsOne->ServerPosition().To2D());
 	}
 	posibleSources.insert (posibleSources.end(), minionSources.begin(), minionSources.end());
 	int maximum = posibleSources.size();
@@ -204,7 +208,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 	}
 	for (auto minionsTwo : sourceMinion)
 	{
-		auto startSource = minionsTwo->GetPosition().To2D();
+		auto startSource = minionsTwo->ServerPosition().To2D();
 		for (auto source : posibleSources)
 		{
 			if (Extensions::GetDistanceSqr (source, startSource) <= 700 * 700)
@@ -242,11 +246,11 @@ void Viktor::OnInterrupt (InterruptibleSpell const& args)
 	if (args.Source == nullptr || args.Source->IsDead() || !args.Source->IsHero() || !args.Source->IsEnemy (GEntityList->Player())) { return; }
 	if (R->IsReady() && rInterrupt->Enabled() && Hero->IsValidTarget (args.Source, R->Range()) && args.Source != GEntityList->Player() && args.Source->IsEnemy (GEntityList->Player()) && args.DangerLevel > kMediumDanger)
 	{
-		R->CastOnPosition (args.Source->GetPosition());
+		R->CastOnPosition (args.Source->ServerPosition());
 	}
 	if (W->IsReady() && interrupterW->Enabled() && Hero->IsValidTarget (args.Source, W->Range()) && args.Source != GEntityList->Player() && args.Source->IsEnemy (GEntityList->Player()) && args.DangerLevel >= kMediumDanger)
 	{
-		W->CastOnPosition (args.Source->GetPosition());
+		W->CastOnPosition (args.Source->ServerPosition());
 	}
 }
 
@@ -275,9 +279,9 @@ void Viktor::WLogic (IUnit* target)
 {
 	for (auto enemies : GEntityList->GetAllHeros (false, true))
 	{
-		if (Extensions::Validate (enemies) && !GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") && enemies->IsVisible() && !enemies->IsDead() && enemies->IsHero() && Extensions::GetDistance (Hero, enemies->GetPosition()) <= W->Radius() * 1.1f)
+		if (Extensions::Validate (enemies) && !GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") && enemies->IsVisible() && !enemies->IsDead() && enemies->IsHero() && Extensions::GetDistance (Hero, enemies->ServerPosition()) <= W->Radius() * 1.1f)
 		{
-			W->CastOnPosition (enemies->GetPosition());
+			W->CastOnPosition (enemies->ServerPosition());
 		}
 	}
 	AdvPredictionOutput prediction_output;
@@ -296,7 +300,7 @@ bool myfunctionHP (IUnit* i, IUnit* j) { return (i->GetHealth() >= j->GetHealth(
 void Viktor::eCast (IUnit* target)
 {
 	{
-		auto in_range = Extensions::GetDistanceSqr2D (target->GetPosition(), Hero->GetPosition()) <= E->Range() * E->Range();
+		auto in_range = Extensions::GetDistanceSqr2D (target->ServerPosition(), Hero->ServerPosition()) <= E->Range() * E->Range();
 		auto casted = false;
 		Vec3 source1;
 		std::vector<IUnit*> closeHero;
@@ -304,10 +308,10 @@ void Viktor::eCast (IUnit* target)
 		std::vector<IUnit*> furtherHero;
 		for (auto targets : GEntityList->GetAllHeros (false, true))
 		{
-			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistanceSqr2D (Hero->GetPosition(), targets->GetPosition()) <= 1225*1225)
+			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistanceSqr2D (Hero->ServerPosition(), targets->ServerPosition()) <= 1225 * 1225)
 			{
 				closeHero.push_back (targets);
-				if (Extensions::GetDistanceSqr2D (targets->GetPosition(), Hero->GetPosition()) <= E->Range() * E->Range())
+				if (Extensions::GetDistanceSqr2D (targets->ServerPosition(), Hero->ServerPosition()) <= E->Range() * E->Range())
 				{
 					closerHero.push_back (targets);
 				}
@@ -322,12 +326,12 @@ void Viktor::eCast (IUnit* target)
 		std::vector<IUnit*> furtherMinions;
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistanceSqr2D (Hero->GetPosition(), minion->GetPosition()) <= 1225)
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistanceSqr2D (Hero->ServerPosition(), minion->ServerPosition()) <= 1225)
 			{
 				if (!minion->IsDead())
 				{
 					closeMinions.push_back (minion);
-					if (Extensions::GetDistanceSqr2D (minion->GetPosition(), Hero->GetPosition()) <= E->Range() * E->Range())
+					if (Extensions::GetDistanceSqr2D (minion->ServerPosition(), Hero->ServerPosition()) <= E->Range() * E->Range())
 					{
 						closerMinions.push_back (minion);
 					}
@@ -341,17 +345,17 @@ void Viktor::eCast (IUnit* target)
 		if (in_range)
 		{
 			E->SetOverrideSpeed (1050 * 0.9f);
-			E->SetFrom (target->GetPosition() + (Hero->GetPosition() - target->GetPosition()).VectorNormalize() * (700 * 0.1f));
+			E->SetFrom (target->ServerPosition() + (Hero->ServerPosition() - target->ServerPosition()).VectorNormalize() * (700 * 0.1f));
 			AdvPredictionOutput outputfam;
 			E->RunPrediction (target, true, kCollidesWithYasuoWall, &outputfam);
-			E->SetFrom (Hero->GetPosition());
-			if (Extensions::GetDistance (outputfam.CastPosition, Hero->GetPosition()) <= E->Range())
+			E->SetFrom (Hero->ServerPosition());
+			if (Extensions::GetDistance (outputfam.CastPosition, Hero->ServerPosition()) <= E->Range())
 			{
 				source1 = outputfam.CastPosition;
 			}
 			else
 			{
-				source1 = target->GetPosition();
+				source1 = target->ServerPosition();
 				E->SetOverrideSpeed (1050);
 			}
 			E->SetFrom (source1);
@@ -364,7 +368,7 @@ void Viktor::eCast (IUnit* target)
 				{
 					AdvPredictionOutput output;
 					E->RunPrediction (enemies, true, kCollidesWithYasuoWall, &output);
-					E->SetFrom (Hero->GetPosition());
+					E->SetFrom (Hero->ServerPosition());
 					if (output.HitChance >= kHitChanceHigh && Extensions::GetDistanceSqr2D (source1, output.CastPosition) < (E->Range() * E->Range()) * 0.8)
 					{
 						closeToPrediction.push_back (enemies);
@@ -396,11 +400,11 @@ void Viktor::eCast (IUnit* target)
 		else
 		{
 			float startPosRad = 150;
-			auto startPos = Hero->GetPosition() + (target->GetPosition() - Hero->GetPosition()).VectorNormalize() * 525;
+			auto startPos = Hero->ServerPosition() + (target->ServerPosition() - Hero->ServerPosition()).VectorNormalize() * 525;
 			std::vector<IUnit*> targets1;
 			for (auto enemies1 : closeHero)
 			{
-				if (Extensions::GetDistanceSqr2D (enemies1->GetPosition(), startPos) < startPosRad * startPosRad && Extensions::GetDistanceSqr2D (Hero->GetPosition(), enemies1->GetPosition()) < 525 * 525)
+				if (Extensions::GetDistanceSqr2D (enemies1->ServerPosition(), startPos) < startPosRad * startPosRad && Extensions::GetDistanceSqr2D (Hero->ServerPosition(), enemies1->ServerPosition()) < 525 * 525)
 				{
 					targets1.push_back (enemies1);
 				}
@@ -411,14 +415,14 @@ void Viktor::eCast (IUnit* target)
 				{
 					std::sort (targets1.begin(), targets1.end(), myfunctionHP);
 				}
-				source1 = targets1[0]->GetPosition();
+				source1 = targets1[0]->ServerPosition();
 			}
 			else
 			{
 				std::vector<IUnit*> minionTargets;
 				for (auto minions1 : closeMinions)
 				{
-					if (Extensions::GetDistanceSqr2D (minions1->GetPosition(), startPos) < startPosRad * startPosRad && Extensions::GetDistanceSqr2D (Hero->GetPosition(), minions1->GetPosition()) < 525 * 525)
+					if (Extensions::GetDistanceSqr2D (minions1->ServerPosition(), startPos) < startPosRad * startPosRad && Extensions::GetDistanceSqr2D (Hero->ServerPosition(), minions1->ServerPosition()) < 525 * 525)
 					{
 						minionTargets.push_back (minions1);
 					}
@@ -429,7 +433,7 @@ void Viktor::eCast (IUnit* target)
 					{
 						std::sort (minionTargets.begin(), minionTargets.end(), myfunctionHP);
 					}
-					source1 = minionTargets[0]->GetPosition();
+					source1 = minionTargets[0]->ServerPosition();
 				}
 				else
 				{
@@ -439,11 +443,21 @@ void Viktor::eCast (IUnit* target)
 			E->SetFrom (source1);
 			E->SetOverrideRange (700);
 			E->SetRangeCheckFrom (source1);
-			AdvPredictionOutput output3;
-			E->RunPrediction (target, true, kCollidesWithNothing, &output3);
-			if (output3.HitChance >= kHitChanceHigh)
+			if (PredictionType->GetInteger() == 0)
 			{
-				E->CastFrom (source1, output3.CastPosition);
+				AdvPredictionOutput output3;
+				E->RunPrediction (target, true, kCollidesWithYasuoWall, &output3);
+				if (output3.HitChance >= kHitChanceHigh)
+				{
+					E->CastFrom (source1, output3.CastPosition);
+				}
+			}
+			else if (PredictionType->GetInteger() == 1)
+			{
+				auto delay = Extensions::GetDistance (Hero, target) / 1225;
+				Vec3 outputFuture;
+				GPrediction->GetFutureUnitPosition (target, E->GetDelay() *delay, true, outputFuture);
+				E->CastFrom (source1, outputFuture);
 			}
 			E->SetOverrideRange (525);
 			E->SetFrom (Vec3 (0, 0, 0));
@@ -494,7 +508,7 @@ void Viktor::Automatic()
 			W->RunPrediction (target, true, kCollidesWithNothing, &prediction_output);
 			if (prediction_output.HitChance == kHitChanceImmobile)
 			{
-				W->CastFrom (prediction_output.CastPosition, Hero->GetPosition());
+				W->CastFrom (prediction_output.CastPosition, Hero->ServerPosition());
 			}
 		}
 	}
@@ -623,8 +637,8 @@ Vec3 Viktor::TeamFightR (IUnit* pos)
 		{
 			posChecked++;
 			auto cRadians = (0x2 * M_PI / (curCurcleChecks - 1)) * i;
-			auto xPos = static_cast<float> (floor (pos->GetPosition().x + curRadius * cos (cRadians)));
-			auto zPos = static_cast<float> (floor (pos->GetPosition().z + curRadius * sin (cRadians)));
+			auto xPos = static_cast<float> (floor (pos->ServerPosition().x + curRadius * cos (cRadians)));
+			auto zPos = static_cast<float> (floor (pos->ServerPosition().z + curRadius * sin (cRadians)));
 			auto posFor2D = Vec2 (xPos, zPos);
 			auto count = Extensions::EnemiesInRange (Extensions::To3D (posFor2D), R->Radius());
 			//GGame->PrintChat (std::to_string (count).c_str());
@@ -633,12 +647,12 @@ Vec3 Viktor::TeamFightR (IUnit* pos)
 				// dont push is wall
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->GetPosition()) >1225)
+			if (Extensions::Dist2D (posFor2D, GEntityList->Player()->ServerPosition()) >1225)
 			{
 				// dont push to far away to cast;
 				continue;
 			}
-			if (Extensions::Dist2D (posFor2D, pos->GetPosition()) <= R->Radius() - 20)
+			if (Extensions::Dist2D (posFor2D, pos->ServerPosition()) <= R->Radius() - 20)
 			{
 				//	GGame->ShowPing (kPingAssistMe, Extensions::To3D (posFor2D), false);
 				possibleQPositions.push_back (std::make_pair (count, posFor2D));
@@ -676,7 +690,7 @@ void Viktor::RFollowLogic (IUnit* target)
 		}
 		else
 		{
-			R->CastOnPosition (target->GetPosition());
+			R->CastOnPosition (target->ServerPosition());
 		}
 	}
 }
@@ -700,7 +714,7 @@ void Viktor::Combo()
 	{
 		if (DPS (rTarget, true, false, true, false) < rTarget->GetHealth() && DPS (rTarget, true, false, true, true) > rTarget->GetHealth())
 		{
-			R->CastOnPosition (rTarget->GetPosition());
+			R->CastOnPosition (rTarget->ServerPosition());
 			return;
 		}
 	}
@@ -740,7 +754,7 @@ void Viktor::Combo()
 		{
 			if (GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") || qUsed || !q || !Q->IsReady() || DPS (rTarget, true, false, false, true) >= rTarget->GetHealth())
 			{
-				R->CastOnPosition (rTarget->GetPosition());
+				R->CastOnPosition (rTarget->ServerPosition());
 			}
 			else if (Extensions::GetDistance (GEntityList->Player(), TeamFightR (rTarget)) <= R->Range() && TeamFightR (rTarget) != Vec3 (0, 0, 0))
 			{
@@ -780,7 +794,7 @@ void Viktor::dmgdraw()
 		{
 			Vec4 BarColor;
 			HPBarColor->GetColor (&BarColor);
-			float totalDamage = DPS (hero,true,false,true,true);
+			float totalDamage = DPS (hero, true, false, true, true);
 			Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
 		}
 	}
@@ -792,7 +806,7 @@ void Viktor::KillSteal()
 	{
 		for (auto targets : GEntityList->GetAllHeros (false, true))
 		{
-			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistance (Hero, targets->GetPosition()) <= 1225)
+			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistance (Hero, targets->ServerPosition()) <= 1225)
 			{
 				if (DPS (targets, false, false, true, false) >= targets->GetHealth())
 				{
@@ -819,7 +833,7 @@ void Viktor::JungleClear()
 	{
 		for (auto mob : GEntityList->GetAllMinions (false, false, true))
 		{
-			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && Extensions::GetDistance (Hero, mob->GetPosition()) <= 525)
+			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= 525)
 			{
 				if (!mob->IsDead())
 				{
@@ -849,7 +863,7 @@ void Viktor::LaneClear()
 	{
 		for (auto minion : GEntityList->GetAllMinions (false, true, false))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->GetPosition()) <= 525)
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->ServerPosition()) <= 525)
 			{
 				if (!minion->IsDead())
 				{
@@ -900,4 +914,3 @@ void Viktor::Drawing()
 		}
 	}
 }
-
