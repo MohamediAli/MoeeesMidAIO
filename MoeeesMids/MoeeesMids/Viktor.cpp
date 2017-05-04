@@ -275,7 +275,7 @@ void Viktor::WLogic (IUnit* target)
 {
 	for (auto enemies : GEntityList->GetAllHeros (false, true))
 	{
-		if (Extensions::Validate (enemies) && enemies->IsVisible() && !enemies->IsDead() && enemies->IsHero() && Extensions::GetDistance (Hero, enemies->GetPosition()) <= W->Radius() * 1.1f)
+		if (Extensions::Validate (enemies) && !GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") && enemies->IsVisible() && !enemies->IsDead() && enemies->IsHero() && Extensions::GetDistance (Hero, enemies->GetPosition()) <= W->Radius() * 1.1f)
 		{
 			W->CastOnPosition (enemies->GetPosition());
 		}
@@ -881,7 +881,7 @@ void Viktor::Drawing()
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
-			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), 1225, Vec4 (0, 225, 0, 225));
 		}
 	}
 	else
@@ -896,7 +896,7 @@ void Viktor::Drawing()
 		}
 		if (DrawE->Enabled())
 		{
-			GRender->DrawCircle (Hero->GetPosition(), E->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), 1225, Vec4 (0, 225, 0, 225));
 		}
 	}
 }
