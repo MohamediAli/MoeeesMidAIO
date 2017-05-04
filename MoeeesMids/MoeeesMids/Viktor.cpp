@@ -13,7 +13,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Q->SetSkillshot (0.15f, 0.f, 2050.f, 600.f + GEntityList->Player()->BoundingRadius() + 15); //+15 for bounding radius of target, find a better way to do this xD
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
 	W->SetSkillshot (1.0f, 200.f, FLT_MAX, 700.f);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, true, kCollidesWithNothing);
+	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, true, kCollidesWithYasuoWall);
 	E->SetSkillshot (0.30f, 80.f, 1050, 525.f);
 	R = GPluginSDK->CreateSpell2 (kSlotR, kCircleCast, false, true, kCollidesWithNothing);
 	R->SetSkillshot (0.25f, 300.f, FLT_MAX, 700.f);
@@ -191,7 +191,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 		minionSources.push_back (minionsOne->GetPosition().To2D());
 	}
 	posibleSources.insert (posibleSources.end(), minionSources.begin(), minionSources.end());
-	auto maximum = posibleSources.size();
+	int maximum = posibleSources.size();
 	for (auto i = 0; i < maximum; i++)
 	{
 		for (auto j = 0; j < maximum; j++)
@@ -296,7 +296,7 @@ bool myfunctionHP (IUnit* i, IUnit* j) { return (i->GetHealth() >= j->GetHealth(
 void Viktor::eCast (IUnit* target)
 {
 	{
-		auto in_range = Extensions::GetDistanceSqr (target->GetPosition().To2D(), Hero->GetPosition().To2D()) <= E->Range() * E->Range();
+		auto in_range = Extensions::GetDistanceSqr2D (target->GetPosition(), Hero->GetPosition()) <= E->Range() * E->Range();
 		auto casted = false;
 		Vec3 source1;
 		std::vector<IUnit*> closeHero;
@@ -304,10 +304,10 @@ void Viktor::eCast (IUnit* target)
 		std::vector<IUnit*> furtherHero;
 		for (auto targets : GEntityList->GetAllHeros (false, true))
 		{
-			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistance (Hero, targets->GetPosition()) <= 1225)
+			if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistanceSqr2D (Hero->GetPosition(), targets->GetPosition()) <= 1225*1225)
 			{
 				closeHero.push_back (targets);
-				if (Extensions::GetDistanceSqr (targets->GetPosition().To2D(), Hero->GetPosition().To2D()) <= E->Range() * E->Range())
+				if (Extensions::GetDistanceSqr2D (targets->GetPosition(), Hero->GetPosition()) <= E->Range() * E->Range())
 				{
 					closerHero.push_back (targets);
 				}
@@ -322,12 +322,12 @@ void Viktor::eCast (IUnit* target)
 		std::vector<IUnit*> furtherMinions;
 		for (auto minion : GEntityList->GetAllMinions (false, true, true))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->GetPosition()) <= 1225)
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistanceSqr2D (Hero->GetPosition(), minion->GetPosition()) <= 1225)
 			{
 				if (!minion->IsDead())
 				{
 					closeMinions.push_back (minion);
-					if (Extensions::GetDistanceSqr (minion->GetPosition().To2D(), Hero->GetPosition().To2D()) <= E->Range() * E->Range())
+					if (Extensions::GetDistanceSqr2D (minion->GetPosition(), Hero->GetPosition()) <= E->Range() * E->Range())
 					{
 						closerMinions.push_back (minion);
 					}
@@ -343,7 +343,7 @@ void Viktor::eCast (IUnit* target)
 			E->SetOverrideSpeed (1050 * 0.9f);
 			E->SetFrom (target->GetPosition() + (Hero->GetPosition() - target->GetPosition()).VectorNormalize() * (700 * 0.1f));
 			AdvPredictionOutput outputfam;
-			E->RunPrediction (target, false, kCollidesWithNothing, &outputfam);
+			E->RunPrediction (target, true, kCollidesWithYasuoWall, &outputfam);
 			E->SetFrom (Hero->GetPosition());
 			if (Extensions::GetDistance (outputfam.CastPosition, Hero->GetPosition()) <= E->Range())
 			{
@@ -363,9 +363,9 @@ void Viktor::eCast (IUnit* target)
 				for (auto enemies : closeHero)
 				{
 					AdvPredictionOutput output;
-					E->RunPrediction (enemies, true, kCollidesWithNothing, &output);
+					E->RunPrediction (enemies, true, kCollidesWithYasuoWall, &output);
 					E->SetFrom (Hero->GetPosition());
-					if (output.HitChance > kHitChanceMedium && Extensions::GetDistanceSqr (source1.To2D(), output.CastPosition.To2D()) < (E->Range() * E->Range()) * 0.8)
+					if (output.HitChance >= kHitChanceHigh && Extensions::GetDistanceSqr2D (source1, output.CastPosition) < (E->Range() * E->Range()) * 0.8)
 					{
 						closeToPrediction.push_back (enemies);
 					}
@@ -377,7 +377,7 @@ void Viktor::eCast (IUnit* target)
 						std::sort (closeToPrediction.begin(), closeToPrediction.end(), myfunctionHP);
 					}
 					AdvPredictionOutput output2;
-					E->RunPrediction (closeToPrediction[0], true, kCollidesWithNothing, &output2);
+					E->RunPrediction (closeToPrediction[0], true, kCollidesWithYasuoWall, &output2);
 					auto source2 = output2.CastPosition;
 					E->CastFrom (source1, source2);
 					casted = true;
@@ -386,7 +386,7 @@ void Viktor::eCast (IUnit* target)
 			if (!casted)
 			{
 				AdvPredictionOutput outputs;
-				E->RunPrediction (target, true, kCollidesWithNothing, &outputs);
+				E->RunPrediction (target, true, kCollidesWithYasuoWall, &outputs);
 				E->CastFrom (source1, outputs.CastPosition);
 			}
 			E->SetOverrideSpeed (1050);
@@ -400,7 +400,7 @@ void Viktor::eCast (IUnit* target)
 			std::vector<IUnit*> targets1;
 			for (auto enemies1 : closeHero)
 			{
-				if (Extensions::GetDistanceSqr (enemies1->GetPosition().To2D(), startPos.To2D()) < startPosRad * startPosRad && Extensions::GetDistanceSqr (Hero->GetPosition().To2D(), enemies1->GetPosition().To2D()) < 525 * 525)
+				if (Extensions::GetDistanceSqr2D (enemies1->GetPosition(), startPos) < startPosRad * startPosRad && Extensions::GetDistanceSqr2D (Hero->GetPosition(), enemies1->GetPosition()) < 525 * 525)
 				{
 					targets1.push_back (enemies1);
 				}
@@ -418,7 +418,7 @@ void Viktor::eCast (IUnit* target)
 				std::vector<IUnit*> minionTargets;
 				for (auto minions1 : closeMinions)
 				{
-					if (Extensions::GetDistanceSqr (minions1->GetPosition().To2D(), startPos.To2D()) < startPosRad * startPosRad && Extensions::GetDistanceSqr (Hero->GetPosition().To2D(), minions1->GetPosition().To2D()) < 525 * 525)
+					if (Extensions::GetDistanceSqr2D (minions1->GetPosition(), startPos) < startPosRad * startPosRad && Extensions::GetDistanceSqr2D (Hero->GetPosition(), minions1->GetPosition()) < 525 * 525)
 					{
 						minionTargets.push_back (minions1);
 					}
