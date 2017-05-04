@@ -78,7 +78,7 @@ auto Rembrandt::DrawDamageOnChampionHPBar (IUnit* Hero, double Damage, const cha
 auto Rembrandt::DrawDamageOnChampionHPBar (IUnit* Hero, double Damage, Vec4 BarColor) -> void
 {
 	Vec2 HPBarPos;
-	if (Hero->GetHPBarPosition (HPBarPos) && Hero->IsVisible())
+	if (Hero->GetHPBarPosition (HPBarPos) && Hero->IsVisible() && !Hero->IsDead())
 	{
 		Vec2 HPBarSize = Vec2 (103 * (Damage / Hero->GetMaxHealth()), 8);
 		HPBarPos = Vec2 (HPBarPos.x + 10, HPBarPos.y += 20);

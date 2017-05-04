@@ -8,7 +8,6 @@ Ahri::~Ahri()
 	AhriMenu->Remove();
 }
 
-
 Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
 	Q = GPluginSDK->CreateSpell2 (kSlotQ, kLineCast, false, false, kCollidesWithNothing);
@@ -275,9 +274,6 @@ void Ahri::CastQ (IUnit* target)
 		}
 	}
 }
-
-
-
 
 void Ahri::AntiGapclose (GapCloserSpell const& args)
 {

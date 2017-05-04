@@ -240,7 +240,7 @@ void Orianna::eAssist()
 			if (entry.second != nullptr)
 			{
 				CastE (entry.second);
-				return;
+				break;
 			}
 		}
 	}
@@ -561,6 +561,7 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 				if (std::string (args.Name_) == spellName)
 				{
 					E->CastOnTarget (args.Caster_);
+					break;
 				}
 			}
 		}
@@ -650,6 +651,7 @@ void Orianna::TeamFightQ (Vec3 pos)
 	for (auto entry : possibleQPositions)
 	{
 		Q->CastOnPosition (Extensions::To3D (entry.second));
+		break;
 	}
 	return;
 }

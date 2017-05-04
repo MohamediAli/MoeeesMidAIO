@@ -44,7 +44,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	eMin = eMenu->AddInteger (":: Minimum Minions Hit", 1, 10, 3);
 	laneClearEMana = eMenu->AddFloat (":: Only Wave Clear E if Mana >", 0, 100, 30);
 	ComboR = rMenu->CheckBox ("Use R", true);
-	ultMin = rMenu->AddInteger ("Ult if can hit more than: ", 1, 5, 3);
+	ultMin = rMenu->AddInteger ("Ult if can hit >=: ", 1, 5, 3);
 	RInterveral = rMenu->AddInteger ("Interval to Follow R in 100ms", 1, 10, 5);
 	killStealR = rMenu->CheckBox ("Only ult if killable", true);
 	rInterrupt = rMenu->CheckBox ("Interrupt Spells with R", true);
@@ -69,6 +69,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 void Viktor::OnGameUpdate()
 {
 	position = GEntityList->Player()->ServerPosition();
+//	IUnit*  test = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	srand (time (NULL));
 	rFollow = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1300);
 	if (Extensions::Validate (rFollow) && rFollow->IsHero() && !rFollow->IsDead() && rFollow->IsVisible())
@@ -100,6 +101,7 @@ void Viktor::OnGameUpdate()
 		auto level = Hero->GetLevel();
 		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
 		{
+			//		GGame->PrintChat (std::to_string (DPS (test, true, false, true, false)).c_str());
 			GOrbwalking->SetAttacksAllowed (false);
 		}
 	}
@@ -111,9 +113,11 @@ void Viktor::OnGameUpdate()
 	}
 	if (GetAsyncKeyState (Fleemode->GetInteger()))
 	{
+//		GGame->PrintChat (std::to_string (DPS (test, true, false, true, true)).c_str());
 		FleeMode();
 	}
 }
+
 
 void Viktor::FleeMode()
 {
@@ -616,7 +620,6 @@ float Viktor::rDmg (IUnit* Target, int ticks)
 float Viktor::DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR, int rTicks)
 {
 	auto total = 0.f;
-	auto ticks = rTicks;
 	auto inQRange = checkQ && Extensions::GetDistance (GEntityList->Player(), target) <= GOrbwalking->GetAutoAttackRange (GEntityList->Player()) || checkQ == false;
 	if (dpsQ && Q->IsReady() && inQRange)
 	{
@@ -639,10 +642,7 @@ float Viktor::DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR, 
 	}
 	if (dpsR && R->IsReady())
 	{
-		if (GEntityList->Player()->HasBuff ("viktorchaosstormtimer") && GBuffData->GetEndTime ("viktorchaosstormtimer") - GBuffData->GetStartTime ("viktorchaosstormtimer") > 3.5f)
-		{
-			total += rDmg (target, ticks);
-		}
+		total += rDmg (target, rTicks);
 	}
 	//Sheen
 	if (GEntityList->Player()->HasItemId (3057))
@@ -660,6 +660,7 @@ float Viktor::DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR, 
 		total += GDamage->CalcMagicDamage (GEntityList->Player(), target, 100 + GEntityList->Player()->TotalMagicDamage() * 0.1);
 	}
 	return (float) total;
+	//credit lizzarin for most of logic here
 }
 
 Vec3 Viktor::TeamFightR (IUnit* pos)
@@ -755,7 +756,11 @@ void Viktor::Combo()
 	}
 	if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead() && rKS)
 	{
-		if (DPS (rTarget, true, false, true, false) < rTarget->GetHealth() && DPS (rTarget, true, false, true, true, 3) > rTarget->GetHealth())
+		if (Extensions::Validate (rObject))
+		{
+			return;
+		}
+		if (DPS (rTarget, true, false, true, true, 2) > rTarget->GetHealth() && DPS (rTarget, true, false, true, false) < rTarget->GetHealth())
 		{
 			R->CastOnPosition (rTarget->ServerPosition());
 			return;
@@ -786,7 +791,6 @@ void Viktor::Combo()
 			WLogic (rTarget);
 		}
 	}
-	auto rCast = false;
 	if (r)
 	{
 		if (Extensions::Validate (rObject))
@@ -795,7 +799,7 @@ void Viktor::Combo()
 		}
 		if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead())
 		{
-			if (GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") || qUsed || !q || !Q->IsReady() || DPS (rTarget, true, false, false, true) >= rTarget->GetHealth())
+			if (GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") || qUsed || !q || !Q->IsReady())
 			{
 				R->CastOnPosition (rTarget->ServerPosition());
 			}
@@ -910,21 +914,21 @@ void Viktor::LaneClear()
 			{
 				if (!minion->IsDead())
 				{
-					if (Extensions::GetMinionType (minion) == kMinionSiege)
+					if (qDmg (minion,true) + qDmg (minion,false) >= minion->GetHealth())
 					{
-						if (GDamage->GetSpellDamage (GEntityList->Player(), minion, kSlotQ) + GDamage->GetAutoAttackDamage (Hero, minion, true) >= GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 0.2, 0))
-						{
-							GOrbwalking->SetAttacksAllowed (false);
-							Q->CastOnTarget (minion);
-							GOrbwalking->SetAttacksAllowed (true);
-							break;
-						}
+						GOrbwalking->SetAttacksAllowed (false);
+						Q->CastOnTarget (minion);
+						GOrbwalking->SetAttacksAllowed (true);
+						GGame->IssueOrder (Hero, kAttackTo, minion);
+						break;
 					}
 				}
 			}
 		}
 	}
 }
+
+
 
 void Viktor::Drawing()
 {
