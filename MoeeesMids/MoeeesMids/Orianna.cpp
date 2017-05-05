@@ -2,7 +2,7 @@
 #include <time.h>
 #include "Lords.h"
 #include "Rembrandt.h"
-#include "MEC.h"
+//#include "MEC.h"
 #include <tuple>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
@@ -240,7 +240,7 @@ void Orianna::eAssist()
 			if (entry.second != nullptr)
 			{
 				CastE (entry.second);
-				break;
+				return;
 			}
 		}
 	}
@@ -561,7 +561,6 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 				if (std::string (args.Name_) == spellName)
 				{
 					E->CastOnTarget (args.Caster_);
-					break;
 				}
 			}
 		}
@@ -651,7 +650,7 @@ void Orianna::TeamFightQ (Vec3 pos)
 	for (auto entry : possibleQPositions)
 	{
 		Q->CastOnPosition (Extensions::To3D (entry.second));
-		break;
+		return;
 	}
 	return;
 }
@@ -916,6 +915,7 @@ void Orianna::CastE (IUnit* target)
 
 std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
 {
+	/*
 	auto points = std::vector<Vec2>();
 	AdvPredictionOutput result;
 	Q->RunPrediction (mainTarget, true, kCollidesWithYasuoWall, &result);
@@ -970,7 +970,7 @@ std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
 		}
 		points.erase (points.begin() + maxdistindex);
 	}
-	return  std::tuple<int, Vec3> (1, Extensions::To3D (points[0]));
+	return  std::tuple<int, Vec3> (1, Extensions::To3D (points[0]));*/
 }
 
 /* void Orianna::SaveTeam()
@@ -992,6 +992,7 @@ E->CastOnUnit(Teamate);
 } //Cast on injured teamate
 }
 }*/
+
 
 void Orianna::CastQ (IUnit* target)
 {
@@ -1143,7 +1144,10 @@ void Orianna::Combo()
 	{
 		W->CastOnPlayer();
 	}
-	eLogic();
+	if (ComboE->Enabled())
+	{
+		eLogic();
+	}
 	auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || isBallMoving() || !target1->IsVisible())
 	{
