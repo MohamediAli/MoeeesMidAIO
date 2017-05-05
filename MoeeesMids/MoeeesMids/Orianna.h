@@ -43,7 +43,7 @@ private:
 	Vec2 vect2d (Vec2 p1, Vec2 p2);
 	void SaveTeam();
 	float BallDelay();
-	std::tuple<int, Vec3> GetBestQLocation (IUnit* mainTarget);
+	//std::tuple<int, Vec3> GetBestQLocation (IUnit* mainTarget);
 	int SpellCheck (IUnit* Location, int range, float delay);
 	BOOL isBallMoving();
 	Vec3 GetMovingBallPos();
@@ -76,6 +76,7 @@ private:
 	int Ticks;
 	IMenuOption* PredictionType;
 	IMenu* Prediction;
+	std::vector<std::pair<int, Vec3>> GetBestQLocation (IUnit* mainTarget);
 
 	float BallRad = 75;
 	float lastTimeStamp;

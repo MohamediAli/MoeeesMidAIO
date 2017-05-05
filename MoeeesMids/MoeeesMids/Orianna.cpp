@@ -2,7 +2,7 @@
 #include <time.h>
 #include "Lords.h"
 #include "Rembrandt.h"
-//#include "MEC.h"
+#include "MEC.h"
 #include <tuple>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
@@ -114,8 +114,8 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	laneClearW = LaneClearMenu->CheckBox ("Wave Clear with W", true);
 	laneClearWMana = LaneClearMenu->AddFloat (":: Only Wave Clear W if Mana >", 0, 100, 50);
 	mouseClear = LaneClearMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
-	PredType = { "Oracle", "Core", };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	PredType = { "Oracle", "Core", "mPred" };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 2, PredType);
 	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
@@ -186,7 +186,7 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
 	OnRunPath (Source, path_);
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (target == nullptr || !target->IsHero() || target->IsDead() || isBallMoving() || !target->IsVisible())
+	if (target == nullptr || !target->IsHero() || target->IsDead() || isBallMoving() || !target->IsVisible() || PredictionType->GetInteger() == 2)
 	{
 		return;
 	}
@@ -913,49 +913,61 @@ void Orianna::CastE (IUnit* target)
 	}
 }
 
-std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
+std::vector<std::pair<int, Vec3>> Orianna::GetBestQLocation (IUnit* mainTarget) //Thanks to Rembrandt and Honda
 {
-	/*
 	auto points = std::vector<Vec2>();
 	AdvPredictionOutput result;
 	Q->RunPrediction (mainTarget, true, kCollidesWithYasuoWall, &result);
-	auto qPrediction = result;
-	if (qPrediction.HitChance < kHitChanceHigh)
+//	auto qPrediction = result;
+	if (result.HitChance <= kHitChanceMedium)
 	{
-		return  std::tuple<int, Vec3> (1, Vec3 (0, 0, 0));
+		std::vector<std::pair<int, Vec3>> one;
+		one.push_back (std::make_pair (1, Vec3 (0, 0, 0)));
+		return one;
 	}
-	points.push_back (qPrediction.TargetPosition.To2D());
+	points.push_back (result.TargetPosition.To2D());
 	auto enemy = GEntityList->GetAllHeros (false, true);
-	for (IUnit* enemy : enemy)
+	for (IUnit* enemies : enemy)
 	{
-		if (enemy->IsValidTarget() && Extensions::GetDistance (Hero, enemy) < Q->Range())
+		if (Extensions::Validate (enemies) && enemies->IsVisible() && !enemies->IsDead() && enemies->IsHero() && Hero->IsValidTarget (enemies, Q->Range() + R->Range()))
 		{
 			AdvPredictionOutput result2;
-			Q->RunPrediction (enemy, true, kCollidesWithYasuoWall, &result2);
+			Q->RunPrediction (enemies, true, kCollidesWithYasuoWall, &result2);
+			Vec3 castOn;
+			BestCastPosition (enemies, Q, castOn, false);
 			if (result.HitChance >= kHitChanceHigh)
 			{
-				points.push_back (result2.TargetPosition.To2D());
+				points.push_back (castOn.To2D());
 			}
 		}
 	}
 	for (int j = 0; j < 5; j++)
 	{
 		auto mecResult = MEC::GetMec (points);
-		if (mecResult.Radius < (R->Range() - 75) && points.size() >= 3 && R->IsReady())
+		/*	if (mecResult.Radius < (R->Range() - 75) && points.size() >= 3 && R->IsReady())
+			{
+				std::vector<std::pair<int, Vec3>> one;
+				one.push_back (std::make_pair (3, Extensions::To3D (mecResult.Center)));
+				return one;
+				break;
+			}*/
+		if (mecResult.Radius < ( (W->Range() - 75))  && points.size() >= 2 && W->IsReady())
 		{
-			return  std::tuple<int, Vec3> (3, Extensions::To3D (mecResult.Center));
-		}
-		if (mecResult.Radius < (W->Range() - 75) && points.size() >= 2 && W->IsReady())
-		{
-			return std::tuple<int, Vec3> (2, Extensions::To3D (mecResult.Center));
+			std::vector<std::pair<int, Vec3>> one;
+			one.push_back (std::make_pair (2, Extensions::To3D (mecResult.Center)));
+			return one;
 		}
 		if (points.size() == 1)
 		{
-			return std::tuple<int, Vec3> (1, Extensions::To3D (mecResult.Center));
+			std::vector<std::pair<int, Vec3>> one;
+			one.push_back (std::make_pair (1, Extensions::To3D (mecResult.Center)));
+			return one;
 		}
-		if (mecResult.Radius < Q->Radius() && points.size() == 2)
+		if (mecResult.Radius < Q->Radius() /2 && points.size() == 2)
 		{
-			return  std::tuple<int, Vec3> (2, Extensions::To3D (mecResult.Center));
+			std::vector<std::pair<int, Vec3>> one;
+			one.push_back (std::make_pair (2, Extensions::To3D (mecResult.Center)));
+			return one;
 		}
 		float maxdist = -1;
 		auto maxdistindex = 1;
@@ -970,7 +982,9 @@ std::tuple<int, Vec3> Orianna::GetBestQLocation (IUnit* mainTarget)
 		}
 		points.erase (points.begin() + maxdistindex);
 	}
-	return  std::tuple<int, Vec3> (1, Extensions::To3D (points[0]));*/
+	std::vector<std::pair<int, Vec3>> one;
+	one.push_back (std::make_pair (1, Extensions::To3D (points[0])));
+	return one;
 }
 
 /* void Orianna::SaveTeam()
@@ -1047,7 +1061,7 @@ void Orianna::CastQ (IUnit* target)
 			}
 		}
 	}
-	if (PredictionType->GetInteger() == 2)
+	if (PredictionType->GetInteger() == 3)
 	{
 		QCast (Q, target);
 	}
@@ -1055,16 +1069,16 @@ void Orianna::CastQ (IUnit* target)
 	{
 		Q->CastOnTarget (target, kHitChanceHigh);
 	}
-	else if (PredictionType->GetInteger() == 3)
+	else if (PredictionType->GetInteger() == 2)
 	{
 		auto cast = GetBestQLocation (target);
-		if (std::get<int> (cast) > 1)
+		for (auto entries : cast)
 		{
-			Q->CastOnPosition (std::get<Vec3> (cast));
-		}
-		else
-		{
-			Q->CastOnTarget (target, kHitChanceVeryHigh);
+			if (entries.first > 1)
+			{
+				Q->CastOnPosition (entries.second);
+				return;
+			}
 		}
 	}
 	else if (PredictionType->GetInteger() == 0 && Extensions::Validate (target))
@@ -1147,6 +1161,22 @@ void Orianna::Combo()
 	if (ComboE->Enabled())
 	{
 		eLogic();
+	}
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
+	if (target == nullptr || !target->IsHero() || target->IsDead() || isBallMoving() || !target->IsVisible())
+	{
+		return;
+	}
+	if (PredictionType->GetInteger() == 2 && Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+	{
+		TeamFightQ (target->GetPosition());
+		return;
+	}
+	else if (PredictionType->GetInteger() == 2 && Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget (target, Q->Range()))
+	{
+		// do a normal cast not aoe one
+		CastQ (target);
+		return;
 	}
 	auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
 	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || isBallMoving() || !target1->IsVisible())
@@ -1291,6 +1321,15 @@ void Orianna::Automatic()
 	if (isBallMoving())
 	{
 		return;
+	}
+	if (PredictionType->GetInteger() == 2 && autoQ->Enabled() && Q->IsReady())
+	{
+		auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
+		if (target1 == nullptr || !target1->IsHero() || !target1->IsValidTarget() || !target1->IsVisible())
+		{
+			return;
+		}
+		CastQ (target1);
 	}
 	if (autoW->Enabled() && W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat() && ( (Extensions::IsValid (GetMovingBallPosW()) && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
 	{

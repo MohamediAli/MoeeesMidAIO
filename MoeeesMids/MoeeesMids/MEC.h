@@ -54,68 +54,85 @@ public:
 
 	static void FindMinimalBoundingCircle (std::vector<Vec2> points, Vec2 &center, float &radius)
 	{
+		/*
+		LARGE_INTEGER frequency;        // ticks per second
+		LARGE_INTEGER t1, t2;           // ticks
+		double elapsedTime;
+		QueryPerformanceFrequency (&frequency);
+		QueryPerformanceCounter (&t1);*/ //DEBUG
 		// Find the convex hull.
 		auto hull = MakeConvexHull (points);
 		// The best solution so far.
 		auto best_center = points[0];
 		float best_radius2 = FLT_MAX;
 		// Look at pairs of hull points.
-		for (auto i = 0; i < hull.size() - 1; i++)
+		if (hull.size() >= 1)
+		{
+			for (auto i = 0; i < hull.size() - 1; i++)
 			{
-			for (auto j = i + 1; j < hull.size(); j++)
+				for (auto j = i + 1; j < hull.size(); j++)
 				{
-				// Find the circle through these two points.
-				Vec2 test_center = Vec2 ( (hull[i].x + hull[j].x) / 2.0, (hull[i].y + hull[j].y) / 2.0);
-				auto dx = test_center.x - hull[i].x;
-				auto dy = test_center.y - hull[i].y;
-				auto test_radius2 = dx * dx + dy * dy;
-				// See if this circle would be an improvement.
-				if (test_radius2 < best_radius2)
+					// Find the circle through these two points.
+					Vec2 test_center = Vec2 ( (hull[i].x + hull[j].x) / 2.0, (hull[i].y + hull[j].y) / 2.0);
+					auto dx = test_center.x - hull[i].x;
+					auto dy = test_center.y - hull[i].y;
+					auto test_radius2 = dx * dx + dy * dy;
+					// See if this circle would be an improvement.
+					if (test_radius2 < best_radius2)
 					{
-					// See if this circle encloses all of the points.
-					if (CircleEnclosesPoints (test_center, test_radius2, points, i, j, -1))
+						// See if this circle encloses all of the points.
+						if (CircleEnclosesPoints (test_center, test_radius2, points, i, j, -1))
 						{
-						// Save this solution.
-						best_center = test_center;
-						best_radius2 = test_radius2;
+							// Save this solution.
+							best_center = test_center;
+							best_radius2 = test_radius2;
 						}
 					}
 				} // for i
 			} // for j
+		}
 		// Look at triples of hull points.
-		for (auto i = 0; i < hull.size() - 2; i++)
+		if (hull.size() >= 2)
+		{
+			for (auto i = 0; i < hull.size() - 2; i++)
 			{
-			for (auto j = i + 1; j < hull.size() - 1; j++)
+				for (auto j = i + 1; j < hull.size() - 1; j++)
 				{
-				for (auto k = j + 1; k < hull.size(); k++)
+					for (auto k = j + 1; k < hull.size(); k++)
 					{
-					// Find the circle through these three points.
-					Vec2 test_center;
-					float test_radius2 = 0;
-					FindCircle (hull[i], hull[j], hull[k], test_center, test_radius2);
-					// See if this circle would be an improvement.
-					if (test_radius2 < best_radius2)
+						// Find the circle through these three points.
+						Vec2 test_center;
+						float test_radius2 = 0;
+						FindCircle (hull[i], hull[j], hull[k], test_center, test_radius2);
+						// See if this circle would be an improvement.
+						if (test_radius2 < best_radius2)
 						{
-						// See if this circle encloses all of the points.
-						if (CircleEnclosesPoints (test_center, test_radius2, points, i, j, k))
+							// See if this circle encloses all of the points.
+							if (CircleEnclosesPoints (test_center, test_radius2, points, i, j, k))
 							{
-							// Save this solution.
-							best_center = test_center;
-							best_radius2 = test_radius2;
+								// Save this solution.
+								best_center = test_center;
+								best_radius2 = test_radius2;
 							}
 						}
 					} // for k
 				} // for i
 			} // for j
+		}/*
+		QueryPerformanceCounter (&t2);
+		elapsedTime = (t2.QuadPart - t1.QuadPart) * 1000.0 / frequency.QuadPart;
+		GGame->PrintChat (std::to_string (elapsedTime).c_str());
+		GGame->PrintChat ("hullsize");
+		GGame->PrintChat (std::to_string (hull.size()).c_str());*/
 		center = best_center;
 		if (best_radius2 == FLT_MAX)
-			{
+		{
 			radius = 0;
-			}
+		}
 		else
-			{
+		{
 			radius = (float) sqrt (best_radius2);
-			}
+		}
 	}
 
 	static MecCircle GetMec (std::vector<Vec2> points)
@@ -140,34 +157,34 @@ public:
 		// if (there's a tie, take the one with the smaller X value.
 		Vec2 best_pt[] = { points[0] };
 		for (int i = 0; i < points.size(); i++)
-			{
+		{
 			auto pt = points.at (i);
 			if ( (pt.y < best_pt[0].y || pt.y == best_pt[0].y) && pt.x < best_pt[0].x)
-				{
+			{
 				best_pt[0] = pt;
-				}
 			}
+		}
 		// Move this point to the convex hull.
 		std::vector<Vec2> hull = std::vector<Vec2> { best_pt[0] };
 		int index = 0;
 		for (int i = 0; i < points.size(); i++)
-			{
+		{
 			if (points.at (i) == best_pt[0])
-				{
+			{
 				index = i;
 				break;
-				}
 			}
+		}
 		points.erase (points.begin() + index);
 		// Start wrapping up the other points.
 		float sweep_angle = 0;
 		for (;;)
-			{
+		{
 			// If all of the points are on the hull, we're done.
 			if (points.size() == 0)
-				{
+			{
 				break;
-				}
+			}
 			// Find the point with smallest AngleValue
 			// from the last point.
 			auto X = hull[hull.size() - 1].x;
@@ -176,36 +193,36 @@ public:
 			float best_angle = 3600;
 			// Search the rest of the points.
 			for (int i = 0; i < points.size(); i++)
-				{
+			{
 				auto pt = points[i];
 				auto test_angle = AngleValue (X, Y, pt.x, pt.y);
 				if ( (test_angle >= sweep_angle) && (best_angle > test_angle))
-					{
+				{
 					best_angle = test_angle;
 					best_pt[0] = pt;
-					}
 				}
+			}
 			// See if the first point is better.
 			// If so, we are done.
 			auto first_angle = AngleValue (X, Y, hull[0].x, hull[0].y);
 			if ( (first_angle >= sweep_angle) && (best_angle >= first_angle))
-				{
+			{
 				// The first point is better. We're done.
 				break;
-				}
+			}
 			for (int i = 0; i < points.size(); i++)
-				{
+			{
 				if (points.at (i) == best_pt[0])
-					{
+				{
 					index = i;
 					break;
-					}
 				}
+			}
 			// Add the best point to the convex hull.
 			hull.push_back (best_pt[0]);
 			points.erase (points.begin() + index);
 			sweep_angle = best_angle;
-			}
+		}
 		return hull;
 	}
 
@@ -234,22 +251,22 @@ public:
 		auto dy = y2 - y1;
 		auto ay = abs (dy);
 		if (ax + ay == 0)
-			{
+		{
 			// if (the two points are the same, return 360.
 			t = 360.0 / 9.0;
-			}
+		}
 		else
-			{
+		{
 			t = dy / (ax + ay);
-			}
+		}
 		if (dx < 0)
-			{
+		{
 			t = 2 - t;
-			}
+		}
 		else if (dy < 0)
-			{
+		{
 			t = 4 + t;
-			}
+		}
 		return t * 90;
 	}
 
@@ -273,25 +290,25 @@ public:
 	{
 		std::vector<Vec2> result;
 		for (int i = 0; i < points.size(); i++)
-			{
+		{
 			auto pt = points.at (i);
 			auto t = pt.x;
 			auto y = pt.y;
 			float test_radius = center.x;
 			if (test_radius < radius2)
-				{
+			{
 				if ( (i != skip1) && (i != skip2) && (i != skip3))
-					{
+				{
 					auto dx = center.x - pt.x;
 					auto dy = center.y - pt.y;
 					test_radius = dx * dx + dy * dy;
-					}
-				}
-			else
-				{
-				return false;
 				}
 			}
+			else
+			{
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -340,22 +357,22 @@ public:
 		auto ymin = ul.y;
 		auto xmax = ur.x;
 		if (ymin < ur.y)
-			{
+		{
 			ymin = ur.y;
-			}
+		}
 		if (xmax > lr.x)
-			{
+		{
 			xmax = lr.x;
-			}
+		}
 		auto ymax = lr.y;
 		if (xmin < ll.x)
-			{
+		{
 			xmin = ll.x;
-			}
+		}
 		if (ymax > ll.y)
-			{
+		{
 			ymax = ll.y;
-			}
+		}
 		auto result = RectangleF (xmin, ymin, xmax - xmin, ymax - ymin);
 		//g_MinMaxBox = result; // For debugging.
 		return result;
@@ -381,25 +398,25 @@ public:
 		lr = ul;
 		// Search the other points.
 		for (int i = 0; i < points.size(); i++)
-			{
+		{
 			auto  pt = points[i];
 			if (-pt.x - pt.y > -ul.x - ul.y)
-				{
+			{
 				ul = pt;
-				}
-			if (pt.x - pt.y > ur1.x - ur1.y)
-				{
-				ur1 = pt;
-				}
-			if (-pt.x + pt.y > -ll.x + ll.y)
-				{
-				ll = pt;
-				}
-			if (pt.x + pt.y > lr.x + lr.y)
-				{
-				lr = pt;
-				}
 			}
+			if (pt.x - pt.y > ur1.x - ur1.y)
+			{
+				ur1 = pt;
+			}
+			if (-pt.x + pt.y > -ll.x + ll.y)
+			{
+				ll = pt;
+			}
+			if (pt.x + pt.y > lr.x + lr.y)
+			{
+				lr = pt;
+			}
+		}
 		//for debugging
 		/*g_MinMaxCorners[0] = ul;
 		g_MinMaxCorners[1] = ur1;
@@ -421,13 +438,13 @@ public:
 		// Cull the points.
 		std::vector<Vec2> results;
 		for (int i = 0; i < points.size(); i++)
-			{
+		{
 			auto pt = points.at (i);
 			if (pt.x <= culling_box.xyzw[0] || pt.x >= culling_box.xyzw[1]
-			        || pt.y <= culling_box.xyzw[2]
-			        || pt.y >= culling_box.xyzw[3])
-				{ results.push_back (pt); }
-			}
+			    || pt.y <= culling_box.xyzw[2]
+			    || pt.y >= culling_box.xyzw[3])
+			{ results.push_back (pt); }
+		}
 		// For debugging.
 		/*g_NonCulledPoints[results.size()];
 		for (int i = 0; i < results.size(); i++)
