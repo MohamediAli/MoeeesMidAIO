@@ -388,7 +388,7 @@ int Orianna::GetEHits()
 		{
 			Vec3 position;
 			GPrediction->FindBestCastPositionEx (player->GetPosition(), 0, E->Range(), E->Radius(), true, false, true, position, hits);
-			if (Extensions::GetDistance (position, StationaryBall->GetPosition()) < 100)
+			if (Extensions::GetDistance (position, NewOriannaBall) < 100)
 			{
 				return hits.size();
 			}
@@ -1041,9 +1041,9 @@ void Orianna::CastQ (IUnit* target)
 	}
 	Vec3 castOn;
 	BestCastPosition (target, Q, castOn, false);
-	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance (target, StationaryBall) >= 250)
+	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance (target, NewOriannaBall) >= 250)
 	{
-		auto directTravelTime = Extensions::GetDistance (StationaryBall, castOn) / Q->Speed();
+		auto directTravelTime = Extensions::GetDistance (NewOriannaBall, castOn) / Q->Speed();
 		auto bestEqTravelTime = FLT_MAX;
 		std::vector<std::pair<int, IUnit*>> bestAlly;
 		for (auto ally : GEntityList->GetAllHeros (true, false))
@@ -1065,7 +1065,7 @@ void Orianna::CastQ (IUnit* target)
 		{
 			if (entry.second != nullptr)
 			{
-				auto t = Extensions::GetDistance (StationaryBall, entry.second->ServerPosition()) / E->Speed() +
+				auto t = Extensions::GetDistance (NewOriannaBall, entry.second->ServerPosition()) / E->Speed() +
 				         Extensions::GetDistance (entry.second, castOn) / Q->Speed();
 				if (t < bestEqTravelTime)
 				{
@@ -1170,7 +1170,7 @@ void Orianna::eLogic()
 	{
 		return;
 	}
-	auto ballEnemies = Extensions::EnemiesInRange (StationaryBall->GetPosition(), 600);
+	auto ballEnemies = Extensions::EnemiesInRange (NewOriannaBall, 600);
 	int playerEnemies = 0;
 	if (player != StationaryBall)
 	{
@@ -1372,12 +1372,12 @@ void Orianna::Harass()
 	{
 		eLogic();
 	}
-	if (W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat() && ( (isBallMoving() && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
+	if (W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat())
 	{
-		W->CastOnPlayer();
+		WLogic();
 	}
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-	if (target == nullptr || !target->IsHero() || !target->IsValidTarget())
+	if (target == nullptr || !target->IsHero() || !target->IsValidTarget() || isBallMoving())
 	{
 		return;
 	}
@@ -1564,7 +1564,7 @@ void Orianna::Automatic()
 {
 	if (Hero->HasBuff ("OrianaGhostSelf"))
 	{
-		if (GGame->TickCount() -lastOriTick > 300)
+		if (GGame->TickCount() -lastOriTick > 200)
 		{
 			NewOriannaBall = Hero->GetPosition();
 		}
@@ -1576,7 +1576,7 @@ void Orianna::Automatic()
 	{
 		if (target->HasBuff ("orianaghost"))
 		{
-			if (GGame->TickCount() - lastOriTick > 300)
+			if (GGame->TickCount() - lastOriTick > 200)
 			{
 				NewOriannaBall = target->GetPosition();
 			}
@@ -1598,9 +1598,9 @@ void Orianna::Automatic()
 		}
 		CastQ (target1);
 	}
-	if (autoW->Enabled() && W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat() && ( (Extensions::IsValid (GetMovingBallPosW()) && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
+	if (autoW->Enabled() && W->IsReady() && harassW->Enabled() && Hero->ManaPercent() > harassWMana->GetFloat())
 	{
-		W->CastOnPlayer();
+		WLogic();
 	}
 	if (GetAsyncKeyState (FlashUlt->GetInteger()) && !GGame->IsChatOpen() && GUtility->IsLeagueWindowFocused())
 	{
