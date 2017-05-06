@@ -32,7 +32,10 @@ private:
 	IUnit* BallMissile;
 	bool PriorityHit();
 	bool IsOneVsOne();
+	std::vector<std::pair<int, std::vector<IUnit*>>> GetHits (ISpell2* spell);
+	void WLogic();
 	float rD1v1 (IUnit* Target);
+	float eDmg (IUnit* Target);
 	bool isChasing (IUnit* Target);
 	bool SpellCheckKS (IUnit* pos, int range, float delay, IUnit* target);
 	bool BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision);
@@ -41,6 +44,10 @@ private:
 	bool IsInRectangle (Vec3 Start, Vec3 End, Vec3 pointTest, int radius);
 	bool PointInRectangle (Vec2 A, Vec2 B, Vec2 C, Vec2 D, Vec2 m);
 	Vec2 vect2d (Vec2 p1, Vec2 p2);
+	bool RLogic();
+	float eMinionHits();
+	float DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR, int rTicks = 0);
+	Vec3 NewOriannaBall = Vec3 (0,0,0) ;
 	void SaveTeam();
 	float BallDelay();
 	//std::tuple<int, Vec3> GetBestQLocation (IUnit* mainTarget);
@@ -50,7 +57,7 @@ private:
 	Vec3 GetMovingBallPosW();
 	bool pairCompare (const std::pair<int, Vec2>& firstElem, const std::pair<int, Vec2>& secondElem);
 	void TeamFightQ (Vec3 pos);
-	void FarmQ (Vec3 pos);
+	std::vector<std::pair<int, Vec2>> FarmQ (Vec3 pos);
 	int GetEHits();
 	void CastE (IUnit* target);
 	void CastQ (IUnit* target);
@@ -155,5 +162,5 @@ private:
 	IMenuOption* autoQ;
 	IMenuOption* autoW;
 	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin, *eHelper, *eHelperKey,
-	            *DivineColor1, *DivineColor2, *DivineColor3, *DivineColor4, *DivineColor5, *DivineColor6, *DivineColor7, *DivineColor8 ;
+	            *DivineColor1, *DivineColor2, *DivineColor3, *DivineColor4, *DivineColor5, *DivineColor6, *DivineColor7, *DivineColor8, *laneClearWMin ;
 };

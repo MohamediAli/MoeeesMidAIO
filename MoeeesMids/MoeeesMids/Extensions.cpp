@@ -4,10 +4,10 @@ eMinionType Extensions::GetMinionType (IUnit* minion)
 {
 	static std::vector<std::string> normalMinions =
 	{
-		"sru_chaosminionmelee", "sru_chaosminionranged",
-		"sru_orderminionmelee", "sru_orderminionranged",
-		"ha_chaosminionmelee", "ha_chaosminionranged",
-		"ha_orderminionmelee", "ha_orderminionranged"
+		"sru_chaosminionranged",
+		"sru_orderminionranged",
+		"ha_chaosminionranged",
+		"ha_orderminionranged"
 	};
 	static std::vector<std::string> siegeMinions =
 	{
@@ -71,6 +71,33 @@ eMinionType Extensions::GetMinionType (IUnit* minion)
 	}
 	return kMinionUnknown;
 }
+
+float Extensions::SegmenDistance (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd, bool onlyIfOnSegment, bool squared)
+{
+	auto objects = Extensions::ProjectOn (point, segmentStart, segmentEnd);
+	if (objects.IsOnSegment || onlyIfOnSegment == false)
+	{
+		return squared
+		       ? Extensions::GetDistanceSqr (objects.SegmentPoint, point)
+		       : Extensions::GetDistance (objects.SegmentPoint, point);
+	}
+	return FLT_MAX;
+}
+/*
+int CountHits(std::vector<Vec3> points, Vec3 castPosition)
+{
+	auto count = 0;
+	for (auto entry : points)
+	{
+		if (entry.To2D().Distance(castPosition.To2D(), this.From.To2D(), true, true)
+			< Math.Pow(this.Width + extraWidth, 2))
+		{
+			return true;
+		}
+
+	}
+	return points.Count(point = > this.WillHit(point, castPosition));
+}*/
 
 bool Extensions::isOnSegment (Vec2 * seg1, Vec2 * seg2, Vec2 * point)
 {

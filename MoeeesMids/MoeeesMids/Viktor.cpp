@@ -202,7 +202,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 	auto minHits = eMin->GetInteger();
 	if (!jg)
 	{
-		for (auto minion : GEntityList->GetAllMinions (false, true, true))
+		for (auto minion : GEntityList->GetAllMinions (false, true, false))
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= 1225)
 			{
@@ -880,7 +880,7 @@ void Viktor::JungleClear()
 	{
 		for (auto mob : GEntityList->GetAllMinions (false, false, true))
 		{
-			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= 525)
+			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= 525)
 			{
 				if (!mob->IsDead())
 				{

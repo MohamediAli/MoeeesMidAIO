@@ -22,6 +22,7 @@ Vec4 GagongColorsMove[9];
 Vec3 UpVec (0, 1, 0);
 float lastTimeStamp;
 float gagongAngle;
+int lastOriTick = 5;
 
 Orianna::~Orianna()
 {
@@ -51,11 +52,11 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Q = GPluginSDK->CreateSpell2 (kSlotQ, kCircleCast, true, true, kCollidesWithYasuoWall);
 	Q->SetSkillshot (0.f, 80.f, 1400.f, 825.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
-	W->SetSkillshot (0.f, 220.f, FLT_MAX, 245.f);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kTargetCast, false, true, kCollidesWithYasuoWall);
+	W->SetSkillshot (0.f, 240.f, FLT_MAX, 245.f);
+	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, true, kCollidesWithYasuoWall);
 	E->SetSkillshot (0.25f, 80.f, 1900.f, 1095.f);
 	R = GPluginSDK->CreateSpell2 (kSlotR, kCircleCast, false, true, kCollidesWithNothing);
-	R->SetSkillshot (0.6f, 365.f, FLT_MAX, 325.f);
+	R->SetSkillshot (0.6f, 375.f, FLT_MAX, 380.f);
 	RFlash = GPluginSDK->CreateSpell2 (kSlotR, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithNothing));
 	RFlash->SetSkillshot (0.25f, 60, FLT_MAX, 775);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
@@ -110,9 +111,12 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	extraAutos = oneVerusOne->AddInteger ("Add Extra Autos in Ult Damage Calc", 0, 5, 2);
 	Laneclear = LaneClearMenu->CheckBox ("Use Spells in Lane Clear", true);
 	laneClearQ = LaneClearMenu->CheckBox ("Wave Clear with Q", true);
-	laneClearQMana = LaneClearMenu->AddFloat (":: Only Wave Clear Q if Mana >", 0, 100, 50);
+	laneClearQMana = LaneClearMenu->AddFloat (":: Only Wave Clear Q if Mana >", 0, 100, 30);
 	laneClearW = LaneClearMenu->CheckBox ("Wave Clear with W", true);
-	laneClearWMana = LaneClearMenu->AddFloat (":: Only Wave Clear W if Mana >", 0, 100, 50);
+//	laneClearWMin = LaneClearMenu->AddInteger ("Minimum Minions to W", 1, 5, 3);
+	laneClearWMana = LaneClearMenu->AddFloat (":: Only Wave Clear W if Mana >", 0, 100, 30);
+	laneClearE = LaneClearMenu->CheckBox ("Wave Clear with E", true);
+	laneClearEMana = LaneClearMenu->AddFloat (":: Only Wave Clear E if Mana >", 0, 100, 60);
 	mouseClear = LaneClearMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
 	PredType = { "Oracle", "Core", "mPred" };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 2, PredType);
@@ -326,12 +330,12 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 {
 	if (Slot == kSlotR && BlockR->Enabled() && FlashUlting == false)
 	{
-		if (SpellCheck (StationaryBall, R->Radius(), 0.2) == 0)
+		if (Extensions::EnemiesInRange (NewOriannaBall, R->Radius()) == 0)
 		{
 			return false;
 		}
 	}
-	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetInteger())
+	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && RLogic())
 	{
 		return false;
 	}
@@ -573,9 +577,19 @@ void Orianna::OnCreate (IUnit* object)
 	auto objectName = object->GetObjectName();
 	if (object->IsMissile() && GMissileData->GetCaster (object) == GEntityList->Player())
 	{
-		if (strcmp (GMissileData->GetName (object), "OrianaIzuna") == 0 || strcmp (GMissileData->GetName (object), "OrianaRedact") == 0)
+		if (strcmp (GMissileData->GetName (object), "OrianaIzuna") == 0)
 		{
-			BallMissile = object;
+			GPluginSDK->DelayFunctionCall (Extensions::GetDistance (NewOriannaBall, GMissileData->GetEndPosition (object)) / 1.2 - 100 - GGame->Latency(), [=]()
+			{
+				NewOriannaBall = GMissileData->GetEndPosition (object);
+			});
+			NewOriannaBall = Vec3 (0, 0, 0);
+			lastOriTick = GGame->TickCount();
+		}
+		else if (strcmp (GMissileData->GetName (object), "OrianaRedact") == 0)
+		{
+			NewOriannaBall = Vec3 (0, 0, 0);
+			lastOriTick = GGame->TickCount();
 		}
 	}
 	if (strcmp (object->GetObjectName(), "Orianna_Base_Z_Izuna_nova.troy") == 0)
@@ -655,7 +669,7 @@ void Orianna::TeamFightQ (Vec3 pos)
 	return;
 }
 
-void Orianna::FarmQ (Vec3 pos)
+std::vector<std::pair<int, Vec2>> Orianna::FarmQ (Vec3 pos) //back line
 {
 	auto posChecked = 0;
 	auto maxRange = R->Radius() + Q->Range();
@@ -663,7 +677,7 @@ void Orianna::FarmQ (Vec3 pos)
 	auto maxPosChecked = (int) (maxRange / posRadius);
 	auto radiusIndex = 0;
 	bool menu;
-	std::vector<std::pair<int, Vec2>> CloseQPositions;
+	std::vector<std::pair<int, Vec2>> HighestMinionCount;
 	std::vector<std::pair<int, Vec2>> possibleQPositions;
 	while (posChecked < maxPosChecked)
 	{
@@ -677,7 +691,7 @@ void Orianna::FarmQ (Vec3 pos)
 			auto xPos = static_cast<float> (floor (pos.x + curRadius * cos (cRadians)));
 			auto zPos = static_cast<float> (floor (pos.z + curRadius * sin (cRadians)));
 			auto posFor2D = Vec2 (xPos, zPos);
-			auto count = Extensions::CountMinionsInTargetRange (Extensions::To3D (posFor2D), Q->Radius());
+			auto count = Extensions::CountMinionsInTargetRange (Extensions::To3D (posFor2D), W->Radius());
 			//GGame->PrintChat(std::to_string(count).c_str());
 			if (GNavMesh->IsPointWall (Extensions::To3D (posFor2D)))
 			{
@@ -703,11 +717,15 @@ void Orianna::FarmQ (Vec3 pos)
 	//	for (auto entry : CloseQPositions) {
 	//		Q->CastOnPosition(To3D(entry.second));
 	//	}
-	for (auto entry : possibleQPositions)
-	{
-		Q->CastOnPosition (Extensions::To3D (entry.second));
-		return;
-	}
+	HighestMinionCount.push_back (std::make_pair (possibleQPositions[0].first, possibleQPositions[0].second));
+	return HighestMinionCount;
+	/*
+		for (auto entry : possibleQPositions)
+		{
+			if (entry.first >= 3)
+			Q->CastOnPosition (Extensions::To3D (entry.second));
+			return;
+		}*/
 }
 
 
@@ -1077,7 +1095,11 @@ void Orianna::CastQ (IUnit* target)
 			if (entries.first > 1)
 			{
 				Q->CastOnPosition (entries.second);
-				return;
+				break;
+			}
+			else
+			{
+				Q->CastOnTarget (target);
 			}
 		}
 	}
@@ -1114,10 +1136,37 @@ bool Orianna::isChasing (IUnit* Target)
 	}
 }
 
+float Orianna::eMinionHits()
+{
+	auto length = Extensions::GetDistance (Hero->GetPosition(), NewOriannaBall);
+	std::vector<Vec3> allMinions;
+	for (auto minion : GEntityList->GetAllMinions (false, true, false))
+	{
+		if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= length)
+		{
+			if (!minion->IsDead())
+			{
+				allMinions.push_back (minion->GetPosition());
+			}
+		}
+	}
+	auto count = 0;
+	for (auto minionVec2 : allMinions)
+	{
+		if (Extensions::SegmenDistance (minionVec2.To2D(), NewOriannaBall.To2D(), Hero->GetPosition().To2D(), false, true) <= 130 * 130)
+		{
+			count++;
+		}
+	}
+//	GGame->PrintChat (std::to_string (count).c_str());
+	return count;
+}
+
+
 void Orianna::eLogic()
 {
 	auto player = Hero;//sebby start
-	if (isBallMoving() || PriorityHit() || !E->IsReady() || SpellCheck (BallMissile, R->Radius(), R->GetDelay() + 0.5) >= ultMin->GetInteger() || Extensions::Validate (StationaryBall) && SpellCheck (StationaryBall, R->Radius(), R->GetDelay()) >= ultMin->GetInteger())
+	if (isBallMoving() || PriorityHit() || !E->IsReady() || RLogic())
 	{
 		return;
 	}
@@ -1152,15 +1201,107 @@ void Orianna::eLogic()
 	}
 }
 
+std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spell)
+{
+	std::vector<std::pair<int, std::vector<IUnit*>>> final;
+	std::vector<IUnit*> hits;
+	auto range = spell->Range() * spell->Range();
+	auto width = spell->Radius() * spell->Radius();
+	for (auto targets : GEntityList->GetAllHeros (false, true))
+	{
+		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
+		{
+			if (Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= width)
+			{
+				hits.push_back (targets);
+			}
+		}
+	}
+	final.push_back (std::make_pair (hits.size(), hits));
+	return  final;
+}
+
+void Orianna::WLogic()
+{
+	auto hits = GetHits (W);
+	for (auto entry : hits)
+	{
+		if (entry.first > 0)
+		{
+			W->CastOnPlayer();
+			return;
+		}
+	}
+}
+
+bool Orianna::RLogic()
+{
+	auto hits = GetHits (R);
+	for (auto entry : hits)
+	{
+		if (entry.first >= ultMin->GetInteger())
+		{
+			R->CastOnPlayer();
+			return true;
+		}
+		for (auto champs : entry.second)
+		{
+			if (GTargetSelector->GetHeroPriority (champs) >= priorityMin->GetInteger())
+			{
+				R->CastOnPlayer();
+				return true;
+			}
+		}
+	}
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
+	if (target == nullptr || !target->IsHero() || target->IsDead() || !target->IsVisible())
+	{
+		return false;
+	}
+	if (onev1->Enabled() && IsOneVsOne() && DPS (target, true, true, true, true, 2) >= target->GetHealth() && DPS (target, true, true, false, false) < target->GetHealth())
+	{
+		for (auto entry : hits)
+		{
+			for (auto champs : entry.second)
+			{
+				if (champs == target)
+				{
+					R->CastOnPlayer();
+					return  true;
+				}
+			}
+		}
+	}
+	if (KillStealR->Enabled() && DPS (target,false,false,false,true) >= target->GetHealth())
+	{
+		for (auto entry : hits)
+		{
+			for (auto champs : entry.second)
+			{
+				if (champs == target)
+				{
+					R->CastOnPlayer();
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 void Orianna::Combo()
 {
-	if (W->IsReady() && ComboW->Enabled() && ( (isBallMoving() && Extensions::EnemiesInRange (GetMovingBallPosW(), W->Radius() - 45)) || (Extensions::Validate (StationaryBall) && Extensions::EnemiesInRange (StationaryBall->GetPosition(), W->Radius()))))
+	if (W->IsReady() && ComboW->Enabled())
 	{
-		W->CastOnPlayer();
+		WLogic();
 	}
 	if (ComboE->Enabled())
 	{
 		eLogic();
+	}
+	if (R->IsReady() && ComboR->Enabled())
+	{
+		RLogic();
 	}
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || target->IsDead() || isBallMoving() || !target->IsVisible())
@@ -1178,34 +1319,34 @@ void Orianna::Combo()
 		CastQ (target);
 		return;
 	}
+	/*
 	auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
-	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || isBallMoving() || !target1->IsVisible())
+	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || !target1->IsVisible())
 	{
 		return;
 	}
-	if (R->IsReady() && ComboR->Enabled() && Extensions::Validate (StationaryBall))
-	{
-		if (PriorityHit())
+
+
+		if (PriorityHit() && Extensions::Validate (StationaryBall))
 		{
 			R->CastOnPlayer();
 			return;
 		}
-		else if (SpellCheck (StationaryBall, R->Radius(), 0.5) >= ultMin->GetInteger())
+		else if (SpellCheck (StationaryBall, R->Radius(), 0.3) >= ultMin->GetInteger() || (isBallMoving() && Extensions::EnemiesInRange (GetMovingBallPosW(), R->Radius() - 45) >= ultMin->GetInteger()))
 		{
 			R->CastOnPlayer();
 			return;
 		}
-		else if (onev1->Enabled() && IsOneVsOne() && rD1v1 (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall, R->Range(), 0.5, target1)))
+		else if (onev1->Enabled() && IsOneVsOne() && Extensions::Validate (StationaryBall) && rD1v1 (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall, R->Range(), 0.5, target1)))
 		{
 			R->CastOnPlayer();
 			return;
 		}
-		else if (KillStealR->Enabled() && rDmg (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall, R->Range(), 0.5, target1)))
+		else if (KillStealR->Enabled() &&  rDmg (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall, R->Range(), 0.5, target1)))
 		{
 			R->CastOnPlayer();
 			return;
-		}
-	}
+		}*/
 	// check if more than X target to try aoe q position
 	//Cast on self
 	/*	if (ShieldTeamate->Enabled())
@@ -1268,8 +1409,126 @@ bool Orianna::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam
 	return false;
 }
 
+bool myOrifunctionHP (IUnit* i, IUnit* j) { return (i->GetHealth() >= j->GetHealth()); }
+
 void Orianna::LaneClear()
 {
+	if (Laneclear->Enabled())
+	{
+		std::vector<std::pair<int, Vec2>> BestPos;
+		std::vector<std::pair<int, Vec2>> BestPosRanged;
+		std::vector<std::pair<int, Vec2>> FinalPos;
+		std::vector<Vec3> allMinions;
+		std::vector<IUnit*> allMinionsUnit;
+		std::vector<Vec3> rangedMinions;
+		for (auto minion : GEntityList->GetAllMinions (false, true, false))
+		{
+			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
+			{
+				if (!minion->IsDead())
+				{
+					allMinions.push_back (minion->GetPosition());
+					allMinionsUnit.push_back (minion);
+					if (Extensions::GetMinionType (minion) == kMinionNormal || Extensions::GetMinionType (minion) == kMinionSiege)
+					{
+						rangedMinions.push_back (minion->GetPosition());
+					}
+				}
+			}
+		}
+		if (laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat())
+		{
+			auto inWrange = 0;
+			auto wKillable = 0;
+			for (auto wm : allMinionsUnit)
+			{
+				if (Extensions::GetDistance (wm,NewOriannaBall) <= W->Range())
+				{
+					inWrange++;
+					if (DPS (wm,false,false,false,false) > wm->GetHealth())
+					{
+						wKillable++;
+					}
+				}
+			}
+			if (inWrange >= 3 || wKillable >= 2)
+			{
+				W->CastOnPlayer();
+				return;
+			}
+		}
+		if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat())
+		{
+			if (laneClearW->Enabled() && allMinions.size() > 1)
+			{
+				for (auto x : allMinions)
+				{
+					BestPos.push_back (FarmQ (x) [0]);
+				}
+				std::sort (BestPos.begin(), BestPos.end(), [] (auto &left, auto &right)
+				{
+					return left.first > right.first;
+				});
+				if (rangedMinions.size() > 0)
+				{
+					for (auto x : rangedMinions)
+					{
+						BestPosRanged.push_back (FarmQ (x) [0]);
+					}
+					std::sort (BestPosRanged.begin(), BestPosRanged.end(), [] (auto &left, auto &right)
+					{
+						return left.first > right.first;
+					});
+					FinalPos = (BestPos[0].first > BestPosRanged[0].first + 1) ? BestPos : BestPosRanged;
+				}
+				else
+				{
+					FinalPos = BestPos;
+				}
+				//	auto finalPos = BestPos[0].first > BestPosRanged[0].first + 1 ? BestPos : BestPosRanged;
+				if (FinalPos[0].first > 0)
+				{
+					Q->CastOnPosition (Extensions::To3D (FinalPos[0].second));
+				}
+			}
+			else
+			{
+				for (auto kill : allMinionsUnit)
+				{
+					if (DPS (kill, true, false, false, false) >= kill->GetHealth())
+					{
+						Q->CastOnTarget (kill);
+						break;
+					}
+				}
+			}
+		}
+		if (E->IsReady() && laneClearE->Enabled() && Hero->ManaPercent() > laneClearEMana->GetFloat() && eMinionHits() >= 3 && (!W->IsReady() || !laneClearW->Enabled()))
+		{
+			E->CastOnPlayer();
+		}
+		std::vector<IUnit*> allMobs;
+		for (auto mob : GEntityList->GetAllMinions (false, false, true))
+		{
+			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= Q->Range())
+			{
+				if (!mob->IsDead())
+				{
+					allMobs.push_back (mob);
+					if (W->IsReady() && laneClearW->Enabled() && Hero->ManaPercent() > laneClearWMana->GetFloat() && Extensions::GetDistance (mob, NewOriannaBall) <= W->Range())
+					{
+						W->CastOnPlayer();
+					}
+				}
+			}
+		}
+		if (allMobs.size() >= 1 && Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat())
+		{
+			std::sort (allMobs.begin(), allMobs.end(), myOrifunctionHP);
+			Q->CastOnUnit (allMobs[0]);
+		}
+	}
+	/*
 	if (Laneclear->Enabled() && Extensions::Validate (StationaryBall))
 	{
 		if (Extensions::CountMinionsInTargetRange (StationaryBall->GetPosition(), W->Radius() + 25) > 2 && laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && (!isBallMoving()))
@@ -1284,20 +1543,20 @@ void Orianna::LaneClear()
 				{
 					if (!minion->IsDead())
 					{
-						/*
+
 						auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 350, 350);
 						if (hp < qDmg (minion))
 						{
 						Q->CastOnPosition (minion->GetPosition());
 						return;
-						}*/
+						}
 						FarmQ (minion->GetPosition());
 						return;
 					}
 				}
 			}
 		}
-	}
+	}*/
 }
 
 
@@ -1305,6 +1564,10 @@ void Orianna::Automatic()
 {
 	if (Hero->HasBuff ("OrianaGhostSelf"))
 	{
+		if (GGame->TickCount() -lastOriTick > 300)
+		{
+			NewOriannaBall = Hero->GetPosition();
+		}
 		BallPosition = Hero->GetPosition();
 		StationaryBall = Hero;
 	}
@@ -1313,6 +1576,10 @@ void Orianna::Automatic()
 	{
 		if (target->HasBuff ("orianaghost"))
 		{
+			if (GGame->TickCount() - lastOriTick > 300)
+			{
+				NewOriannaBall = target->GetPosition();
+			}
 			BallPosition = target->GetPosition();
 			StationaryBall = target;
 			result.push_back (target);
@@ -1397,6 +1664,15 @@ float Orianna::wDmg (IUnit* Target)
 	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
 }
 
+float Orianna::eDmg (IUnit* Target)
+{
+	float InitDamage = 0;
+	auto Level = (GEntityList->Player()->GetSpellLevel (kSlotE));
+	double d[] = { 60, 90, 120, 150, 180 };
+	InitDamage = d[Level] + 0.3 * Hero->BonusMagicDamage();
+	return GDamage->CalcMagicDamage (Hero, Target, InitDamage);
+}
+
 float Orianna::rDmg (IUnit* Target)
 {
 	float InitDamage = 0;
@@ -1434,11 +1710,51 @@ float Orianna::rD1v1 (IUnit* Target)
 		InitDamage += 300 + BonusStackDamage;
 	}
 	// MAGIC DAMAGE: 150 / 225 / 300 (+ 70% AP)
-	auto total = GDamage->CalcPhysicalDamage (Hero, Target, GDamage->GetAutoAttackDamage (Hero, Hero, true) * extraAutos->GetInteger()) + GDamage->CalcMagicDamage (Hero, Target, InitDamage);
+	auto total = GDamage->CalcPhysicalDamage (Hero, Target, GDamage->GetAutoAttackDamage (Hero, Target, true) * extraAutos->GetInteger()) + GDamage->CalcMagicDamage (Hero, Target, InitDamage);
 	return total;
 }
-
-void Orianna::KillSteal() {}
+float Orianna::DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR, int rTicks)
+{
+	auto total = 0.f;
+	if (dpsQ && Q->IsReady())
+	{
+		total += qDmg (target);
+	}
+	if (dpsW && W->IsReady())
+	{
+		{
+			total += wDmg (target);
+		}
+	}
+	if (dpsE && E->IsReady())
+	{
+		{
+			total += eDmg (target);
+		}
+	}
+	if (dpsR && R->IsReady())
+	{
+		total += rDmg (target);
+	}
+	//Sheen
+	if (GEntityList->Player()->HasItemId (3057))
+	{
+		total += GDamage->CalcPhysicalDamage (GEntityList->Player(), target, GEntityList->Player()->TotalPhysicalDamage() - GEntityList->Player()->BonusDamage());
+	}
+	//Lich Bane
+	if (GEntityList->Player()->HasItemId (3100))
+	{
+		total += GDamage->CalcMagicDamage (GEntityList->Player(), target, 0.5 * GEntityList->Player()->TotalMagicDamage() + 0.75 * (GEntityList->Player()->TotalPhysicalDamage() - GEntityList->Player()->BonusDamage()));
+	}
+	// Ludens Echo
+	if (GEntityList->Player()->HasBuff ("itemmagicshankcharge") && GBuffData->GetStacks ("itemmagicshankcharge") > 85)
+	{
+		total += GDamage->CalcMagicDamage (GEntityList->Player(), target, 100 + GEntityList->Player()->TotalMagicDamage() * 0.1);
+	}
+	total += GDamage->CalcPhysicalDamage (Hero, target, GDamage->GetAutoAttackDamage (Hero, target, true) * rTicks);
+	return (float) total;
+	//credit lizzarin for most of logic here
+}
 
 
 

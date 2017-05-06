@@ -105,6 +105,7 @@ float GetDistance (IUnit* from, Vec3 to);
 float GetDistance (Vec2 from, Vec2 to);
 float GetDistanceSqr (Vec2 from, Vec2 to);
 int CountEnemiesInRange (float range);
+float SegmenDistance (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd, bool onlyIfOnSegment, bool squared);
 bool IsValid (Vec2 p);
 bool IsValid (Vec3 p);
 Vec3 To3D (Vec2 p);
