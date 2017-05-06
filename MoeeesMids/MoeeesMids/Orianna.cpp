@@ -833,9 +833,10 @@ bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosit
 			{
 				TravelTime = ( (EstimatedMaxPosition - NewOriannaBall).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 				EstimatedMaxPosition = (Unit->ServerPosition()).Extend (Path.at (1), (Unit->MovementSpeed() * TravelTime) * 0.5);
-				GRender->DrawCircle (EstimatedMaxPosition, 90, Vec4 (0, 255, 107, 255));
+				//GRender->DrawCircle (EstimatedMaxPosition, 90, Vec4 (0, 255, 107, 255));
 			}
 			CastPosition = EstimatedMaxPosition.Extend (Unit->ServerPosition(), Unit->BoundingRadius() + Skillshot->Radius() * 0.8);
+			//	GRender->DrawCircle (CastPosition, 90, Vec4 (0, 255, 0, 255));
 		}
 		else
 		{
