@@ -324,6 +324,8 @@ void Orianna::OnRender()
 			GRender->DrawTextW (Vec2 (pos.x + 72, pos.y + 10), Vec4 (0, 255, 0, 255), "LANE CLEAR ON");
 		}
 	}
+	Vec3 Pos;
+	BestCastPosition (GTargetSelector->GetFocusedTarget(), Q, Pos, false);
 }
 
 bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition)
@@ -819,36 +821,25 @@ bool Orianna::CheckForCollision (ISpell2* Skillshot, Vec3 CheckAtPosition)
 
 bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision)
 {
-	if (Extensions::Validate (StationaryBall) && Extensions::Validate (Unit))
+	if (Extensions::Validate (Unit))
 	{
-		float TravelTime = ( (Unit->GetPosition() - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
+		float TravelTime = ( (Unit->ServerPosition() - NewOriannaBall).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
 		auto Path = Unit->GetWaypointList();
 		if (Path.size() > 1)   //target is moving
 		{
 			Vec3 EstimatedMaxPosition;
-			EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
+			EstimatedMaxPosition = (Unit->ServerPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
 			for (int i = 0; i < 10; i++)
 			{
-				TravelTime = ( (EstimatedMaxPosition - StationaryBall->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
-				EstimatedMaxPosition = (Unit->GetPosition()).Extend (Path.at (1), Unit->MovementSpeed() * TravelTime);
+				TravelTime = ( (EstimatedMaxPosition - NewOriannaBall).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency()) / 1000;
+				EstimatedMaxPosition = (Unit->ServerPosition()).Extend (Path.at (1), (Unit->MovementSpeed() * TravelTime) * 0.5);
+				GRender->DrawCircle (EstimatedMaxPosition, 90, Vec4 (0, 255, 107, 255));
 			}
-			CastPosition = EstimatedMaxPosition.Extend (Unit->GetPosition(), Unit->BoundingRadius() + Skillshot->Radius() * 0.8);
-		}
-		else if (Extensions::Validate (Unit))
-		{
-			CastPosition = Unit->GetPosition();
+			CastPosition = EstimatedMaxPosition.Extend (Unit->ServerPosition(), Unit->BoundingRadius() + Skillshot->Radius() * 0.8);
 		}
 		else
 		{
-			return false;
-		}
-		if (CheckCollision)
-		{
-			return CheckForCollision (Skillshot, CastPosition);
-		}
-		else
-		{
-			return true;
+			CastPosition = Unit->ServerPosition();
 		}
 	}
 	return false;
