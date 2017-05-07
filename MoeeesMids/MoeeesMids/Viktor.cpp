@@ -48,7 +48,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	RInterveral = rMenu->AddInteger ("Interval to Follow R in 100ms", 1, 10, 5);
 	killStealR = rMenu->CheckBox ("Only ult if killable", true);
 	rInterrupt = rMenu->CheckBox ("Interrupt Spells with R", true);
-	PredType = { "Core", "mPred", };
+	PredType = { "Core", "Moeee's Pred", };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
 	Laneclear = MiscMenu->CheckBox ("Use Spells in Lane Clear", true);
 	mouseClear = MiscMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
