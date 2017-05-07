@@ -128,7 +128,7 @@ void Viktor::FleeMode()
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
 			{
-				if (!minion->IsDead())
+				if (!minion->IsDead() && minion->PhysicalDamage() > 1)
 				{
 					Q->CastOnTarget (minion);
 					break;
@@ -206,7 +206,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= 1225)
 			{
-				if (!minion->IsDead())
+				if (!minion->IsDead() && minion->PhysicalDamage() > 1)
 				{
 					allMinions.push_back (minion);
 					if ( (minion->ServerPosition().To2D() - GEntityList->Player()->ServerPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
@@ -223,7 +223,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsJungleCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= 1225)
 			{
-				if (!minion->IsDead())
+				if (!minion->IsDead() && minion->PhysicalDamage() > 1)
 				{
 					allMinions.push_back (minion);
 					if ( (minion->ServerPosition().To2D() - GEntityList->Player()->ServerPosition().To2D()).LengthSqr() <= E->Range() * E->Range())
@@ -374,7 +374,7 @@ void Viktor::eCast (IUnit* target)
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistanceSqr2D (Hero->ServerPosition(), minion->ServerPosition()) <= 1225)
 			{
-				if (!minion->IsDead())
+				if (!minion->IsDead() && minion->PhysicalDamage() > 1)
 				{
 					closeMinions.push_back (minion);
 					if (Extensions::GetDistanceSqr2D (minion->ServerPosition(), Hero->ServerPosition()) <= E->Range() * E->Range())
@@ -882,7 +882,7 @@ void Viktor::JungleClear()
 		{
 			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= 525)
 			{
-				if (!mob->IsDead())
+				if (!mob->IsDead() && mob->PhysicalDamage() > 1)
 				{
 					allMobs.push_back (mob);
 				}
@@ -912,7 +912,7 @@ void Viktor::LaneClear()
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->ServerPosition()) <= 525)
 			{
-				if (!minion->IsDead())
+				if (!minion->IsDead() && minion->PhysicalDamage() > 1)
 				{
 					if (qDmg (minion,true) + qDmg (minion,false) >= minion->GetHealth())
 					{

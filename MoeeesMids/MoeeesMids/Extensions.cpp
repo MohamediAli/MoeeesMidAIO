@@ -35,6 +35,13 @@ eMinionType Extensions::GetMinionType (IUnit* minion)
 		"sru_dragon_water", "sru_dragon_elder", "sru_riftherald",
 		"sru_baron"
 	};
+	static std::vector<std::string> normalREAL =
+	{
+		"sru_chaosminionmelee", "sru_chaosminionranged",
+		"sru_orderminionmelee", "sru_orderminionranged",
+		"ha_chaosminionmelee", "ha_chaosminionranged",
+		"ha_orderminionmelee", "ha_orderminionranged"
+	};
 	if (minion == nullptr)
 	{
 		return kMinionUnknown;
@@ -68,6 +75,10 @@ eMinionType Extensions::GetMinionType (IUnit* minion)
 	if (find (epicJungleCreeps.begin(), epicJungleCreeps.end(), baseSkinName) != epicJungleCreeps.end())
 	{
 		return kMinionJungleEpic;
+	}
+	if (find (normalREAL.begin(), normalREAL.end(), baseSkinName) != normalREAL.end())
+	{
+		return kMinionNormalREAL;
 	}
 	return kMinionUnknown;
 }
@@ -288,7 +299,7 @@ int Extensions::CountEnemiesInRange (float range)
 	int enemies = 0;
 	for (auto enemy : GEntityList->GetAllHeros (false, true))
 	{
-		if (enemy != nullptr && GetDistance (GEntityList->Player(), enemy) <= range)
+		if (enemy != nullptr && Validate (enemy) && GetDistance (GEntityList->Player(), enemy) <= range)
 		{
 			enemies++;
 		}
@@ -361,11 +372,11 @@ float Extensions::Dist2D (Vec2 from, Vec3 to)
 int Extensions::CountMinionsInTargetRange (Vec3 target, float range)
 {
 	auto minions = 0;
-	for (auto minion : GEntityList->GetAllMinions (false, true, true))
+	for (auto minion : GEntityList->GetAllMinions (false, true, false))
 	{
-		if (minion != nullptr && !minion->IsWard() && GetDistance (target, minion->GetPosition()) <= range)
+		if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (target, minion->ServerPosition()) <= range)
 		{
-			if (!minion->IsDead())
+			if (!minion->IsDead() && minion->PhysicalDamage() > 1)
 			{
 				minions++;
 			}

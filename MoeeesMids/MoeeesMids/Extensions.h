@@ -42,13 +42,14 @@ struct ProjectionInfo
 enum eMinionType
 {
 	kMinionUnknown = 0,
-	kMinionWard = (1 << 0),
-	kMinionNormal = (1 << 1),
-	kMinionSiege = (1 << 2),
-	kMinionSuper = (1 << 3),
-	kMinionJungleSmall = (1 << 4),
-	kMinionJungleBig = (1 << 5),
-	kMinionJungleEpic = (1 << 6)
+	kMinionWard = 1,
+	kMinionNormal = 2,
+	kMinionSiege = 3,
+	kMinionSuper = 4,
+	kMinionJungleSmall = 5,
+	kMinionJungleBig = 6,
+	kMinionJungleEpic = 7,
+	kMinionNormalREAL = 8
 };
 
 struct FarmLocationVik

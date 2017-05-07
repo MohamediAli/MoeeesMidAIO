@@ -53,7 +53,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Q->SetSkillshot (0.f, 130.f, 1200.f, 825.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
 	W->SetSkillshot (0.f, 240.f, FLT_MAX, 245.f);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, true, kCollidesWithYasuoWall);
+	E = GPluginSDK->CreateSpell2 (kSlotE, kTargetCast, true, true, kCollidesWithYasuoWall);
 	E->SetSkillshot (0.25f, 80.f, 1900.f, 1095.f);
 	R = GPluginSDK->CreateSpell2 (kSlotR, kCircleCast, false, true, kCollidesWithNothing);
 	R->SetSkillshot (0.6f, 375.f, FLT_MAX, 380.f);
@@ -1366,7 +1366,7 @@ void Orianna::LaneClear()
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
 			{
-				if (!minion->IsDead())
+				if (!minion->IsDead() && minion->PhysicalDamage() > 1);
 				{
 					allMinions.push_back (minion->GetPosition());
 					allMinionsUnit.push_back (minion);
@@ -1453,7 +1453,7 @@ void Orianna::LaneClear()
 		{
 			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= Q->Range())
 			{
-				if (!mob->IsDead())
+				if (!mob->IsDead() && mob->PhysicalDamage() > 1)
 				{
 					allMobs.push_back (mob);
 					if (W->IsReady() && laneClearW->Enabled() && Hero->ManaPercent() > laneClearWMana->GetFloat() && Extensions::GetDistance (mob, NewOriannaBall) <= W->Range())
