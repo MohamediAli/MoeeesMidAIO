@@ -317,8 +317,6 @@ void  Karthus::CastW()
 		}
 }
 
-
-
 Vec3 Karthus::FarmQ (Vec3 pos)
 {
 	auto posChecked = 0;

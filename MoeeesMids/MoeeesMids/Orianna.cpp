@@ -50,7 +50,7 @@ struct MovingBallDataW
 Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
 	Q = GPluginSDK->CreateSpell2 (kSlotQ, kCircleCast, true, true, kCollidesWithYasuoWall);
-	Q->SetSkillshot (0.f, 130.f, 1400.f, 825.f);
+	Q->SetSkillshot (0.f, 130.f, 1200.f, 825.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
 	W->SetSkillshot (0.f, 240.f, FLT_MAX, 245.f);
 	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, true, kCollidesWithYasuoWall);
@@ -94,7 +94,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	ComboE = eMenu->CheckBox ("Use E in Combo", true);
 	killStealE = eMenu->CheckBox ("Kill Steal with E", true);
 	harassE = eMenu->CheckBox ("Harass with E", false);
-	HealthPercentage = eMenu->AddFloat ("Shield  Self if Health Percent Below: ", 0, 100, 30);
+	HealthPercentage = eMenu->AddFloat ("Shield  Self if Health Percent Below: ", 0, 100, 25);
 	ShieldTeamate = eMenu->CheckBox ("Shield Teammates", true);
 	ShieldTeamatePercent = eMenu->AddFloat ("::Shield Teammate if Health Percent Below: ", 0, 100, 30);
 	autoEiniti = eMenu->CheckBox ("Automatically Shield Initiating Teammates", true);
@@ -333,6 +333,7 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 		{
 			return false;
 		}
+		return true;
 	}
 	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && RLogic())
 	{
@@ -922,13 +923,13 @@ std::vector<std::pair<int, Vec3>> Orianna::GetBestQLocation (IUnit* mainTarget) 
 	for (int j = 0; j < 5; j++)
 	{
 		auto mecResult = MEC::GetMec (points);
-		if (mecResult.Radius < (R->Range() - 75) && points.size() >= 3 && R->IsReady())
-		{
-			std::vector<std::pair<int, Vec3>> one;
-			one.push_back (std::make_pair (3, Extensions::To3D (mecResult.Center)));
-			return one;
-			break;
-		}
+		/*	if (mecResult.Radius < (R->Range() - 75) && points.size() >= 3 && R->IsReady())
+			{
+				std::vector<std::pair<int, Vec3>> one;
+				one.push_back (std::make_pair (3, Extensions::To3D (mecResult.Center)));
+				return one;
+				break;
+			}*/
 		if (mecResult.Radius < ( (W->Range() - 75))  && points.size() >= 2 && W->IsReady())
 		{
 			std::vector<std::pair<int, Vec3>> one;
@@ -989,13 +990,8 @@ void Orianna::CastQ (IUnit* target)
 	{
 		return;
 	}
-	float distance = Extensions::GetDistance (StationaryBall->GetPosition(), target->ServerPosition());
+	float distance = Extensions::GetDistance (NewOriannaBall, target->ServerPosition());
 	auto player = Hero;
-	if (E->IsReady() && player->GetMana() > R->ManaCost() + Q->ManaCost() + W->ManaCost() + E->ManaCost() && distance > Extensions::GetDistance (player->GetPosition(), target->ServerPosition()) + 330)
-	{
-		E->CastOnPlayer();
-		return;
-	}
 	Vec3 castOn;
 	BestCastPosition (target, Q, castOn, false);
 	if (ComboE->Enabled() && E->IsReady() && Extensions::GetDistance (target, NewOriannaBall) >= 250)
@@ -1800,7 +1796,7 @@ void Orianna::dmgdraw()
 				}
 				Vec4 BarColor;
 				HPBarColor->GetColor (&BarColor);
-				float totalDamage = QDamage + WDamage + EDamage + RDamage;
+				float totalDamage = DPS (hero,true,true,true,true,1);
 				Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
 			}
 		}
