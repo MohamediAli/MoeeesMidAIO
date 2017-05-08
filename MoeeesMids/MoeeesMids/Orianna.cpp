@@ -451,7 +451,7 @@ Vec3 Orianna::GetMovingBallPosW()
 }
 void Orianna::OnSpellCast (CastedSpell const& args)
 {
-	if (!args.Caster_->IsEnemy (Hero))
+	if (Extensions::Validate (args.Caster_) && !args.Caster_->IsEnemy (Hero))
 	{
 		if (std::string (args.Name_) == "OrianaIzunaCommand")
 		{
@@ -460,7 +460,7 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			{
 				// v = d/t => t = d/v
 				//	GGame->PrintChat (std::to_string (args.Speed_).c_str());
-				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
+				Vec3 StartPos = NewOriannaBall;
 				float dist = (args.EndPosition_ - StartPos).Length();
 				QBallData = { StartPos,args.EndPosition_, (dist / args.Speed_), GGame->Time() };
 				WBallData = { StartPos,args.EndPosition_, (dist / args.Speed_), GGame->Time() };
@@ -472,7 +472,7 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			if (&args.Position_ && &args.EndPosition_ && args.Speed_)
 			{
 				// v = d/t => t = d/v
-				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
+				Vec3 StartPos = NewOriannaBall;
 				float dist = (args.EndPosition_ - StartPos).Length();
 				QBallData = { StartPos,args.EndPosition_, (dist / 1900), GGame->Time() };
 			}
@@ -551,7 +551,7 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			{
 				if (std::string (args.Name_) == spellName)
 				{
-					E->CastOnTarget (args.Caster_);
+					CastE (args.Caster_);
 					break;
 				}
 			}
@@ -1141,15 +1141,23 @@ void Orianna::eLogic()
 	}
 	for (auto ally : GEntityList->GetAllHeros (true, false))
 	{
-		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && R->IsReady() && !isBallMoving() && Hero != ally)
+		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && R->IsReady() && !isBallMoving())
 		{
-			CastE (ally);
-			return;
+			if (ally != Hero)
+			{
+				CastE (ally);
+				return;
+			}
 		}
 	}
-	if (!Hero->IsDead() && Hero->HealthPercent() <= HealthPercentage->GetInteger() && Extensions::EnemiesInRange (Hero->GetPosition(), 600) > 0)
+	if (!Hero->IsDead() && Hero->HealthPercent() <= HealthPercentage->GetFloat() && Extensions::EnemiesInRange (Hero->GetPosition(), 600) > 0)
 	{
-		E->CastOnPlayer();
+		CastE (player);
+		return;
+	}
+	if (!Hero->IsDead() && Extensions::EnemiesInRange (Hero->GetPosition(), 360) > 0)
+	{
+		CastE (player);
 		return;
 	}
 }
