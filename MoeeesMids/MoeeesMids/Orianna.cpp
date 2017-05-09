@@ -328,7 +328,7 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 {
 	if (Slot == kSlotR && BlockR->Enabled() && FlashUlting == false)
 	{
-		if (Extensions::EnemiesInRange (NewOriannaBall, R->Radius()) == 0)
+		if (SpellCheck (NewOriannaBall, R->Radius(),0.3f)  == 0)
 		{
 			return false;
 		}
