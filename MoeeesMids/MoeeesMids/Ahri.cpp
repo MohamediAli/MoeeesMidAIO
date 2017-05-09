@@ -1,6 +1,7 @@
 #include "Ahri.h"
 #include "Extensions.h"
 #include "Rembrandt.h"
+#include <unordered_map>
 
 
 Ahri::~Ahri()
@@ -10,11 +11,11 @@ Ahri::~Ahri()
 
 Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
-	Q = GPluginSDK->CreateSpell2 (kSlotQ, kLineCast, false, false, kCollidesWithNothing);
-	Q->SetSkillshot (0.25f, 80, 1450, 840);
+	Q = GPluginSDK->CreateSpell2 (kSlotQ, kLineCast, true, false, static_cast<eCollisionFlags> (kCollidesWithYasuoWall));
+	Q->SetSkillshot (0.25f, 90.f, 1550.f, 870.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kTargetCast, false, false, kCollidesWithNothing);
 	W->SetOverrideRange (580);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
+	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
 	E->SetSkillshot (0.25f, 60, 1550, 950);
 	EFlash = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
 	EFlash->SetSkillshot (0.25f, 60, 3100, 1350);
@@ -63,7 +64,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
-	PredType = { "Core" };
+	PredType = { "Core","Moeee's Pred" };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 }
 
@@ -109,9 +110,109 @@ void Ahri::OnGameUpdate()
 
 void Ahri::OnRender()
 {
-	GRender->DrawCircle (Hero->GetPosition(), 30, Vec4 (255, 255, 0, 255), 2);
 	Drawing();
 	dmgdraw();
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
+	if (target == nullptr || !target->IsHero())
+	{
+		return;
+	}
+	for (auto x : mPrediction (target, E, Hero->GetPosition()))
+	{
+		GRender->DrawCircle (x.second, 30, Vec4 (255, 255, 0, 255), 2);
+	}
+}
+
+static std::unordered_map<int, float> mia;
+static std::unordered_map<int, float> waypoint_map;
+
+void Ahri::OnExitVisible (IUnit* Args)
+{
+	int id = Args->GetNetworkId();
+	mia[id] = GGame->Time();
+}
+
+std::vector<std::pair<float, Vec3>> Ahri::mPrediction (IUnit* unit, ISpell2* spell, Vec3 sourcePos)
+{
+	std::vector<std::pair<float, Vec3>> possiblePositions;
+	auto delay = spell->GetDelay();
+	auto speed = spell->Speed();
+	auto width = spell->Radius();
+	auto range = spell->Range();
+	auto source = sourcePos;
+	auto Path = unit->GetWaypointList();
+	auto pI = Vec3 (0, 0, 0);
+	auto id = unit->GetNetworkId();
+	float hitchance;
+	auto UnitDirection = (unit->ServerPosition() - sourcePos).VectorNormalize();
+	if (unit->IsMoving())  //maybe change later
+	{
+		auto serverPos = unit->ServerPosition() - UnitDirection * unit->BoundingRadius();
+		auto timeElapsed = 0;
+		auto timeMissing = (!unit->IsVisible()) * (GGame->Time() - mia[id]); //check this later z
+		for (auto wayPoint : unit->GetWaypointList())
+		{
+			auto distanceX = wayPoint.x - serverPos.x;
+			auto distanceY = wayPoint.y - serverPos.y;
+			auto distanceZ = wayPoint.z - serverPos.z;
+			auto magnitude = sqrt (distanceX * distanceX + distanceZ * distanceZ);
+			auto velocity = unit->MovementSpeed(); //do dashes later, faster but will more likely go to end position
+			auto travelTime = magnitude / velocity;
+			if (timeMissing < 1 && travelTime > timeMissing)
+			{
+				distanceX = (distanceX / magnitude) * velocity;
+				distanceY = distanceY / magnitude;
+				distanceZ = (distanceZ / magnitude) * velocity;
+			}
+			if (timeMissing > 0)
+			{
+				serverPos.x = serverPos.x + distanceX * timeMissing;
+				serverPos.y = serverPos.y + distanceY * timeMissing;
+				serverPos.z = serverPos.z + distanceZ * timeMissing;
+			}
+			auto t = GGame->Latency() / 1000 + delay;
+			// Calculate the interception time
+			if (speed != FLT_MAX)
+			{
+				auto a = (distanceX * distanceX) + (distanceZ * distanceZ) - (speed * speed);
+				auto b = 2 * ( (serverPos.x * distanceX) + (serverPos.z * distanceZ) - (source.x * distanceX) - (source.z * distanceZ));
+				auto c = (serverPos.x * serverPos.x) + (serverPos.z * serverPos.z) + (source.x * source.x) + (source.z * source.z) - (2 * source.x * serverPos.x) - (2 * source.z * serverPos.z);
+				auto discriminant = (b * b) - (4 * a * c);
+				auto t1 = (-b + sqrt (discriminant)) / (2 * a);
+				auto t2 = (-b - sqrt (discriminant)) / (2 * a);
+				//Greater of the two roots
+				t = t + max (t1, t2);
+			}
+			if (Path.size() > 1 || (t > 0 && t < timeElapsed + travelTime))
+			{
+				//GGame->PrintChat (std::to_string (width).c_str());
+				// Calculate the point of interception
+				if (timeMissing > 0)
+				{
+					pI.x = serverPos.x;
+					pI.y = serverPos.y;
+					pI.z = serverPos.z;
+				}
+				else
+				{
+					auto displacement = min ( (t - timeElapsed) * velocity, magnitude);
+					/*{
+						auto b = displacement;
+						auto c = displacement;
+						auto A = GSpellData->CastConeAngle (spell);
+						//	width = sqrt (pow (b, 2) + pow (c, 2) - 2 * b * c * cos (A));
+					}*/
+					pI.x = serverPos.x + displacement * (distanceX / velocity);
+					pI.y = serverPos.y + displacement * distanceY;
+					pI.z = serverPos.z + displacement * (distanceZ / velocity);
+				}
+				hitchance = min (1, ( (1.5 * width) / velocity) / t);
+				possiblePositions.push_back (std::make_pair (hitchance, pI));
+				//	unit->GetWaypointList().
+			}
+		}
+	}
+	return possiblePositions;
 }
 
 Vec2 Ahri::vect2d (Vec2 p1, Vec2 p2)
@@ -235,13 +336,17 @@ void Ahri::CastE (IUnit* target)
 {
 	if (PredictionType->GetInteger() == 1)
 	{
-		Vec3 CastOn;
-		BestCastPosition (target, E, CastOn, false);
-		AdvPredictionOutput prediction_output1;
-		E->RunPrediction (target, false, kCollidesWithMinions, &prediction_output1);
-		if (prediction_output1.HitChance > kHitChanceCollision)
+		AdvPredictionOutput prediction_output;
+		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
+		if (prediction_output.HitChance > kHitChanceCollision)
 		{
-			E->CastOnPosition (CastOn);
+			for (auto x : mPrediction (target, E, Hero->GetPosition()))
+				if (x.second != Vec3 (0, 0, 0) && x.first >= 0.3)
+				{
+					GGame->PrintChat (std::to_string (x.first).c_str());
+					E->CastOnPosition (x.second);
+					break;
+				}
 		}
 	}
 	if (PredictionType->GetInteger() == 0)
@@ -260,18 +365,11 @@ void Ahri::CastQ (IUnit* target)
 {
 	if (PredictionType->GetInteger() == 1)
 	{
-		Vec3 CastOn;
-		BestCastPosition (target, Q, CastOn, false);
-		Q->CastOnPosition (CastOn);
+		Q->CastOnTarget (target, kHitChanceHigh);
 	}
 	if (PredictionType->GetInteger() == 0)
 	{
-		AdvPredictionOutput prediction_output;
-		Q->RunPrediction (target, false, kCollidesWithYasuoWall, &prediction_output);
-		if (prediction_output.HitChance >= kHitChanceHigh)
-		{
-			Q->CastOnPosition (prediction_output.CastPosition);
-		}
+		Q->CastOnTarget (target,kHitChanceHigh);
 	}
 }
 
@@ -383,6 +481,7 @@ void Ahri::Combo()
 }
 void Ahri::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 {
+	auto nID = Source->GetNetworkId();
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo && target == Source)
 	{
@@ -487,13 +586,7 @@ void Ahri::Automated()
 	{
 		if (GetDistance (Hero, target) > 730)
 		{
-			IUnit *target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
-			AdvPredictionOutput result;
-			Q->RunPrediction (target, false, kCollidesWithNothing, &result);
-			if (result.HitChance >= kHitChanceVeryHigh)
-			{
-				Q->CastOnPosition (result.CastPosition);
-			}
+			CastQ (target);
 		}
 	}
 	if (GetAsyncKeyState (FlashCondemn->GetInteger()) && !GGame->IsChatOpen())

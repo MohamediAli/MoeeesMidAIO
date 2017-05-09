@@ -69,3 +69,7 @@ void Champion::OnDoCast (CastedSpell const& args)
 void Champion::OnOrbwalkPreAttack (IUnit* Target)
 {
 }
+
+void Champion::OnExitVisible (IUnit* Args)
+{
+}

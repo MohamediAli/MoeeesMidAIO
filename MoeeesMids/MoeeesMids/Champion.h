@@ -30,12 +30,12 @@ public:
 	virtual void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
 	virtual void OnDoCast (CastedSpell const& args);
 	virtual void OnOrbwalkPreAttack (IUnit* Target);
+	virtual void OnExitVisible (IUnit* Args);
 	/*virtual void OnRealSpellCast(CastedSpell const& Args);
 	virtual void OnOrbwalkAttack(IUnit* Source, IUnit* Target);
 	virtual void BeforeAttack(IUnit* Target);
 	virtual void OnLevelUp(IUnit* Source, int NewLevel);
-	virtual void OnPlayAnimation(IUnit* Source, std::string const Args);
-	virtual void OnExitVisible(IUnit* Source);*/
+	virtual void OnPlayAnimation(IUnit* Source, std::string const Args);*/
 
 	/*	You can store variables here that are accessable by all champions - no need to redefine */
 protected:

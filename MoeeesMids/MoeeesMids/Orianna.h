@@ -32,7 +32,7 @@ private:
 	IUnit* BallMissile;
 	bool PriorityHit();
 	bool IsOneVsOne();
-	std::vector<std::pair<int, std::vector<IUnit*>>> GetHits (ISpell2* spell);
+	std::vector<std::pair<int, std::vector<IUnit*>>> GetHits (ISpell2* spell, float delay);
 	void WLogic();
 	float rD1v1 (IUnit* Target);
 	float eDmg (IUnit* Target);
@@ -51,7 +51,7 @@ private:
 	void SaveTeam();
 	float BallDelay();
 	//std::tuple<int, Vec3> GetBestQLocation (IUnit* mainTarget);
-	int SpellCheck (IUnit* Location, int range, float delay);
+	int SpellCheck (Vec3 Location, int range, float delay);
 	BOOL isBallMoving();
 	Vec3 GetMovingBallPos();
 	Vec3 GetMovingBallPosW();

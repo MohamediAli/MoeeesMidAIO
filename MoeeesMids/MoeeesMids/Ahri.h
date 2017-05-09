@@ -13,11 +13,13 @@ public:
 	void OnRender();
 	void AntiGapclose (GapCloserSpell const& args);
 	void AntiInterrupt (InterruptibleSpell const& args);
+	void OnExitVisible (IUnit* Args);
 	void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
 
 
 private:
 	std::string MissileName, MissileReturnName;
+	std::vector<std::pair<float, Vec3>> mPrediction (IUnit* unit, ISpell2* spell, Vec3 sourcePos);
 	ISpell2* QWER;
 	IUnit* missileSource;
 	Vec3 CalculateReturnPos();

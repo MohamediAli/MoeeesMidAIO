@@ -3,7 +3,6 @@
 #include "Lords.h"
 #include "Rembrandt.h"
 #include "MEC.h"
-#include <tuple>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
@@ -229,7 +228,7 @@ void Orianna::eAssist()
 			{
 				int distanceA = Extensions::GetDistance (Hero, ally);
 				int distanceB = Extensions::GetDistance (ally, GGame->CursorPosition());
-				if (distanceA < 2000 && distanceB < 420)
+				if (distanceA < 2000 && distanceB < 520)
 				{
 					bestAlly.push_back (std::make_pair (distanceB, ally));
 				}
@@ -243,7 +242,7 @@ void Orianna::eAssist()
 		{
 			if (entry.second != nullptr)
 			{
-				CastE (entry.second);
+				E->CastOnTarget (entry.second);
 				return;
 			}
 		}
@@ -335,7 +334,7 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 		}
 		return true;
 	}
-	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && RLogic())
+	if (Slot == kSlotW && R->IsReady() && ComboR->Enabled() && SpellCheck (NewOriannaBall,R->Range(),0.3) >= ultMin->GetInteger())
 	{
 		return false;
 	}
@@ -400,10 +399,10 @@ bool Orianna::PriorityHit()
 	auto Targets = GEntityList->GetAllHeros (false, true);
 	for (auto target : Targets)
 	{
-		if (Extensions::Validate (StationaryBall) && Extensions::Validate (target) && !target->IsDead() && target->IsHero() && target->IsVisible())
+		if (Extensions::Validate (target) && !target->IsDead() && target->IsHero() && target->IsVisible())
 		{
 			GPrediction->GetFutureUnitPosition (target, 0.5f, true, futurePos);
-			auto flDistance = (futurePos - StationaryBall->GetPosition()).Length();
+			auto flDistance = (futurePos - NewOriannaBall).Length();
 			if (flDistance <= R->Range())
 			{
 				if (GTargetSelector->GetHeroPriority (target) >= priorityMin->GetInteger())
@@ -820,43 +819,26 @@ bool Orianna::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosit
 	}
 	return false;
 }
-int Orianna::SpellCheck (IUnit* pos, int range, float delay)
+int Orianna::SpellCheck (Vec3 pos, int range, float delay)
 {
 	auto count = 0;
-	Vec3 futurePos;
-	if (Extensions::Validate (pos))
+	for (auto target : GEntityList->GetAllHeros (false, true))
 	{
-		if (pos->IsMissile())
+		if (Extensions::Validate (target) && target->IsVisible() && !target->IsDead() && target->IsHero() && target->PhysicalDamage() > 1)
 		{
-			for (auto target : GEntityList->GetAllHeros (false, true))
+			Vec3 futurePos;
+			GPrediction->GetFutureUnitPosition (target, delay, true, futurePos);
+			if ( (futurePos - (pos)).LengthSqr() <= range*range)
 			{
-				if (Extensions::Validate (target) && target->IsVisible() && !target->IsDead() && target->IsHero())
-				{
-					GPrediction->GetFutureUnitPosition (target, delay, true, futurePos);
-					if ( (futurePos - GMissileData->GetEndPosition (pos)).LengthSqr() <= range*range)
-					{
-						count++;
-					}
-				}
-			}
-		}
-		else
-		{
-			for (auto target : GEntityList->GetAllHeros (false, true))
-			{
-				if (Extensions::Validate (target) && target->IsVisible() && !target->IsDead() && target->IsHero())
-				{
-					GPrediction->GetFutureUnitPosition (target, delay, true, futurePos);
-					if ( (futurePos - pos->GetPosition()).LengthSqr() <= range*range)
-					{
-						count++;
-					}
-				}
+				count++;
 			}
 		}
 	}
 	return (count);
 }
+
+
+
 bool Orianna::SpellCheckKS (IUnit* pos, int range, float delay, IUnit* target)
 {
 	Vec3 futurePos;
@@ -1055,7 +1037,7 @@ void Orianna::CastQ (IUnit* target)
 				Q->CastOnTarget (target);
 			}
 		}
-		if (!target->IsFacing (Hero) && target->GetWaypointList().size() >= 1) // target is running
+		if (isChasing (target) && target->GetWaypointList().size() >= 1) // target is running
 		{
 			auto targetBehind = target->ServerPosition() + ( (target->ServerPosition() - NewOriannaBall).VectorNormalize() * target->MovementSpeed() / 2) * (Extensions::GetDistance (NewOriannaBall, target->ServerPosition()) / 1200);
 			Q->CastOnPosition (targetBehind);
@@ -1119,7 +1101,7 @@ float Orianna::eMinionHits()
 void Orianna::eLogic()
 {
 	auto player = Hero;//sebby start
-	if (isBallMoving() || PriorityHit() || !E->IsReady() || RLogic())
+	if (isBallMoving() || PriorityHit() || !E->IsReady())
 	{
 		return;
 	}
@@ -1161,7 +1143,7 @@ void Orianna::eLogic()
 		return;
 	}
 }
-std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spell)
+std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spell, float delay)
 {
 	std::vector<std::pair<int, std::vector<IUnit*>>> final;
 	std::vector<IUnit*> hits;
@@ -1171,7 +1153,9 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 	{
 		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
 		{
-			if (Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= width)
+			Vec3 futurePos;
+			GPrediction->GetFutureUnitPosition (targets, delay, true, futurePos);
+			if (Extensions::GetDistanceSqr2D (NewOriannaBall, futurePos) <= width)
 			{
 				hits.push_back (targets);
 			}
@@ -1182,7 +1166,7 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 }
 void Orianna::WLogic()
 {
-	auto hits = GetHits (W);
+	auto hits = GetHits (W,0);
 	for (auto entry : hits)
 	{
 		if (entry.first > 0)
@@ -1194,7 +1178,7 @@ void Orianna::WLogic()
 }
 bool Orianna::RLogic()
 {
-	auto hits = GetHits (R);
+	auto hits = GetHits (R, 0.45);
 	for (auto entry : hits)
 	{
 		if (entry.first >= ultMin->GetInteger())
