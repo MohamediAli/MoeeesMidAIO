@@ -1079,7 +1079,7 @@ float Orianna::eMinionHits()
 	std::vector<Vec3> allMinions;
 	for (auto minion : GEntityList->GetAllMinions (false, true, false))
 	{
-		if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= length)
+		if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && minion->PhysicalDamage() > 1 && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= length)
 		{
 			if (!minion->IsDead())
 			{
@@ -1088,11 +1088,14 @@ float Orianna::eMinionHits()
 		}
 	}
 	auto count = 0;
-	for (auto minionVec2 : allMinions)
+	if (allMinions.size())
 	{
-		if (Extensions::SegmenDistance (minionVec2.To2D(), NewOriannaBall.To2D(), Hero->GetPosition().To2D(), false, true) <= 130 * 130)
+		for (auto minionVec2 : allMinions)
 		{
-			count++;
+			if (Extensions::SegmenDistance (minionVec2.To2D(), NewOriannaBall.To2D(), Hero->GetPosition().To2D(), false, true) <= 130 * 130)
+			{
+				count++;
+			}
 		}
 	}
 //	GGame->PrintChat (std::to_string (count).c_str());
@@ -1369,13 +1372,13 @@ void Orianna::LaneClear()
 				}
 			}
 		}
-		if (laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat())
+		if (laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && allMinionsUnit.size())
 		{
 			auto inWrange = 0;
 			auto wKillable = 0;
 			for (auto wm : allMinionsUnit)
 			{
-				if (Extensions::GetDistance (wm,NewOriannaBall) <= W->Range())
+				if (Extensions::GetDistance (wm->ServerPosition(),NewOriannaBall) <= W->Range())
 				{
 					inWrange++;
 					if (DPS (wm,false,false,false,false) > wm->GetHealth())
@@ -1424,13 +1427,13 @@ void Orianna::LaneClear()
 					Q->CastOnPosition (Extensions::To3D (FinalPos[0].second));
 				}
 			}
-			else
+			else if (allMinionsUnit.size())
 			{
 				for (auto kill : allMinionsUnit)
 				{
 					if (DPS (kill, true, false, false, false) >= kill->GetHealth())
 					{
-						Q->CastOnTarget (kill);
+						Q->CastOnPosition (kill->ServerPosition());
 						break;
 					}
 				}
