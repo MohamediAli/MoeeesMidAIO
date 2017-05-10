@@ -65,7 +65,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
 	PredType = { "Core","Moeee's Pred" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
 }
 
 void Ahri::OnGameUpdate()
