@@ -2,7 +2,7 @@
 #include "Extensions.h"
 #include "Rembrandt.h"
 #include <unordered_map>
-
+#include <algorithm>
 
 Ahri::~Ahri()
 {
@@ -174,8 +174,9 @@ std::vector<std::pair<float, Vec3>> Ahri::mPrediction (IUnit* unit, ISpell2* spe
 			// Calculate the interception time
 			if (speed != FLT_MAX)
 			{
+				auto cosTheta = serverPos * UnitDirection;
 				auto a = (distanceX * distanceX) + (distanceZ * distanceZ) - (speed * speed);
-				auto b = 2 * ( (serverPos.x * distanceX) + (serverPos.z * distanceZ) - (source.x * distanceX) - (source.z * distanceZ));
+				auto b = 2 * ( (serverPos.x * distanceX) + (serverPos.z * distanceZ) - (source.x * distanceX) - (source.z * distanceZ)) *cosTheta;
 				auto c = (serverPos.x * serverPos.x) + (serverPos.z * serverPos.z) + (source.x * source.x) + (source.z * source.z) - (2 * source.x * serverPos.x) - (2 * source.z * serverPos.z);
 				auto discriminant = (b * b) - (4 * a * c);
 				auto t1 = (-b + sqrt (discriminant)) / (2 * a);
@@ -207,6 +208,7 @@ std::vector<std::pair<float, Vec3>> Ahri::mPrediction (IUnit* unit, ISpell2* spe
 					pI.z = serverPos.z + displacement * (distanceZ / velocity);
 				}
 				hitchance = min (1, ( (1.5 * width) / velocity) / t);
+				//	GRender->DrawCircle (pI, 30, Vec4 (255, 255, 0, 255), 2);
 				possiblePositions.push_back (std::make_pair (hitchance, pI));
 				//	unit->GetWaypointList().
 			}
@@ -341,7 +343,7 @@ void Ahri::CastE (IUnit* target)
 		if (prediction_output.HitChance > kHitChanceCollision)
 		{
 			for (auto x : mPrediction (target, E, Hero->GetPosition()))
-				if (x.second != Vec3 (0, 0, 0) && x.first >= 0.3)
+				if (x.second != Vec3 (0, 0, 0) && x.first >= 0.3 && Extensions::GetDistanceSqr (x.second,target->ServerPosition()) < 250*250)
 				{
 					GGame->PrintChat (std::to_string (x.first).c_str());
 					E->CastOnPosition (x.second);
