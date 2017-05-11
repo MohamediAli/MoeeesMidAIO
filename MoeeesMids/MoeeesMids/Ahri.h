@@ -15,6 +15,7 @@ public:
 	void AntiInterrupt (InterruptibleSpell const& args);
 	void OnExitVisible (IUnit* Args);
 	void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
+	void OnCreate (IUnit* object);
 
 
 private:

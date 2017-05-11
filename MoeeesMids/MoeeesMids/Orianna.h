@@ -164,5 +164,5 @@ private:
 	IMenuOption* autoQ;
 	IMenuOption* autoW;
 	IMenuOption *HealthPercentage, *ShieldTeamate, *ShieldTeamatePercent, *ultMin, *drawBall, *ballSelect, *Laneclear, *KillStealR, *InterruptR, *autoEiniti, *mouseClear, *drawLC, *extraAutos, *onev1, *priorityMin, *eHelper, *eHelperKey,
-	            *DivineColor1, *DivineColor2, *DivineColor3, *DivineColor4, *DivineColor5, *DivineColor6, *DivineColor7, *DivineColor8, *laneClearWMin ;
+	            *DivineColor1, *DivineColor2, *DivineColor3, *DivineColor4, *DivineColor5, *DivineColor6, *DivineColor7, *DivineColor8, *laneClearWMin, *eRange ;
 };

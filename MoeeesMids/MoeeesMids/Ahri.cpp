@@ -38,6 +38,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Drawings = Parent->AddMenu ("Spell Drawings");
 	MiscMenu = Parent->AddMenu ("Miscs");
 	ComboQ = ComboMenu->CheckBox ("Use Q", true);
+	CatchQ = ComboMenu->CheckBox ("::Catch Q", true);
 	ComboW = ComboMenu->CheckBox ("Use W", true);
 	ComboE = ComboMenu->CheckBox ("Use E", true);
 	HarassQ = HarassMenu->CheckBox ("Use Q", true);
@@ -107,11 +108,47 @@ void Ahri::OnGameUpdate()
 		}
 	}
 }
+void Ahri::MissileReturn (std::string missile, std::string missileReturn, ISpell2* qwer)
+{
+	MissileName = missile;
+	MissileReturnName = missileReturn;
+	QWER = qwer;
+}
+
+void  Ahri::OnCreate (IUnit* object)
+{
+	auto objectName = GMissileData->GetName (object);
+	if (object->IsMissile() && GMissileData->GetCaster (object) == GEntityList->Player())
+	{
+		if (strstr (objectName, MissileName.c_str()) || strstr (objectName, MissileReturnName.c_str()))
+		{
+			missileSource = object;
+		}
+		if (strstr (objectName, MissileName.c_str()))
+		{
+			{
+				MissileEndPos = GMissileData->GetEndPosition (object);
+			}
+		}
+	}
+}
 
 void Ahri::OnRender()
 {
 	Drawing();
 	dmgdraw();
+	if (CalculateReturnPos() != Vec3 (0, 0, 0))
+	{
+		GRender->DrawCircle (CalculateReturnPos(), 100, Vec4 (255, 0, 255, 255), 5, false);
+		if (CatchQ->Enabled() && Extensions::GetDistance (Hero, CalculateReturnPos()) < 500 && Extensions::GetDistance (Hero, CalculateReturnPos()) > 20 && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed) || autoQ->Enabled())
+		{
+			GGame->IssueOrder (Hero, kMoveTo, CalculateReturnPos());
+		}
+	}
+	if (Extensions::Validate (missileSource))
+	{
+		Extensions::DrawLineRectangle (Hero->GetPosition(), missileSource->GetPosition(), (int) QWER->Radius(), 1, Vec4 (255, 0, 255, 255));
+	}
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	if (target == nullptr || !target->IsHero())
 	{
@@ -122,27 +159,27 @@ void Ahri::OnRender()
 
 static std::unordered_map<int, float> mia;
 static std::unordered_map<int, float> waypoint_map;
-/*
+
 Vec3 Ahri::CalculateReturnPos() //credits 2 my nigga sebby
 {
-	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
-	if (Extensions::Validate (Qing) && Extensions::Validate (target))
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
+	if (Extensions::Validate (missileSource) && Extensions::Validate (target))
 	{
-		auto finishPosition = GMissileData->GetEndPosition (Qing);
+		auto finishPosition = GMissileData->GetEndPosition (missileSource);
 		/*if (GMissileData->GetName (missileSource) == MissileName)
 		{
 		finishPosition = MissileEndPos;
-		}
+		}*/
 		auto misToPlayer = Extensions::GetDistance (Hero, finishPosition);
 		auto tarToPlayer = Extensions::GetDistance (Hero, target);
 		if (misToPlayer > tarToPlayer)
 		{
 			auto misToTarget = Extensions::GetDistance (target, finishPosition);
-			if (misToTarget < Q->Range() && misToTarget > 50)
+			if (misToTarget < QWER->Range() && misToTarget > 50)
 			{
-				auto cursorToTarget = Extensions::GetDistance (target, (Hero->ServerPosition().Extend (GGame->CursorPosition(), 100)));
+				auto cursorToTarget = Extensions::GetDistance (target, (Hero->GetPosition().Extend (GGame->CursorPosition(), 100)));
 				auto ext = finishPosition.Extend (target->ServerPosition(), cursorToTarget + misToTarget);
-				if (Extensions::GetDistance (ext, Hero->ServerPosition()) < 1000 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
+				if (Extensions::GetDistance (ext, Hero->GetPosition()) < 800 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
 				{
 					return ext;
 				}
@@ -150,7 +187,7 @@ Vec3 Ahri::CalculateReturnPos() //credits 2 my nigga sebby
 		}
 	}
 	return Vec3 (0, 0, 0);
-}*/
+}
 
 void Ahri::OnExitVisible (IUnit* Args)
 {
@@ -432,6 +469,7 @@ bool Ahri::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition
 	}
 }
 
+
 void Ahri::CastE (IUnit* target)
 {
 	if (PredictionType->GetInteger() == 2)
@@ -475,10 +513,8 @@ void Ahri::CastQ (IUnit* target)
 {
 	if (PredictionType->GetInteger() == 2)
 	{
-		AdvPredictionOutput prediction_output;
 		auto castPos = GetCastPosition (Q, Hero, target);
-		Q->RunPrediction (target, false, kCollidesWithYasuoWall, &prediction_output);
-		if (prediction_output.HitChance > kHitChanceCollision && castPos != Vec3 (0,0,0))
+		if (castPos != Vec3 (0,0,0))
 		{
 			Q->CastOnPosition (castPos);
 		}
@@ -701,6 +737,7 @@ float GetDistance (IUnit* Player, IUnit* target)
 
 void Ahri::Automated()
 {
+	MissileReturn ("AhriOrbMissile", "AhriOrbReturn", Q);
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	if (autoQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()) && Hero->GetMana() > (100 + W->ManaCost() + Q->ManaCost() * 2)) //magic number for r mana cost
 	{

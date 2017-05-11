@@ -98,6 +98,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	ShieldTeamatePercent = eMenu->AddFloat ("::Shield Teammate if Health Percent Below: ", 0, 100, 30);
 	autoEiniti = eMenu->CheckBox ("Automatically Shield Initiating Teammates", true);
 	eHelper = eMenu->CheckBox ("E Assist", true);
+	eRange = eMenu->CheckBox ("::Mouse Range Check", true);
 	eHelperKey = eMenu->AddKey ("E Assist Key", 69);
 	ComboR = rMenu->CheckBox ("Use Ult in Combo", true);
 	ultMin = rMenu->AddInteger ("Only Ult if it will hit atleast: ", 0, 5, 2);
@@ -228,7 +229,7 @@ void Orianna::eAssist()
 			{
 				int distanceA = Extensions::GetDistance (Hero, ally);
 				int distanceB = Extensions::GetDistance (ally, GGame->CursorPosition());
-				if (distanceA < 2000 && distanceB < 520)
+				if (distanceA < 2000 && (distanceB < 520 || !eRange->Enabled()))
 				{
 					bestAlly.push_back (std::make_pair (distanceB, ally));
 				}
