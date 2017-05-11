@@ -28,6 +28,8 @@ private:
 	std::vector<std::string> ballAnimation;
 	std::vector<std::string> ballColor;
 
+	float GetImpactTime (ISpell2* spell, Vec3 source, IUnit* unit);
+	Vec3 GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit);
 	void eAssist();
 	IUnit* BallMissile;
 	bool PriorityHit();

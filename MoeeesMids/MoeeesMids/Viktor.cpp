@@ -32,7 +32,6 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	laneClearQ = qMenu->CheckBox ("Wave Clear with Q", true);
 	laneClearQMana = qMenu->AddFloat (":: Only Wave Clear Q if Mana >", 0, 100, 30);
 	ComboW = wMenu->CheckBox ("Use W in Combo", true);
-	killStealW = wMenu->CheckBox ("Kill Steal with W", true);
 	gapCloserW = wMenu->CheckBox ("W on Gap Closer", true);
 	interrupterW = wMenu->CheckBox ("W on Interruptable Spells", true);
 	ComboE = eMenu->CheckBox ("Use E in Combo", true);
@@ -41,7 +40,7 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	harassE = eMenu->CheckBox ("Harass with E", true);
 	harassEMana = eMenu->AddFloat (":: Only Harras E if Mana >", 0, 100, 40);
 	laneClearE = eMenu->CheckBox ("Wave Clear with E", true);
-	eMin = eMenu->AddInteger (":: Minimum Minions Hit", 1, 10, 3);
+	eMin = eMenu->AddInteger (":: Only E Minions Hit >", 1, 10, 2);
 	laneClearEMana = eMenu->AddFloat (":: Only Wave Clear E if Mana >", 0, 100, 30);
 	ComboR = rMenu->CheckBox ("Use R", true);
 	ultMin = rMenu->AddInteger ("Ult if can hit >=: ", 1, 5, 3);
@@ -268,7 +267,7 @@ FarmLocationVik Viktor::FindBestLaserLineFarm (bool jg)
 						count++;
 					}
 				}
-				if (count >= Hits)
+				if (count >= Hits-1)
 				{
 					sourceTwo = endPos;
 					Hits = count;
@@ -569,7 +568,11 @@ void Viktor::OnDoCast (CastedSpell const& args)
 		{
 			GGame->IssueOrder (GEntityList->Player(), kMoveTo, Vec3 (position.x + rand() % 5 + 1, position.y, position.z + rand() % 5 + 1));
 			GOrbwalking->SetAttacksAllowed (true);
-			GGame->IssueOrder (GEntityList->Player(), kAttackTo, GOrbwalking->GetLastTarget());
+			GOrbwalking->SetOverrideTarget (GOrbwalking->GetLastTarget());
+			for (auto i = 0; i < 30; i++)
+			{
+				GGame->IssueOrder (Hero, kAttackTo, GOrbwalking->GetLastTarget());
+			}
 			//	GGame->PrintChat (std::to_string (GGame->Latency()).c_str());
 		});
 	}
@@ -919,7 +922,11 @@ void Viktor::LaneClear()
 						GOrbwalking->SetAttacksAllowed (false);
 						Q->CastOnTarget (minion);
 						GOrbwalking->SetAttacksAllowed (true);
-						GGame->IssueOrder (Hero, kAttackTo, minion);
+						GOrbwalking->SetOverrideTarget (minion);
+						for (auto i = 0; i < 30; i++)
+						{
+							GGame->IssueOrder (Hero, kAttackTo, minion);
+						}
 						break;
 					}
 				}

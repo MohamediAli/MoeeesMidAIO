@@ -448,6 +448,77 @@ Vec3 Orianna::GetMovingBallPosW()
 	}
 	else { return Vec3 (0, 0, 0); }
 }
+
+float Orianna::GetImpactTime (ISpell2* spell, Vec3 source, IUnit* unit)
+{
+	auto unitSpeed = unit->MovementSpeed();
+	auto unitHitboxRadius = unit->BoundingRadius();
+	//auto unitDirection = PathManager : GetDirection(unit, unit.path.curPath)
+	auto unitPath = unit->GetNavigationPath();
+	//PathManager.paths[nID][unit.path.curPath]
+	auto unitDirection = (unitPath->EndPosition - (unit->ServerPosition())).VectorNormalize();
+	//Calculations //
+	auto ping = GGame->Latency() / 1000;
+	auto delays = ping + spell->GetDelay();
+	auto unitPosition = unit->ServerPosition();
+	auto sourcePosition = source;
+	unitPosition = unitPosition + unitDirection * (unitSpeed * delays);
+	unitPosition = unitPosition - unitDirection * unitHitboxRadius;
+	auto toUnitDirection = (unitPosition - sourcePosition).VectorNormalize();
+	sourcePosition = sourcePosition - toUnitDirection;
+	auto theta = unitDirection * toUnitDirection;
+	auto castDirection = unitDirection + toUnitDirection;
+	unitPosition = unitPosition - castDirection * (theta * spell->Radius());
+	auto unitDistance = Extensions::GetDistance (sourcePosition, unitPosition);
+	//sourcePosition : dist(unitPosition)
+	//Calculations //
+	auto a = (unitSpeed * unitSpeed) - (spell->Speed() * spell->Speed());
+	auto b = 2 * unitSpeed * unitDistance * theta;
+	auto c = unitDistance * unitDistance;
+	auto discriminant = b * b - 4 * a * c;
+	if (discriminant < 0)
+	{
+		return -1.f;
+	}
+	auto impactTime = 2 * c / (sqrt (discriminant) - b);
+	if (impactTime < 0)
+	{
+		return -1.f;
+	}
+	return impactTime;
+}
+
+Vec3 Orianna::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit)
+{
+	auto castPosition = Vec3 (0, 0, 0);
+	auto index = 0;
+	auto path = unit->GetWaypointList();
+	if (unit->IsMoving() && path.size() > 1)
+	{
+		for (auto pathIndex : path)
+		{
+			auto unitPosition = unit->ServerPosition();
+			auto unitPath = pathIndex;
+			{
+				auto unitDirection = (pathIndex - unitPosition).VectorNormalize();
+				auto impactTime = GetImpactTime (Q, NewOriannaBall, unit);
+				if (!impactTime)
+				{
+					return Vec3 (0, 0, 0);
+				}
+				castPosition = unitPosition + unitDirection * (unit->MovementSpeed() * impactTime);
+			}
+			index++;
+		}
+		if (Extensions::GetDistance (source->ServerPosition(), castPosition) > spell->Range())
+		{
+			return Vec3 (0, 0, 0);
+		}
+		return castPosition;
+	}
+	return Vec3 (0, 0, 0);
+}
+
 void Orianna::OnSpellCast (CastedSpell const& args)
 {
 	if (Extensions::Validate (args.Caster_) && !args.Caster_->IsEnemy (Hero))
@@ -894,8 +965,7 @@ std::vector<std::pair<int, Vec3>> Orianna::GetBestQLocation (IUnit* mainTarget) 
 		{
 			AdvPredictionOutput result2;
 			Q->RunPrediction (enemies, true, kCollidesWithYasuoWall, &result2);
-			Vec3 castOn;
-			BestCastPosition (enemies, Q, castOn, false);
+			Vec3 castOn = GetCastPosition (Q, Hero, mainTarget);
 			if (result.HitChance >= kHitChanceHigh)
 			{
 				points.push_back (castOn.To2D());

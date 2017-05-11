@@ -64,8 +64,8 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
-	PredType = { "Core","Moeee's Pred" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
+	PredType = { "Core","Moeee's Pred", "Praedictio" };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 2, PredType);
 }
 
 void Ahri::OnGameUpdate()
@@ -117,10 +117,7 @@ void Ahri::OnRender()
 	{
 		return;
 	}
-	for (auto x : mPrediction (target, E, Hero->GetPosition()))
-	{
-		GRender->DrawCircle (x.second, 30, Vec4 (255, 255, 0, 255), 2);
-	}
+	GRender->DrawCircle (GetCastPosition (E, Hero, target), 30, Vec4 (255, 255, 0, 255), 2);
 }
 
 static std::unordered_map<int, float> mia;
@@ -305,6 +302,78 @@ bool Ahri::CheckForCollision (ISpell2* Skillshot, Vec3 CheckAtPosition)
 	return true;
 }
 
+float Ahri::GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit)
+{
+	auto unitSpeed = unit->MovementSpeed();
+	auto unitHitboxRadius = unit->BoundingRadius();
+	//auto unitDirection = PathManager : GetDirection(unit, unit.path.curPath)
+	auto unitPath = unit->GetNavigationPath();
+	//PathManager.paths[nID][unit.path.curPath]
+	auto unitDirection = (unitPath->EndPosition - (unit->ServerPosition())).VectorNormalize();
+	//Calculations //
+	auto ping = GGame->Latency() / 1000;
+	auto delays = ping + spell->GetDelay();
+	auto unitPosition = unit->ServerPosition();
+	auto sourcePosition = source->ServerPosition();
+	unitPosition = unitPosition + unitDirection * (unitSpeed * delays);
+	unitPosition = unitPosition - unitDirection * unitHitboxRadius;
+	auto toUnitDirection = (unitPosition - sourcePosition).VectorNormalize();
+	sourcePosition = sourcePosition - toUnitDirection * source->BoundingRadius();
+	auto theta = unitDirection * toUnitDirection;
+	auto castDirection = unitDirection + toUnitDirection;
+	unitPosition = unitPosition - castDirection * (theta * spell->Radius());
+	auto unitDistance = Extensions::GetDistance (sourcePosition, unitPosition);
+	//sourcePosition : dist(unitPosition)
+	//Calculations //
+	auto a = (unitSpeed * unitSpeed) - (spell->Speed() * spell->Speed());
+	auto b = 2 * unitSpeed * unitDistance * theta;
+	auto c = unitDistance * unitDistance;
+	auto discriminant = b * b - 4 * a * c;
+	if (discriminant < 0)
+	{
+		return -1.f;
+	}
+	auto impactTime = 2 * c / (sqrt (discriminant) - b);
+	if (impactTime < 0)
+	{
+		return -1.f;
+	}
+	return impactTime;
+}
+
+Vec3 Ahri::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit)
+{
+	auto castPosition = Vec3 (0, 0, 0);
+	auto index = 0;
+	auto path = unit->GetWaypointList();
+	if (unit->IsMoving() && path.size() > 1)
+	{
+		for (auto pathIndex : path)
+		{
+			auto unitPosition = unit->ServerPosition();
+			auto unitPath = pathIndex;
+			{
+				auto unitDirection = (pathIndex - unitPosition).VectorNormalize();
+				auto impactTime = GetImpactTime (spell, source, unit);
+				if (!impactTime)
+				{
+					return Vec3 (0, 0, 0);
+				}
+				castPosition = unitPosition + unitDirection * (unit->MovementSpeed() * impactTime);
+			}
+			index++;
+		}
+		if (Extensions::GetDistance (source->ServerPosition(), castPosition) > spell->Range())
+		{
+			return Vec3 (0, 0, 0);
+		}
+		return castPosition;
+	}
+	return Vec3 (0, 0, 0);
+}
+
+
+
 bool Ahri::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition, bool CheckCollision)
 {
 	float TravelTime = ( (Unit->GetPosition() - Hero->GetPosition()).Length2D() - Unit->BoundingRadius()) / Skillshot->Speed() + Skillshot->GetDelay() + (GGame->Latency() / 2) / 1000;
@@ -336,6 +405,16 @@ bool Ahri::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition
 
 void Ahri::CastE (IUnit* target)
 {
+	if (PredictionType->GetInteger() == 2)
+	{
+		AdvPredictionOutput prediction_output;
+		auto castPos = GetCastPosition (E, Hero, target);
+		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
+		if (prediction_output.HitChance > kHitChanceCollision)
+		{
+			E->CastOnPosition (castPos);
+		}
+	}
 	if (PredictionType->GetInteger() == 1)
 	{
 		AdvPredictionOutput prediction_output;
@@ -345,7 +424,7 @@ void Ahri::CastE (IUnit* target)
 			for (auto x : mPrediction (target, E, Hero->GetPosition()))
 				if (x.second != Vec3 (0, 0, 0) && x.first >= 0.3 && Extensions::GetDistanceSqr (x.second,target->ServerPosition()) < 250*250)
 				{
-					GGame->PrintChat (std::to_string (x.first).c_str());
+					//	GGame->PrintChat (std::to_string (x.first).c_str());
 					E->CastOnPosition (x.second);
 					break;
 				}

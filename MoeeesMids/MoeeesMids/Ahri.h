@@ -18,6 +18,8 @@ public:
 
 
 private:
+	float GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit);
+	Vec3 GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit);
 	std::string MissileName, MissileReturnName;
 	std::vector<std::pair<float, Vec3>> mPrediction (IUnit* unit, ISpell2* spell, Vec3 sourcePos);
 	ISpell2* QWER;
