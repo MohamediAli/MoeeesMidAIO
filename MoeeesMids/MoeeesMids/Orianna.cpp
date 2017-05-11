@@ -119,7 +119,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	mouseClear = LaneClearMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
 	PredType = { "Oracle", "Core", "Praedictio" };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 2, PredType);
-	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
+	ballAnimation = { "Divine Nader [Sl]", "Gagong" };
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);
 	drawDmg = Drawings->CheckBox ("Draw Damage", true);
 	HPBarColor = Drawings->AddColor ("Change Health Bar", 69, 64, 185, 100);
@@ -1094,7 +1094,7 @@ void Orianna::CastQ (IUnit* target)
 	}
 	else if (PredictionType->GetInteger() == 2)
 	{
-		auto cast = GetBestQLocation (target);
+		/*auto cast = GetBestQLocation (target);
 		for (auto entries : cast)
 		{
 			if (entries.first > 1)
@@ -1106,6 +1106,11 @@ void Orianna::CastQ (IUnit* target)
 			{
 				Q->CastOnTarget (target);
 			}
+		}*/
+		auto castPos = GetCastPosition (Q, Hero, target);
+		if (castPos != Vec3 (0,0,0))
+		{
+			Q->CastOnPosition (castPos);
 		}
 		if (isChasing (target) && target->GetWaypointList().size() >= 1) // target is running
 		{

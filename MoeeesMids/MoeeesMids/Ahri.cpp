@@ -122,6 +122,35 @@ void Ahri::OnRender()
 
 static std::unordered_map<int, float> mia;
 static std::unordered_map<int, float> waypoint_map;
+/*
+Vec3 Ahri::CalculateReturnPos() //credits 2 my nigga sebby
+{
+	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
+	if (Extensions::Validate (Qing) && Extensions::Validate (target))
+	{
+		auto finishPosition = GMissileData->GetEndPosition (Qing);
+		/*if (GMissileData->GetName (missileSource) == MissileName)
+		{
+		finishPosition = MissileEndPos;
+		}
+		auto misToPlayer = Extensions::GetDistance (Hero, finishPosition);
+		auto tarToPlayer = Extensions::GetDistance (Hero, target);
+		if (misToPlayer > tarToPlayer)
+		{
+			auto misToTarget = Extensions::GetDistance (target, finishPosition);
+			if (misToTarget < Q->Range() && misToTarget > 50)
+			{
+				auto cursorToTarget = Extensions::GetDistance (target, (Hero->ServerPosition().Extend (GGame->CursorPosition(), 100)));
+				auto ext = finishPosition.Extend (target->ServerPosition(), cursorToTarget + misToTarget);
+				if (Extensions::GetDistance (ext, Hero->ServerPosition()) < 1000 && Extensions::EnemiesInRange (ext, 400) <2) // CountEnemiesInRange (400) < 2)
+				{
+					return ext;
+				}
+			}
+		}
+	}
+	return Vec3 (0, 0, 0);
+}*/
 
 void Ahri::OnExitVisible (IUnit* Args)
 {
@@ -410,7 +439,7 @@ void Ahri::CastE (IUnit* target)
 		AdvPredictionOutput prediction_output;
 		auto castPos = GetCastPosition (E, Hero, target);
 		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
-		if (prediction_output.HitChance > kHitChanceCollision)
+		if (prediction_output.HitChance > kHitChanceCollision && castPos != Vec3 (0, 0, 0))
 		{
 			E->CastOnPosition (castPos);
 		}
@@ -449,7 +478,7 @@ void Ahri::CastQ (IUnit* target)
 		AdvPredictionOutput prediction_output;
 		auto castPos = GetCastPosition (Q, Hero, target);
 		Q->RunPrediction (target, false, kCollidesWithYasuoWall, &prediction_output);
-		if (prediction_output.HitChance > kHitChanceCollision)
+		if (prediction_output.HitChance > kHitChanceCollision && castPos != Vec3 (0,0,0))
 		{
 			Q->CastOnPosition (castPos);
 		}
