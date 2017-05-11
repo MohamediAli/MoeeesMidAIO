@@ -774,7 +774,7 @@ void Ahri::Drawing()
 		}
 		if (W->IsReady() && DrawW->Enabled())
 		{
-			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), 700, Vec4 (0, 225, 0, 225));
 		}
 		if (E->IsReady() && DrawE->Enabled())
 		{
@@ -789,7 +789,7 @@ void Ahri::Drawing()
 		}
 		if (DrawW->Enabled())
 		{
-			GRender->DrawCircle (Hero->GetPosition(), W->Range(), Vec4 (0, 225, 0, 225));
+			GRender->DrawCircle (Hero->GetPosition(), 700, Vec4 (0, 225, 0, 225));
 		}
 		if (DrawE->Enabled())
 		{
