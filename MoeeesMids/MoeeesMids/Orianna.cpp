@@ -117,7 +117,7 @@ Orianna::Orianna (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	laneClearE = LaneClearMenu->CheckBox ("Wave Clear with E", true);
 	laneClearEMana = LaneClearMenu->AddFloat (":: Only Wave Clear E if Mana >", 0, 100, 60);
 	mouseClear = LaneClearMenu->CheckBox ("Mouse Scroll to Toggle Wave Clear", true);
-	PredType = { "Oracle", "Core", "Moeee's Pred" };
+	PredType = { "Oracle", "Core", "Praedictio" };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 2, PredType);
 	ballAnimation = { "Divine Nader [Sl]", "Gagondix" };
 	DrawReady = Drawings->CheckBox ("Draw Ready Spells", true);

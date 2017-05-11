@@ -444,6 +444,16 @@ void Ahri::CastE (IUnit* target)
 
 void Ahri::CastQ (IUnit* target)
 {
+	if (PredictionType->GetInteger() == 2)
+	{
+		AdvPredictionOutput prediction_output;
+		auto castPos = GetCastPosition (Q, Hero, target);
+		Q->RunPrediction (target, false, kCollidesWithYasuoWall, &prediction_output);
+		if (prediction_output.HitChance > kHitChanceCollision)
+		{
+			Q->CastOnPosition (castPos);
+		}
+	}
 	if (PredictionType->GetInteger() == 1)
 	{
 		Q->CastOnTarget (target, kHitChanceHigh);
