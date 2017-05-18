@@ -125,7 +125,7 @@ void Viktor::OnPlayAnimation (IUnit* Source, std::string const AnimationId)
 		if (strstr (AnimationId.c_str(), "b2f63868"))
 		{
 			GOrbwalking->SetAttacksAllowed (false);
-			GPluginSDK->DelayFunctionCall (125 + GGame->Latency() /2, [=]()
+			GPluginSDK->DelayFunctionCall (150 - GGame->Latency(), [=]()
 			{
 				CancelAnimation();
 			});

@@ -313,7 +313,7 @@ void Orianna::OnGameUpdate()
 
 void Orianna::OnRender()
 {
-	//GRender->DrawCircle (NewOriannaBall, 90, Vec4 (255, 0, 0, 255), 5, true);
+
 	Drawing();
 	dmgdraw();
 	if (Laneclear->Enabled() && drawLC->Enabled())
@@ -1239,7 +1239,7 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 	{
 		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && !targets->IsInvulnerable() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
 		{
-			if (delay)
+
 			{
 				Vec3 futurePos;
 				GPrediction->GetFutureUnitPosition (targets, delay, true, futurePos);
@@ -1248,10 +1248,7 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 					hits.push_back (targets);
 				}
 			}
-			else if (Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= width)
-			{
-				hits.push_back (targets);
-			}
+
 
 		}
 	}
@@ -1354,48 +1351,6 @@ void Orianna::Combo()
 		CastQ (target);
 		return;
 	}
-	/*
-	auto target1 = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range() + R->Radius() * 2);
-	if (target1 == nullptr || !target1->IsHero() || target1->IsDead() || !target1->IsVisible())
-	{
-		return;
-	}
-
-
-		if (PriorityHit() && Extensions::Validate (StationaryBall))
-		{
-			R->CastOnPlayer();
-			return;
-		}
-		else if (SpellCheck (StationaryBall, R->Radius(), 0.3) >= ultMin->GetInteger() || (isBallMoving() && Extensions::EnemiesInRange (GetMovingBallPosW(), R->Radius() - 45) >= ultMin->GetInteger()))
-		{
-			R->CastOnPlayer();
-			return;
-		}
-		else if (onev1->Enabled() && IsOneVsOne() && Extensions::Validate (StationaryBall) && rD1v1 (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall, R->Range(), 0.5, target1)))
-		{
-			R->CastOnPlayer();
-			return;
-		}
-		else if (KillStealR->Enabled() &&  rDmg (target1) >= target1->GetHealth() && (SpellCheckKS (StationaryBall, R->Range(), 0.5, target1)))
-		{
-			R->CastOnPlayer();
-			return;
-		}*/
-	// check if more than X target to try aoe q position
-	//Cast on self
-	/*	if (ShieldTeamate->Enabled())
-	{
-	auto Teamates = GEntityList->GetAllHeros(true, false);
-	for (IUnit* Teamate : Teamates)
-	{
-	if (Extensions::GetDistance(Hero, Teamate->GetPosition()) <= E->Range()) {
-	if (!(Teamate->IsDead()) && Teamate->HealthPercent() <= ShieldTeamatePercent->GetInteger() && Extensions::EnemiesInRange(Teamate->GetPosition(), 600) > 0) {
-	E->CastOnUnit(Teamate);
-	} //Cast on injured teamate
-	}
-	}
-	}*/
 }
 void Orianna::Harass()
 {
@@ -1450,7 +1405,7 @@ void Orianna::LaneClear()
 		std::vector<Vec3> rangedMinions;
 		for (auto minion : GEntityList->GetAllMinions (false, true, false))
 		{
-			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
+			if (minion != nullptr && minion->IsValidTarget() && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
 			{
 				if (!minion->IsDead() && minion->PhysicalDamage() > 1);
 				{
@@ -1463,6 +1418,7 @@ void Orianna::LaneClear()
 				}
 			}
 		}
+
 		if (laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && allMinionsUnit.size())
 		{
 			auto inWrange = 0;
@@ -1484,7 +1440,7 @@ void Orianna::LaneClear()
 				return;
 			}
 		}
-		if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat())
+		if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat() && allMinionsUnit.size())
 		{
 			if (laneClearW->Enabled() && allMinions.size() > 1)
 			{
@@ -1534,10 +1490,11 @@ void Orianna::LaneClear()
 		{
 			E->CastOnPlayer();
 		}
+
 		std::vector<IUnit*> allMobs;
 		for (auto mob : GEntityList->GetAllMinions (false, false, true))
 		{
-			if (mob != nullptr && !mob->IsWard() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= Q->Range())
+			if (mob != nullptr && mob->IsValidTarget() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= Q->Range())
 			{
 				if (!mob->IsDead() && mob->PhysicalDamage() > 1)
 				{
