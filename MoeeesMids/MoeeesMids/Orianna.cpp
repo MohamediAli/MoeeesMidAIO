@@ -4,7 +4,6 @@
 #include "Rembrandt.h"
 #include "MEC.h"
 #include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
 
 
 
@@ -329,7 +328,7 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 {
 	if (Slot == kSlotR && BlockR->Enabled() && FlashUlting == false)
 	{
-		if (SpellCheck (NewOriannaBall, R->Radius(),0.3f)  == 0)
+		if (SpellCheck (NewOriannaBall, R->Radius(),0.2f)  == 0)
 		{
 			return false;
 		}
@@ -346,7 +345,7 @@ bool Orianna::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* End
 void Orianna::OnInterrupt (InterruptibleSpell const& Args)
 {
 	auto player = Hero;
-	if (Args.Source == nullptr || Args.Source->IsDead() || Args.DangerLevel != kHighDanger)
+	if (Args.Source == nullptr || Args.Source->IsDead() || Args.DangerLevel != kHighDanger || strstr (Args.Source->ChampionName(), "Zed") || strstr (Args.Source->ChampionName(), "Master Yi"))
 	{
 		return;
 	}
@@ -455,9 +454,8 @@ float Orianna::GetImpactTime (ISpell2* spell, Vec3 source, IUnit* unit)
 	auto unitSpeed = unit->MovementSpeed();
 	auto unitHitboxRadius = unit->BoundingRadius();
 	//auto unitDirection = PathManager : GetDirection(unit, unit.path.curPath)
-	auto unitPath = unit->GetNavigationPath();
-	//PathManager.paths[nID][unit.path.curPath]
-	auto unitDirection = (unitPath->EndPosition - (unit->ServerPosition())).VectorNormalize();
+	auto unitPath = unit->GetWaypointList();
+	auto unitDirection = (unitPath[1] - (unitPath[0])).VectorNormalize();
 	//Calculations //
 	auto ping = GGame->Latency() / 1000;
 	auto delays = ping + spell->GetDelay();
@@ -531,7 +529,8 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			{
 				// v = d/t => t = d/v
 				//	GGame->PrintChat (std::to_string (args.Speed_).c_str());
-				Vec3 StartPos = NewOriannaBall;
+
+				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
 				float dist = (args.EndPosition_ - StartPos).Length();
 				QBallData = { StartPos,args.EndPosition_, (dist / args.Speed_), GGame->Time() };
 				WBallData = { StartPos,args.EndPosition_, (dist / args.Speed_), GGame->Time() };
@@ -543,12 +542,12 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			if (&args.Position_ && &args.EndPosition_ && args.Speed_)
 			{
 				// v = d/t => t = d/v
-				Vec3 StartPos = NewOriannaBall;
+				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
 				float dist = (args.EndPosition_ - StartPos).Length();
 				QBallData = { StartPos,args.EndPosition_, (dist / 1900), GGame->Time() };
 			}
 		}
-		if (Extensions::Validate (args.Caster_) && Extensions::GetDistance (Hero, args.Caster_->GetPosition()) <= E->Range() && autoEiniti->Enabled() && E->IsReady() && !args.Caster_->IsEnemy (Hero))
+		if (Extensions::Validate (args.Caster_) && E->IsReady() && Extensions::GetDistanceSqr (Hero->GetPosition(), args.Caster_->GetPosition()) <= E->Range() * E->Range() && autoEiniti->Enabled() && !args.Caster_->IsEnemy (Hero))
 		{
 			std::vector<std::string> SpellNames =
 			{
@@ -640,12 +639,12 @@ void Orianna::OnCreate (IUnit* object)
 			{
 				NewOriannaBall = GMissileData->GetEndPosition (object);
 			});
-			NewOriannaBall = Vec3 (0, 0, 0);
+			//NewOriannaBall = Vec3 (0, 0, 0);
 			lastOriTick = GGame->TickCount();
 		}
 		else if (strcmp (GMissileData->GetName (object), "OrianaRedact") == 0)
 		{
-			NewOriannaBall = Vec3 (0, 0, 0);
+			//	NewOriannaBall = Vec3 (0, 0, 0);
 			lastOriTick = GGame->TickCount();
 		}
 	}
@@ -773,13 +772,14 @@ std::vector<std::pair<int, Vec2>> Orianna::FarmQ (Vec3 pos) //back line
 	HighestMinionCount.push_back (std::make_pair (possibleQPositions[0].first, possibleQPositions[0].second));
 	return HighestMinionCount;
 	/*
-		for (auto entry : possibleQPositions)
-		{
-			if (entry.first >= 3)
-			Q->CastOnPosition (Extensions::To3D (entry.second));
-			return;
-		}*/
+	for (auto entry : possibleQPositions)
+	{
+	if (entry.first >= 3)
+	Q->CastOnPosition (Extensions::To3D (entry.second));
+	return;
+	}*/
 }
+
 Vec2 Orianna::vect2d (Vec2 p1, Vec2 p2)
 {
 	Vec2 temp;
@@ -896,7 +896,7 @@ int Orianna::SpellCheck (Vec3 pos, int range, float delay)
 	auto count = 0;
 	for (auto target : GEntityList->GetAllHeros (false, true))
 	{
-		if (Extensions::Validate (target) && target->IsVisible() && !target->IsDead() && target->IsHero() && target->PhysicalDamage() > 1)
+		if (Extensions::Validate (target) && target->IsVisible() && !target->IsDead() && target->IsHero() && target->PhysicalDamage() > 1 && !target->IsInvulnerable())
 		{
 			Vec3 futurePos;
 			GPrediction->GetFutureUnitPosition (target, delay, true, futurePos);
@@ -918,7 +918,7 @@ bool Orianna::SpellCheckKS (IUnit* pos, int range, float delay, IUnit* target)
 	{
 		if (pos->IsMissile())
 		{
-			if (target != nullptr && target->IsValidTarget() && isBallMoving() && target->IsVisible() && !target->IsDead())
+			if (target != nullptr && target->IsValidTarget() && target->IsVisible() && !target->IsDead() && !target->IsInvulnerable())
 			{
 				GPrediction->GetFutureUnitPosition (target, delay, true, futurePos);
 				if ( (futurePos - GMissileData->GetEndPosition (pos)).Length() <= range)
@@ -1132,7 +1132,7 @@ void Orianna::CastQ (IUnit* target)
 }
 bool Orianna::IsOneVsOne()
 {
-	if (Extensions::EnemiesInRange (Hero->GetPosition(), 1000) == 1 && Extensions::AlliesInRange (Hero->GetPosition(), 950) <= 3)
+	if (Extensions::EnemiesInRange (Hero->GetPosition(), 1000) == 1 && Extensions::AlliesInRange (Hero->GetPosition(), 950) <= 2)
 	{
 		return true;
 	}
@@ -1230,7 +1230,7 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 	auto width = spell->Radius() * spell->Radius();
 	for (auto targets : GEntityList->GetAllHeros (false, true))
 	{
-		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
+		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && !targets->IsInvulnerable() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
 		{
 			Vec3 futurePos;
 			GPrediction->GetFutureUnitPosition (targets, delay, true, futurePos);
@@ -1454,10 +1454,10 @@ void Orianna::LaneClear()
 			auto wKillable = 0;
 			for (auto wm : allMinionsUnit)
 			{
-				if (Extensions::GetDistance (wm->ServerPosition(),NewOriannaBall) <= W->Range())
+				if (Extensions::GetDistance (wm->ServerPosition(), NewOriannaBall) <= W->Range())
 				{
 					inWrange++;
-					if (DPS (wm,false,false,false,false) > wm->GetHealth())
+					if (DPS (wm, false, false, false, false) > wm->GetHealth())
 					{
 						wKillable++;
 					}
@@ -1540,35 +1540,6 @@ void Orianna::LaneClear()
 			Q->CastOnUnit (allMobs[0]);
 		}
 	}
-	/*
-	if (Laneclear->Enabled() && Extensions::Validate (StationaryBall))
-	{
-		if (Extensions::CountMinionsInTargetRange (StationaryBall->GetPosition(), W->Radius() + 25) > 2 && laneClearW->Enabled() && W->IsReady() && Hero->ManaPercent() > laneClearWMana->GetFloat() && (!isBallMoving()))
-		{
-			W->CastOnPlayer();
-		}
-		if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat())
-		{
-			for (auto minion : GEntityList->GetAllMinions (false, true, true))
-			{
-				if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->GetPosition()) <= 1000)
-				{
-					if (!minion->IsDead())
-					{
-
-						auto hp = GHealthPrediction->GetPredictedHealth (minion, kLastHitPrediction, 350, 350);
-						if (hp < qDmg (minion))
-						{
-						Q->CastOnPosition (minion->GetPosition());
-						return;
-						}
-						FarmQ (minion->GetPosition());
-						return;
-					}
-				}
-			}
-		}
-	}*/
 }
 void Orianna::Automatic()
 {
@@ -1846,30 +1817,14 @@ void Orianna::dmgdraw()
 	{
 		for (auto hero : GEntityList->GetAllHeros (false, true))
 		{
-			Vec2 barPos = Vec2();
-			if (hero->GetHPBarPosition (barPos) && !hero->IsDead())
+			if (Extensions::Validate (hero) && !hero->IsDead() && hero->IsOnScreen())
 			{
-				float QDamage = 0;
-				float WDamage = 0;
-				float EDamage = 0;
-				float RDamage = 0;
-				if (W->IsReady())
-				{
-					WDamage = wDmg (hero);
-				}
-				if (Q->IsReady())
-				{
-					QDamage = qDmg (hero);
-				}
-				if (R->IsReady())
-				{
-					RDamage = rDmg (hero) + GDamage->GetAutoAttackDamage (Hero, hero, true);
-				}
 				Vec4 BarColor;
 				HPBarColor->GetColor (&BarColor);
-				float totalDamage = DPS (hero,true,true,true,true,1);
+				float totalDamage = DPS (hero, true, true, true, true, 1);
 				Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
 			}
+
 		}
 	}
 }
@@ -1921,7 +1876,7 @@ void Orianna::Drawing()
 	auto player = Hero;
 	if (drawBall->Enabled() && ballSelect->GetInteger() == 0)
 	{
-		if (StationaryBall && !isBallMoving() && (StationaryBall->IsValidObject() || StationaryBall->IsValidTarget()))
+		if (Extensions::Validate (StationaryBall) && !isBallMoving() && (StationaryBall->IsValidObject() || StationaryBall->IsValidTarget()))
 		{
 			Vec3 Pos = StationaryBall->GetPosition();
 			DrawGagongReplicate (Pos);
@@ -1933,7 +1888,7 @@ void Orianna::Drawing()
 	}
 	else if (drawBall->Enabled() && ballSelect->GetInteger() == 1)
 	{
-		if (StationaryBall && (StationaryBall->IsValidObject() || StationaryBall->IsValidTarget()))
+		if (Extensions::Validate (StationaryBall) && (StationaryBall->IsValidObject() || StationaryBall->IsValidTarget()))
 		{
 			Vec3 Pos = StationaryBall->GetPosition();
 			DrawGagonDix (Pos, BallIndicatorColor);

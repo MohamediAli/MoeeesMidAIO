@@ -111,8 +111,8 @@ private:
 	IMenuOption* comboFullW;
 
 
-	IMenuOption* killStealE;
-	IMenuOption* harassE;
+	IMenuOption* killstealing_e_;
+	IMenuOption* harassmentE;
 	IMenuOption* harassEMana;
 	IMenuOption* laneClearE;
 	IMenuOption* laneClearEMana;
@@ -123,7 +123,7 @@ private:
 	Vec3 position;
 
 	IUnit *rFollow, *rObject;
-	IMenuOption *RInterveral, *ultMin, *eMin, *automaticE, *killStealR, *mouseClear, *Laneclear, *drawLC, *HPBarColor, *Fleemode;
+	IMenuOption *RInterveral, *ultMin, *eMin, *hunderAuto, *killStealR, *mouseClear, *Laneclear, *drawLC, *HPBarColor, *Fleemode;
 
 	float lastRMoveTick;
 	IUnit* QMis;

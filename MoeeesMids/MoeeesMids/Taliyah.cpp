@@ -101,7 +101,7 @@ void Taliyah::OnGameUpdate()
 }
 void Taliyah::OnRender()
 {
-	if (Extensions::Validate (Qing))
+	if (Extensions::Validate (Qing) && LockQ->Enabled())
 	{
 		Extensions::DrawLineRectangle (Hero->GetPosition(), GMissileData->GetEndPosition (Qing), Q->Radius(), laneClearWMana->GetFloat(), Vec4 (255, 255, 100, 255));
 	}
@@ -332,7 +332,7 @@ void Taliyah::CastE()
 	{
 		return;
 	}
-	if (ComboE->Enabled())
+	if (ComboE->Enabled() && Extensions::GetDistanceSqr (Hero->ServerPosition(),target->ServerPosition()) < (E->Range()+100) * (E->Range() + 100))
 	{
 		E->CastOnPosition (target->ServerPosition());
 	}

@@ -35,9 +35,9 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	gapCloserW = wMenu->CheckBox ("W on Gap Closer", true);
 	interrupterW = wMenu->CheckBox ("W on Interruptable Spells", true);
 	ComboE = eMenu->CheckBox ("Use E in Combo", true);
-	killStealE = eMenu->CheckBox ("Kill Steal with E", true);
-	automaticE = eMenu->CheckBox ("Automatic Harass with E", false);
-	harassE = eMenu->CheckBox ("Harass with E", true);
+	killstealing_e_ = eMenu->CheckBox ("Kill Steal with E", true);
+	hunderAuto = eMenu->CheckBox ("Automatic Harass with E", false);
+	harassmentE = eMenu->CheckBox ("Harass with E", true);
 	harassEMana = eMenu->AddFloat (":: Only Harras E if Mana >", 0, 100, 40);
 	laneClearE = eMenu->CheckBox ("Wave Clear with E", true);
 	eMin = eMenu->AddInteger (":: Only E Minions Hit >", 1, 10, 2);
@@ -116,6 +116,21 @@ void Viktor::OnGameUpdate()
 		FleeMode();
 	}
 }
+
+/*void CancelAnimation()
+{
+	if (WaitForMove)
+	{ return; }
+
+	WaitForMove = true;
+	var movePos = Game.CursorPos;
+	if (Player.Distance (_target.Position) < 600)
+	{
+		movePos = Player.ServerPosition.Extend (_target.ServerPosition, 100);
+	}
+	Player.IssueOrder (GameObjectOrder.MoveTo, movePos);
+}
+*/
 
 
 void Viktor::FleeMode()
@@ -301,13 +316,28 @@ void Viktor::OnInterrupt (InterruptibleSpell const& args)
 
 void Viktor::OnOrbwalkPreAttack (IUnit* Target)
 {
-	if (Target->IsHero() && Q->IsReady() && !GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
+	if (Extensions::Validate (Target) && Target->IsHero() && Q->IsReady() && !GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
 	{
-		GOrbwalking->SetAttacksAllowed (false);
+		GOrbwalking->DisableNextAttack();
 	}
-	else
+	if (Extensions::Validate (Target) && Target->IsCreep() && GEntityList->Player()->HasBuff ("ViktorPowerTransferReturn") && (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
 	{
-		GOrbwalking->SetAttacksAllowed (true);
+		float hp = Target->GetHealth();
+
+		if (Q->Speed() != 0.f)
+		{
+			int t =
+			    static_cast<int> (Q->GetDelay() * 1000) +
+			    static_cast<int> ( (Target->ServerPosition() - GEntityList->Player()->GetPosition()).Length2D() * 1000) /
+			    static_cast<int> (Q->Speed()) - 125;
+
+			hp = GHealthPrediction->GetPredictedHealth (Target, kLastHitPrediction, t, 0);
+		}
+
+		if (hp > 0 && hp > qDmg (Target, false) - 15.f)
+		{
+			GOrbwalking->DisableNextAttack();
+		}
 	}
 }
 
@@ -514,7 +544,7 @@ void Viktor::eCast (IUnit* target)
 void Viktor::Harass()
 {
 	auto q = harassQ->Enabled() && Q->IsReady() && Hero->ManaPercent() >= harassQMana->GetFloat();
-	auto e = harassE->Enabled() && E->IsReady() && Hero->ManaPercent() >= harassEMana->GetFloat();
+	auto e = harassmentE->Enabled() && E->IsReady() && Hero->ManaPercent() >= harassEMana->GetFloat();
 	auto qTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	auto eTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1225);
 	if (e)
@@ -537,7 +567,7 @@ void Viktor::Harass()
 void Viktor::autoE()
 {
 	auto eTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1225);
-	if (automaticE->Enabled() && Extensions::Validate (eTarget) && eTarget->IsHero() && !eTarget->IsDead() && harassEMana->GetFloat() <= GEntityList->Player()->ManaPercent())
+	if (hunderAuto->Enabled() && Extensions::Validate (eTarget) && eTarget->IsHero() && !eTarget->IsDead() && harassEMana->GetFloat() <= GEntityList->Player()->ManaPercent())
 	{
 		eCast (eTarget);
 	}
@@ -753,7 +783,10 @@ void Viktor::Combo()
 	auto qTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	auto eTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1225);
 	auto rTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, R->Range());
-	if (Extensions::Validate (qTarget) && qTarget->IsHero() && !qTarget->IsDead() && Extensions::Validate (eTarget) && eTarget->IsHero() && !eTarget->IsDead() && eTarget != qTarget && ( (eTarget->GetHealth() > DPS (eTarget, false, false, true, false)) || (eTarget->GetHealth() > DPS (eTarget, false, false, true, true) && eTarget == rTarget)) && qTarget->GetHealth() < DPS (qTarget, true, false, true, false))
+	if (Extensions::Validate (qTarget) && qTarget->IsHero() && !qTarget->IsDead() && Extensions::Validate (eTarget) && eTarget->IsHero() &&
+	    !eTarget->IsDead() && eTarget != qTarget && ( (eTarget->GetHealth() > DPS (eTarget, false, false, true, false)) ||
+	            (eTarget->GetHealth() > DPS (eTarget, false, false, true, true) && eTarget == rTarget)
+	            && qTarget->GetHealth() < DPS (qTarget, true, false, true, false)))
 	{
 		eTarget = qTarget;
 	}
@@ -842,17 +875,20 @@ void Viktor::dmgdraw()
 	{
 		for (auto hero : GEntityList->GetAllHeros (false, true))
 		{
-			Vec4 BarColor;
-			HPBarColor->GetColor (&BarColor);
-			float totalDamage = DPS (hero, true, false, true, true);
-			Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
+			if (Extensions::Validate (hero) && !hero->IsDead() && hero->IsOnScreen())
+			{
+				Vec4 BarColor;
+				HPBarColor->GetColor (&BarColor);
+				float totalDamage = DPS (hero, true, false, true, true);
+				Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
+			}
 		}
 	}
 }
 
 void Viktor::KillSteal()
 {
-	if (killStealE->Enabled())
+	if (killstealing_e_->Enabled())
 	{
 		for (auto targets : GEntityList->GetAllHeros (false, true))
 		{
@@ -911,6 +947,34 @@ void Viktor::LaneClear()
 	}
 	if (laneClearQ->Enabled() && Q->IsReady() && Hero->ManaPercent() >= laneClearQMana->GetFloat())
 	{
+		for (auto pCreep : GEntityList->GetAllMinions (false, true, true))
+		{
+			if (!GEntityList->Player()->IsValidTarget (pCreep, Q->Range()))
+			{
+				continue;
+			}
+
+			float hp = pCreep->GetHealth();
+
+			if (Q->Speed() != 0.f)
+			{
+				int t =
+				    static_cast<int> (Q->GetDelay() * 1000) +
+				    static_cast<int> ( (pCreep->ServerPosition() - GEntityList->Player()->GetPosition()).Length2D() * 1000) /
+				    static_cast<int> (Q->Speed()) - 125;
+
+				hp = GHealthPrediction->GetPredictedHealth (pCreep, kLastHitPrediction, t, 0);
+			}
+
+			if (hp > 0 && hp < (qDmg (pCreep, true) - 15.f))
+			{
+				if (Q->CastOnUnit (pCreep))
+				{
+					return;
+				}
+			}
+		}
+		/*
 		for (auto minion : GEntityList->GetAllMinions (false, true, false))
 		{
 			if (minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->ServerPosition()) <= 525)
@@ -923,15 +987,12 @@ void Viktor::LaneClear()
 						Q->CastOnTarget (minion);
 						GOrbwalking->SetAttacksAllowed (true);
 						GOrbwalking->SetOverrideTarget (minion);
-						for (auto i = 0; i < 30; i++)
-						{
-							GGame->IssueOrder (Hero, kAttackTo, minion);
-						}
+
 						break;
 					}
 				}
 			}
-		}
+		}*/
 	}
 }
 

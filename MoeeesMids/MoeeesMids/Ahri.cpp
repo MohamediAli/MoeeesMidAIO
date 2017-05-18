@@ -373,9 +373,8 @@ float Ahri::GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit)
 	auto unitSpeed = unit->MovementSpeed();
 	auto unitHitboxRadius = unit->BoundingRadius();
 	//auto unitDirection = PathManager : GetDirection(unit, unit.path.curPath)
-	auto unitPath = unit->GetNavigationPath();
-	//PathManager.paths[nID][unit.path.curPath]
-	auto unitDirection = (unitPath->EndPosition - (unit->ServerPosition())).VectorNormalize();
+	auto unitPath = unit->GetWaypointList();
+	auto unitDirection = (unitPath[1] - (unitPath[0])).VectorNormalize();
 	//Calculations //
 	auto ping = GGame->Latency() / 1000;
 	auto delays = ping + spell->GetDelay();
@@ -532,10 +531,16 @@ void Ahri::AntiGapclose (GapCloserSpell const& args)
 		if (Extensions::GetDistance (GEntityList->Player(), args.EndPosition) <= 300)
 		{
 			auto delay = (GBuffData->GetEndTime (args.Data) - GGame->Time() - E->GetDelay());
-			GPluginSDK->DelayFunctionCall (delay, [=]()
+			if (delay > 0)
 			{
-				E->CastOnPosition (args.EndPosition);
-			});
+				GPluginSDK->DelayFunctionCall (delay, [=]()
+				{
+					E->CastOnPosition (args.EndPosition);
+				});
+			}
+			else
+			{ E->CastOnPosition (args.EndPosition); }
+
 		}
 	}
 }
@@ -590,28 +595,25 @@ void Ahri::dmgdraw()
 	{
 		for (auto hero : GEntityList->GetAllHeros (false, true))
 		{
-			Vec2 barPos = Vec2();
-			if (hero->GetHPBarPosition (barPos) && !hero->IsDead())
+			float totalDamage = 0;
+
+			if (Extensions::Validate (hero) && !hero->IsDead() && hero->IsOnScreen())
 			{
-				float QDamage = 0;
-				float WDamage = 0;
-				float EDamage = 0;
-				float RDamage = 0;
+
 				if (W->IsReady())
 				{
-					WDamage = GDamage->GetSpellDamage (Hero, hero, kSlotW);
+					totalDamage += GDamage->GetSpellDamage (Hero, hero, kSlotW);
 				}
 				if (Q->IsReady())
 				{
-					QDamage = GDamage->GetSpellDamage (Hero, hero, kSlotQ) + GDamage->GetAutoAttackDamage (Hero, hero, true);
+					totalDamage += GDamage->GetSpellDamage (Hero, hero, kSlotQ) + GDamage->GetAutoAttackDamage (Hero, hero, true);
 				}
 				if (E->IsReady())
 				{
-					EDamage = GDamage->GetSpellDamage (Hero, hero, kSlotE);
+					totalDamage += GDamage->GetSpellDamage (Hero, hero, kSlotE);
 				}
 				Vec4 BarColor;
 				HPBar->GetColor (&BarColor);
-				float totalDamage = QDamage + WDamage + EDamage + RDamage;
 				float percentHealthAfterDamage = max (0, hero->GetHealth() - float (totalDamage)) / hero->GetMaxHealth();
 				Rembrandt::DrawDamageOnChampionHPBar (hero, totalDamage, BarColor);
 			}
