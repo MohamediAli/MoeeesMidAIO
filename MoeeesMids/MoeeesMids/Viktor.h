@@ -23,6 +23,7 @@ public:
 	void OnPlayAnimation (IUnit* Source, std::string const AnimationId);
 
 private:
+	void CancelAnimation();
 	IMenuOption* ComboAA;
 	IMenuOption* ComboAAkey;
 	IMenuOption* ComboAALevel;

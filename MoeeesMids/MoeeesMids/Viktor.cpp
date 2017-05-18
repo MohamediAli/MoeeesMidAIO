@@ -2,6 +2,7 @@
 #include "Rembrandt.h"
 #include "Ahri.h"
 #define M_PI 3.14159265358979323846
+bool WaitForMove = true;
 
 Viktor::~Viktor()
 {
@@ -121,28 +122,36 @@ void Viktor::OnPlayAnimation (IUnit* Source, std::string const AnimationId)
 {
 	if (Source == Hero)
 	{
-		GUtility->CreateDebugConsole();
 		if (strstr (AnimationId.c_str(), "b2f63868"))
-		{ GUtility->LogConsole ("Q animation"); }
-		GUtility->LogConsole (AnimationId.c_str());
+		{
+			GOrbwalking->SetAttacksAllowed (false);
+			GPluginSDK->DelayFunctionCall (125 + GGame->Latency() /2, [=]()
+			{
+				CancelAnimation();
+			});
+		}
 
+		if (strstr (AnimationId.c_str(), "2acd4eca") || strstr (AnimationId.c_str(), "9dd9dc06"))
+		{
+			WaitForMove = false;
+		}
 	}
 }
 
-/*void CancelAnimation()
+void Viktor::CancelAnimation() //yol0 riven credits
 {
 	if (WaitForMove)
-	{ return; }
-
-	WaitForMove = true;
-	var movePos = Game.CursorPos;
-	if (Player.Distance (_target.Position) < 600)
 	{
-		movePos = Player.ServerPosition.Extend (_target.ServerPosition, 100);
+		return;
 	}
-	Player.IssueOrder (GameObjectOrder.MoveTo, movePos);
+	WaitForMove = true;
+	GGame->IssueOrder (Hero, kMoveTo, GGame->CursorPosition());
+
+	GOrbwalking->SetAttacksAllowed (true);
+	GGame->IssueOrder (Hero, kAttackUnit, GOrbwalking->GetLastTarget());
+
 }
-*/
+
 
 
 void Viktor::FleeMode()
@@ -603,21 +612,7 @@ void Viktor::Automatic()
 
 void Viktor::OnDoCast (CastedSpell const& args)
 {
-	if (strcmp (args.Name_, "ViktorPowerTransfer") == 0)
-	{
-		GOrbwalking->SetAttacksAllowed (false);
-		GPluginSDK->DelayFunctionCall (90 - GGame->Latency(), [=]()
-		{
-			GGame->IssueOrder (GEntityList->Player(), kMoveTo, Vec3 (position.x + rand() % 5 + 1, position.y, position.z + rand() % 5 + 1));
-			GOrbwalking->SetAttacksAllowed (true);
-			GOrbwalking->SetOverrideTarget (GOrbwalking->GetLastTarget());
-			for (auto i = 0; i < 30; i++)
-			{
-				GGame->IssueOrder (Hero, kAttackTo, GOrbwalking->GetLastTarget());
-			}
-			//	GGame->PrintChat (std::to_string (GGame->Latency()).c_str());
-		});
-	}
+
 }
 
 float Viktor::qDmg (IUnit* Target, bool stage)
