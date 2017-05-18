@@ -65,6 +65,11 @@ PLUGIN_EVENT (void) OnExitVisible (IUnit* Args)
 	ChampHandler->OnExitVisible (Args);
 }
 
+PLUGIN_EVENT (void) OnPlayAnimation (IUnit* Source, std::string const Args)
+{
+	ChampHandler->OnPlayAnimation (Source, Args);
+}
+
 
 void  LoadEvents()
 {
@@ -81,6 +86,7 @@ void  LoadEvents()
 	GEventManager->AddEventHandler (kEventOnDoCast, OnDoCast);
 	GEventManager->AddEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
 	GEventManager->AddEventHandler (kEventOnExitVisible, OnExitVisible);
+	GEventManager->AddEventHandler (kEventOnPlayAnimation, OnPlayAnimation);
 	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO (Ahri, Orianna, Karthus, Taliyah, Viktor) </b></font><b><font color=\"#FFFFFF\"> Loaded!</font></b>");
 	GGame->PrintChat ("<b><font color=\"#FF0000\"> DELETE Config if you are having errors!</font></b>");
 }
@@ -100,6 +106,7 @@ void  UnloadEvents()
 	GEventManager->RemoveEventHandler (kEventOnDoCast, OnDoCast);
 	GEventManager->RemoveEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
 	GEventManager->RemoveEventHandler (kEventOnExitVisible, OnExitVisible);
+	GEventManager->RemoveEventHandler (kEventOnPlayAnimation, OnPlayAnimation);
 }
 
 // Called when plugin is first loaded

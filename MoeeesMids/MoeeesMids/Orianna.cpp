@@ -313,6 +313,7 @@ void Orianna::OnGameUpdate()
 
 void Orianna::OnRender()
 {
+	//GRender->DrawCircle (NewOriannaBall, 90, Vec4 (255, 0, 0, 255), 5, true);
 	Drawing();
 	dmgdraw();
 	if (Laneclear->Enabled() && drawLC->Enabled())
@@ -529,6 +530,11 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			{
 				// v = d/t => t = d/v
 				//	GGame->PrintChat (std::to_string (args.Speed_).c_str());
+				GPluginSDK->DelayFunctionCall (Extensions::GetDistance (NewOriannaBall, args.EndPosition_) / 1.2 - 100 - GGame->Latency(), [=]()
+				{
+					NewOriannaBall = args.EndPosition_;
+				});
+				lastOriTick = GGame->TickCount();
 
 				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
 				float dist = (args.EndPosition_ - StartPos).Length();
@@ -542,6 +548,7 @@ void Orianna::OnSpellCast (CastedSpell const& args)
 			if (&args.Position_ && &args.EndPosition_ && args.Speed_)
 			{
 				// v = d/t => t = d/v
+				lastOriTick = GGame->TickCount();
 				Vec3 StartPos = (StationaryBall ? StationaryBall->GetPosition() : args.Position_);
 				float dist = (args.EndPosition_ - StartPos).Length();
 				QBallData = { StartPos,args.EndPosition_, (dist / 1900), GGame->Time() };
@@ -633,7 +640,7 @@ void Orianna::OnCreate (IUnit* object)
 	auto objectName = object->GetObjectName();
 	if (object->IsMissile() && GMissileData->GetCaster (object) == GEntityList->Player())
 	{
-		if (strcmp (GMissileData->GetName (object), "OrianaIzuna") == 0)
+		/*if (strcmp (GMissileData->GetName (object), "OrianaIzuna") == 0)
 		{
 			GPluginSDK->DelayFunctionCall (Extensions::GetDistance (NewOriannaBall, GMissileData->GetEndPosition (object)) / 1.2 - 100 - GGame->Latency(), [=]()
 			{
@@ -646,7 +653,7 @@ void Orianna::OnCreate (IUnit* object)
 		{
 			//	NewOriannaBall = Vec3 (0, 0, 0);
 			lastOriTick = GGame->TickCount();
-		}
+		}*/
 	}
 	if (strcmp (object->GetObjectName(), "Orianna_Base_Z_Izuna_nova.troy") == 0)
 	{
@@ -1232,12 +1239,20 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 	{
 		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && !targets->IsInvulnerable() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
 		{
-			Vec3 futurePos;
-			GPrediction->GetFutureUnitPosition (targets, delay, true, futurePos);
-			if (Extensions::GetDistanceSqr2D (NewOriannaBall, futurePos) <= width)
+			if (delay)
+			{
+				Vec3 futurePos;
+				GPrediction->GetFutureUnitPosition (targets, delay, true, futurePos);
+				if (Extensions::GetDistanceSqr2D (NewOriannaBall, futurePos) <= width)
+				{
+					hits.push_back (targets);
+				}
+			}
+			else if (Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= width)
 			{
 				hits.push_back (targets);
 			}
+
 		}
 	}
 	final.push_back (std::make_pair (hits.size(), hits));

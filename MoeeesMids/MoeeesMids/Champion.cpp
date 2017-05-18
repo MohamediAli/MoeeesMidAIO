@@ -73,3 +73,7 @@ void Champion::OnOrbwalkPreAttack (IUnit* Target)
 void Champion::OnExitVisible (IUnit* Args)
 {
 }
+
+void Champion::OnPlayAnimation (IUnit* Source, std::string const Args)
+{
+}

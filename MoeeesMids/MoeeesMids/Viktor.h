@@ -20,6 +20,7 @@ public:
 //	bool OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* EndPosition);
 	void OnDoCast (CastedSpell const& args);
 	void OnOrbwalkPreAttack (IUnit* Target);
+	void OnPlayAnimation (IUnit* Source, std::string const AnimationId);
 
 private:
 	IMenuOption* ComboAA;

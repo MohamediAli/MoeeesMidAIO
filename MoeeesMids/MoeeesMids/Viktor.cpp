@@ -117,6 +117,18 @@ void Viktor::OnGameUpdate()
 	}
 }
 
+void Viktor::OnPlayAnimation (IUnit* Source, std::string const AnimationId)
+{
+	if (Source == Hero)
+	{
+		GUtility->CreateDebugConsole();
+		if (strstr (AnimationId.c_str(), "b2f63868"))
+		{ GUtility->LogConsole ("Q animation"); }
+		GUtility->LogConsole (AnimationId.c_str());
+
+	}
+}
+
 /*void CancelAnimation()
 {
 	if (WaitForMove)
