@@ -15,8 +15,8 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Q->SetSkillshot (0.25f, 90.f, 1550.f, 870.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kTargetCast, false, false, kCollidesWithNothing);
 	W->SetOverrideRange (580);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, false, (kCollidesWithYasuoWall, kCollidesWithHeroes, kCollidesWithMinions));
-	E->SetSkillshot (0.25f, 60.f, 1550.f, 950.f);
+	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, false, (kCollidesWithHeroes, kCollidesWithMinions));
+	E->SetSkillshot (0.25f, 90.f, 1550.f, 950.f);
 	EFlash = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
 	EFlash->SetSkillshot (0.25f, 60, 3100, 1350);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
@@ -73,7 +73,7 @@ void Ahri::OnGameUpdate()
 {
 	Automated();
 	killSteal();
-	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused())
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen())
 	{
 		return;
 	}
@@ -89,11 +89,11 @@ void Ahri::OnGameUpdate()
 	{
 		LaneClear();
 	}
-	if (GetAsyncKeyState (Fleemode->GetInteger()))
+	if (GUtility->IsKeyDown (Fleemode->GetInteger()))
 	{
 		FleeMode();
 	}
-	if (GetAsyncKeyState (ComboAAkey->GetInteger()))
+	if (GUtility->IsKeyDown (ComboAAkey->GetInteger()))
 	{
 		auto level = Hero->GetLevel();
 		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
@@ -101,7 +101,7 @@ void Ahri::OnGameUpdate()
 			GOrbwalking->SetAttacksAllowed (false);
 		}
 	}
-	if (!GetAsyncKeyState (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
+	if (!GUtility->IsKeyDown (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
 	{
 		{
 			GOrbwalking->SetAttacksAllowed (true);
@@ -475,8 +475,7 @@ void Ahri::CastE (IUnit* target)
 	{
 		AdvPredictionOutput prediction_output;
 		auto castPos = GetCastPosition (E, Hero, target);
-		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
-		if (prediction_output.HitChance > kHitChanceCollision && castPos != Vec3 (0, 0, 0))
+		if (castPos != Vec3 (0, 0, 0) && CheckForCollision (E,castPos))
 		{
 			E->CastOnPosition (castPos);
 		}
@@ -485,7 +484,7 @@ void Ahri::CastE (IUnit* target)
 	{
 		AdvPredictionOutput prediction_output;
 		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
-		if (prediction_output.HitChance > kHitChanceCollision)
+		if (prediction_output.HitChance != kHitChanceCollision)
 		{
 			for (auto x : mPrediction (target, E, Hero->GetPosition()))
 				if (x.second != Vec3 (0, 0, 0) && x.first >= 0.3 && Extensions::GetDistanceSqr (x.second,target->ServerPosition()) < 250*250)
@@ -744,7 +743,7 @@ void Ahri::Automated()
 			CastQ (target);
 		}
 	}
-	if (GetAsyncKeyState (FlashCondemn->GetInteger()) && !GGame->IsChatOpen())
+	if (GUtility->IsKeyDown (FlashCondemn->GetInteger()) && !GGame->IsChatOpen())
 	{
 		PerformFlashCharm();
 	}
