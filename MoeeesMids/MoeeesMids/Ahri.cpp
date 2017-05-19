@@ -89,11 +89,11 @@ void Ahri::OnGameUpdate()
 	{
 		LaneClear();
 	}
-	if (GUtility->IsKeyDown (Fleemode->GetInteger()))
+	if (GetAsyncKeyState (Fleemode->GetInteger()))
 	{
 		FleeMode();
 	}
-	if (GUtility->IsKeyDown (ComboAAkey->GetInteger()))
+	if (GetAsyncKeyState (ComboAAkey->GetInteger()))
 	{
 		auto level = Hero->GetLevel();
 		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
@@ -101,7 +101,7 @@ void Ahri::OnGameUpdate()
 			GOrbwalking->SetAttacksAllowed (false);
 		}
 	}
-	if (!GUtility->IsKeyDown (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
+	if (!GetAsyncKeyState (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
 	{
 		{
 			GOrbwalking->SetAttacksAllowed (true);
@@ -743,7 +743,7 @@ void Ahri::Automated()
 			CastQ (target);
 		}
 	}
-	if (GUtility->IsKeyDown (FlashCondemn->GetInteger()) && !GGame->IsChatOpen())
+	if (GetAsyncKeyState (FlashCondemn->GetInteger()) && !GGame->IsChatOpen())
 	{
 		PerformFlashCharm();
 	}

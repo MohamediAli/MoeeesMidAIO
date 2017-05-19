@@ -292,7 +292,7 @@ void Orianna::OnGameUpdate()
 		return;
 	}
 	Automatic();
-	if (GUtility->IsKeyDown (eHelperKey->GetInteger()))
+	if (GetAsyncKeyState (eHelperKey->GetInteger()))
 	{
 		eAssist();
 	}
@@ -1555,7 +1555,7 @@ void Orianna::Automatic()
 	{
 		WLogic();
 	}
-	if (GUtility->IsKeyDown (FlashUlt->GetInteger()) && !GGame->IsChatOpen() && GUtility->IsLeagueWindowFocused())
+	if (GetAsyncKeyState (FlashUlt->GetInteger()) && !GGame->IsChatOpen() && GUtility->IsLeagueWindowFocused())
 	{
 		PerformFlashUlt();
 	}

@@ -84,7 +84,7 @@ void Karthus::OnGameUpdate()
 	{
 		LaneClear();
 	}
-	if (GUtility->IsKeyDown (ComboAAkey->GetInteger()))
+	if (GetAsyncKeyState (ComboAAkey->GetInteger()))
 	{
 		auto level = Hero->GetLevel();
 		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
@@ -92,7 +92,7 @@ void Karthus::OnGameUpdate()
 			GOrbwalking->SetAttacksAllowed (false);
 		}
 	}
-	if (!GUtility->IsKeyDown (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
+	if (!GetAsyncKeyState (ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
 	{
 		{
 			GOrbwalking->SetAttacksAllowed (true);
@@ -482,7 +482,7 @@ void Karthus::dmgdraw()
 				{
 					LastSeen = GGame->Time();
 				}
-				if (health < rDmg (enemy) && GGame->Time()-LastSeen<15)
+				if (health < rDmg (enemy) && GGame->Time()-LastSeen<8)
 				{
 					killable += enemy->ChampionName();
 					killable.append (" ");
@@ -501,7 +501,7 @@ void Karthus::dmgdraw()
 		static Vec2 Resoution = GRender->ScreenSize();
 		static Vec2 ScreenCenter = Vec2 (Resoution.x / 3.0f, (Resoution.y / 4.7f));
 		//if (GGame->Projection(Hero->ServerPosition(), &pos)) {
-		static auto message = GRender->CreateFontW ("Impact", 60.f, kFontWeightNormal);
+		auto message = GRender->CreateFontW ("Impact", 60.f, kFontWeightNormal);
 		message->SetColor (Vec4 (255, 0, 0, 255));
 		message->SetOutline (true);
 		message->Render (ScreenCenter.x, ScreenCenter.y, killable.c_str());
