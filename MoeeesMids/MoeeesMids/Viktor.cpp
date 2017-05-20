@@ -68,6 +68,11 @@ Viktor::Viktor (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 void Viktor::OnGameUpdate()
 {
+	auto qRange = GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1300);
+	if (Extensions::Validate (qRange) && qRange->IsHero() && !qRange->IsDead())
+	{
+		Q->SetSkillshot (0.15f, 0.f, 2050.f, 600.f + GEntityList->Player()->BoundingRadius() + qRange->BoundingRadius());
+	}
 	position = GEntityList->Player()->ServerPosition();
 //	IUnit*  test = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	srand (time (NULL));
@@ -79,7 +84,7 @@ void Viktor::OnGameUpdate()
 	KillSteal();
 	Automatic();
 	autoE();
-	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused() || Hero->IsDead())
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
 	{
 		return;
 	}
@@ -797,18 +802,7 @@ void Viktor::Combo()
 	{
 		eTarget = qTarget;
 	}
-	if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead() && rKS)
-	{
-		if (Extensions::Validate (rObject))
-		{
-			return;
-		}
-		if (DPS (rTarget, true, false, true, true, 2) > rTarget->GetHealth() && DPS (rTarget, true, false, true, false) < rTarget->GetHealth())
-		{
-			R->CastOnPosition (rTarget->ServerPosition());
-			return;
-		}
-	}
+
 	if (e)
 	{
 		if (Extensions::Validate (eTarget) && eTarget->IsHero() && !eTarget->IsDead())
@@ -832,6 +826,18 @@ void Viktor::Combo()
 		if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead())
 		{
 			WLogic (rTarget);
+		}
+	}
+	if (Extensions::Validate (rTarget) && rTarget->IsHero() && !rTarget->IsDead() && rKS)
+	{
+		if (Extensions::Validate (rObject))
+		{
+			return;
+		}
+		if (DPS (rTarget, true, false, true, true, 2) > rTarget->GetHealth() && DPS (rTarget, true, false, true, false) < rTarget->GetHealth())
+		{
+			R->CastOnPosition (rTarget->ServerPosition());
+			return;
 		}
 	}
 	if (r)

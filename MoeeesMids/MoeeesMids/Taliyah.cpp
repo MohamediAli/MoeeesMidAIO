@@ -71,7 +71,7 @@ void Taliyah::OnGameUpdate()
 {
 	auto walkPos = CalculateReturnPos();
 	QTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
-	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused())
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
 	{
 		return;
 	}

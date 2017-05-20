@@ -73,7 +73,7 @@ void Ahri::OnGameUpdate()
 {
 	Automated();
 	killSteal();
-	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen())
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
 	{
 		return;
 	}

@@ -287,7 +287,7 @@ void Orianna::OnGameUpdate()
 		DivineColor8->GetColor (&Color8);
 	}
 	//debug key
-	if (GGame->IsChatOpen() || !GUtility->IsLeagueWindowFocused() || Hero->IsDead())
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
 	{
 		return;
 	}
@@ -1092,11 +1092,8 @@ void Orianna::CastQ (IUnit* target)
 			}
 		}
 	}
-	if (PredictionType->GetInteger() == 3)
-	{
-		QCast (Q, target);
-	}
-	else if (PredictionType->GetInteger() == 1)
+
+	if (PredictionType->GetInteger() == 1)
 	{
 		Q->CastOnTarget (target, kHitChanceHigh);
 	}
@@ -1257,14 +1254,9 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 }
 void Orianna::WLogic()
 {
-	auto hits = GetHits (W,0);
-	for (auto entry : hits)
+	if (Extensions::EnemiesInRange (NewOriannaBall, W->Radius()))
 	{
-		if (entry.first > 0)
-		{
-			W->CastOnPlayer();
-			return;
-		}
+		W->CastOnPlayer();
 	}
 }
 bool Orianna::RLogic()

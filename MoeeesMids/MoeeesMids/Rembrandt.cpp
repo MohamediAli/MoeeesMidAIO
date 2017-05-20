@@ -65,9 +65,12 @@ auto Rembrandt::DrawDamageOnChampionHPBar (IUnit* Hero, double Damage, const cha
 	if (Hero->GetHPBarPosition (HPBarPos))
 	{
 		Vec2 HPBarSize = Vec2 (103 * (Damage / Hero->GetMaxHealth()), 8);
+		if (HPBarSize.x > 103) { HPBarSize.x = 103; }
 		HPBarPos = Vec2 (HPBarPos.x + 10, HPBarPos.y += 20);
+
 		Vec2 LinePos1 = Vec2 (HPBarPos.x + HPBarSize.x, HPBarPos.y);
 		Vec2 LinePos2 = Vec2 (HPBarPos.x + HPBarSize.x - 5, HPBarPos.y - 7);
+
 		GRender->DrawFilledBox (HPBarPos, HPBarSize, BarColor);
 		GRender->DrawLine (LinePos1, LinePos2, Vec4 (255, 255, 255, 255));
 		GRender->DrawLine (LinePos1, LinePos1 + Vec2 (0, 8), Vec4 (255, 255, 255, 255));
@@ -78,15 +81,19 @@ auto Rembrandt::DrawDamageOnChampionHPBar (IUnit* Hero, double Damage, const cha
 auto Rembrandt::DrawDamageOnChampionHPBar (IUnit* Hero, double Damage, Vec4 BarColor) -> void
 {
 	Vec2 HPBarPos;
-	if (Hero->GetHPBarPosition (HPBarPos) && Hero->IsVisible() && !Hero->IsDead())
+	if (Hero->GetHPBarPosition (HPBarPos))
 	{
 		Vec2 HPBarSize = Vec2 (103 * (Damage / Hero->GetMaxHealth()), 8);
+		if (HPBarSize.x > 103) { HPBarSize.x = 103; }
 		HPBarPos = Vec2 (HPBarPos.x + 10, HPBarPos.y += 20);
+
 		Vec2 LinePos1 = Vec2 (HPBarPos.x + HPBarSize.x, HPBarPos.y);
 		Vec2 LinePos2 = Vec2 (HPBarPos.x + HPBarSize.x - 5, HPBarPos.y - 7);
+
 		GRender->DrawFilledBox (HPBarPos, HPBarSize, BarColor);
 	}
 }
+
 
 auto Rembrandt::LengthSqr (Vec3 v) -> float
 {

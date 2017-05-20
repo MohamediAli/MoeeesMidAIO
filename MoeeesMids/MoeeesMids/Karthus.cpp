@@ -66,6 +66,10 @@ void Karthus::OnGameUpdate()
 {
 	automatic();
 	zigzag();
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
+	{
+		return;
+	}
 	QTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
