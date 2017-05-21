@@ -93,7 +93,7 @@ void  LoadEvents()
 	GEventManager->AddEventHandler (kEventOnPlayAnimation, OnPlayAnimation);
 	GEventManager->AddEventHandler (kEventOnDash, OnDash);
 	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO (Ahri, Orianna, Karthus, Taliyah, Viktor, </b></font> <font color = \"#62ff4d\"><b>Cassiopeia)</b></font><b><font color=\"#FFFFFF\"><b><font color=\"#FFFFFF\">  Loaded!</font></b>");
-	GGame->PrintChat ("<b><font color=\"#FF0000\"> DELETE Config if you are having errors!</font></b>");
+	GGame->PrintChat ("<b><font color=\"#FF0000\"> DELETE Config if you are having any issues!</font></b>");
 }
 
 void  UnloadEvents()

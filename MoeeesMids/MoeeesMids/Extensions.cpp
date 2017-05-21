@@ -94,21 +94,6 @@ float Extensions::SegmenDistance (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd
 	}
 	return FLT_MAX;
 }
-/*
-int CountHits(std::vector<Vec3> points, Vec3 castPosition)
-{
-	auto count = 0;
-	for (auto entry : points)
-	{
-		if (entry.To2D().Distance(castPosition.To2D(), this.From.To2D(), true, true)
-			< Math.Pow(this.Width + extraWidth, 2))
-		{
-			return true;
-		}
-
-	}
-	return points.Count(point = > this.WillHit(point, castPosition));
-}*/
 
 bool Extensions::isOnSegment (Vec2 * seg1, Vec2 * seg2, Vec2 * point)
 {

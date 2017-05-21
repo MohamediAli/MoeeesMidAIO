@@ -1234,7 +1234,7 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 	auto width = spell->Radius() * spell->Radius();
 	for (auto targets : GEntityList->GetAllHeros (false, true))
 	{
-		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && !targets->IsInvulnerable() && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
+		if (Extensions::Validate (targets) && targets->IsVisible() && !targets->IsDead() && targets->IsHero() && !targets->IsInvulnerable() && !Extensions::HasSpellShield (targets) && Extensions::GetDistanceSqr2D (NewOriannaBall, targets->ServerPosition()) <= range)
 		{
 
 			{
