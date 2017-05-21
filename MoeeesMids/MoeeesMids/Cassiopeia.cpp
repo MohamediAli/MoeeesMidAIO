@@ -372,6 +372,8 @@ float Cassiopeia::DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR
 	{
 		total += GDamage->CalcMagicDamage (GEntityList->Player(), target, 100 + GEntityList->Player()->TotalMagicDamage() * 0.1);
 	}
+
+	total * Rembrandt::DamageModifierFromMasteries (Hero, target);
 	return (float) total;
 }
 

@@ -1,27 +1,28 @@
 #include "Rembrandt.h"
 #include "Geometry.h"
 
-/*				UPDATED PATCH #7.7				*/
+/*				UPDATED PATCH #7.10				*/
 auto Rembrandt::DamageModifierFromMasteries (IUnit* Hero, IUnit* Target) -> double
 {
 	double Modifier = 1;
 	std::vector<HeroMastery> MyMasteryBuffer;
+
 	if (Hero->GetMasteries (MyMasteryBuffer))
 	{
 		for (auto Mastery : MyMasteryBuffer)
 		{
 			//SORCERY: Increases ability and spell damage by 0.4 / 0.8 / 1.2 / 1.6 / 2 %
-			if (Mastery.MasteryId == 40)
+			if (Mastery.MasteryId == 68)
 			{
 				Modifier += (0.4 * Mastery.Points) / 100;
 			}
 			//DOUBLE EDGED SWORD: You deal 3% increased damage from all sources, but take 1.5% increased damage from all sources.
-			else if (Mastery.MasteryId == 12)
+			else if (Mastery.MasteryId == 114)
 			{
 				Modifier += 0.03;
 			}
 			//ASSASSAIN: Grants 2% increased damage against enemy champions while no allied champions are nearby - 800 range
-			else if (Mastery.MasteryId == 186)
+			else if (Mastery.MasteryId == 83)
 			{
 				bool IsActive = true;
 				for (auto Friend : GEntityList->GetAllHeros (true, false))
@@ -32,18 +33,18 @@ auto Rembrandt::DamageModifierFromMasteries (IUnit* Hero, IUnit* Target) -> doub
 						break;
 					}
 				}
+
 				if (IsActive) { Modifier += 0.02; }
 			}
 			//MERCILESS: Grants 0.6 / 1.2 / 1.8 / 2.4 / 3 % increased damage against champions below 40 % health.
-			else if (Mastery.MasteryId == 232)
+			else if (Mastery.MasteryId == 97)
 			{
 				if (Target->HealthPercent() < 40)
-				{
-					Modifier += (0.6 * Mastery.Points) / 100;
-				}
+				{ Modifier += (0.6 * Mastery.Points) / 100; }
 			}
 		}
 	}
+
 	//check if enemy has double edged sword
 	std::vector<HeroMastery> TarMasteryBuffer;
 	if (Target->GetMasteries (TarMasteryBuffer))
@@ -51,15 +52,17 @@ auto Rembrandt::DamageModifierFromMasteries (IUnit* Hero, IUnit* Target) -> doub
 		for (auto Mastery : TarMasteryBuffer)
 		{
 			//DOUBLE EDGED SWORD: You deal 3% increased damage from all sources, but take 1.5% increased damage from all sources.
-			if (Mastery.MasteryId == 12)
+			if (Mastery.MasteryId == 114)
 			{
 				Modifier += 0.015;
 				break;
 			}
 		}
 	}
+
 	return Modifier;
 }
+
 
 auto Rembrandt::DrawDamageOnChampionHPBar (IUnit* Hero, double Damage, const char *Text, Vec4 BarColor) -> void
 {
