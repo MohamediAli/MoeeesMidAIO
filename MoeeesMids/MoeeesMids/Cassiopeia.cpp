@@ -751,7 +751,7 @@ void Cassiopeia::OnSpellCast (CastedSpell const& args)
 	};
 	for (auto spellName : SpellNames)
 	{
-		if (strstr (std::string (args.Name_).c_str(), spellName.c_str()))
+		if (strstr (std::string (args.Name_).c_str(), spellName.c_str()) && W->IsReady())
 		{
 			if (args.Caster_ != nullptr || args.Caster_->IsHero() && args.Caster_->IsEnemy (Hero) && Extensions::GetDistanceSqr (args.Caster_->ServerPosition(), Hero->ServerPosition()) <= WMaxRangeSqr() && !Hero->IsValidTarget (args.Caster_, 500))
 			{
@@ -938,11 +938,6 @@ void Cassiopeia::eLogic (IUnit* target)
 }
 void Cassiopeia::OnInterrupt (InterruptibleSpell const& Args)
 {
-	GGame->PrintChat (GSpellData->GetSpellName (Args.Data));
-	std::vector<std::string> SpellNames =
-	{
-
-	};
 
 	if (Args.Source == nullptr || Args.Source->IsDead() || strstr (Args.Source->ChampionName(), "Zed") || strstr (Args.Source->ChampionName(), "Master Yi") || !Args.Source->IsEnemy (Hero) || Args.DangerLevel != kHighDanger)
 	{
@@ -974,6 +969,7 @@ void Cassiopeia::OnInterrupt (InterruptibleSpell const& Args)
 						scriptR = false;
 
 					});
+					break;
 				}
 			}
 
