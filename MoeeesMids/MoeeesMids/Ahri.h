@@ -16,11 +16,16 @@ public:
 	void OnExitVisible (IUnit* Args);
 	void OnNewPath (IUnit* Source, const std::vector<Vec3>& path_);
 	void OnCreate (IUnit* object);
-
+	void OnDash (UnitDash* Args);
 
 private:
+	float czx = 0, czy = 0, czx2 = 0, czy2 = 0;
+	bool cz = false;
+	IUnit* ETarget;
+	Vec3 PredPos (IUnit* Hero, float Delay);
+	void zigzag();
 	float GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit);
-	Vec3 GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit);
+	bool GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit, Vec3& out);
 	std::string MissileName, MissileReturnName;
 	std::vector<std::pair<float, Vec3>> mPrediction (IUnit* unit, ISpell2* spell, Vec3 sourcePos);
 	ISpell2* QWER;

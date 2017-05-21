@@ -85,6 +85,13 @@ struct FarmLocationVik
 
 namespace Extensions
 {
+bool HasSpellShield (IUnit* entity);
+bool IsFacingMe (IUnit* source, float angle = 80);
+float AngleBetween (Vec2 p1, Vec2 p2);
+double timeImmobile (IUnit* unit);
+float Polar (Vec2 v1);
+float AngleBetweenEx (Vec2 p1, Vec2 p2);
+bool Close (float a, float b, float eps);
 eMinionType GetMinionType (IUnit* minion);
 ProjectionInfo ProjectOn (Vec2 point, Vec2 segmentStart, Vec2 segmentEnd);
 bool isOnSegment (Vec2 * seg1, Vec2 * seg2, Vec2 * point);

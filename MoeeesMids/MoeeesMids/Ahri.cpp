@@ -71,6 +71,7 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 void Ahri::OnGameUpdate()
 {
+	ETarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	Automated();
 	killSteal();
 	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
@@ -133,6 +134,103 @@ void  Ahri::OnCreate (IUnit* object)
 	}
 }
 
+void Ahri::zigzag()   //credits sn karthus
+{
+	if (ETarget == nullptr || !ETarget->IsHero() || !ETarget->IsValidTarget())
+	{
+		return;
+	}
+	if (czx < czx2)
+	{
+		if (czx2 >= ETarget->ServerPosition().x)
+		{
+			cz = true;
+		}
+		else
+		{
+			cz = false;
+		}
+	}
+	else if (czx == czx2)
+	{
+		cz = false;
+		czx = czx2;
+		czx2 = (ETarget->ServerPosition().x);
+		return;
+	}
+	else
+	{
+		if (czx2 <= ETarget->ServerPosition().x)
+		{
+			cz = true;
+		}
+		else
+		{
+			cz = false;
+		}
+	}
+	czx = czx2;
+	czx2 = ETarget->ServerPosition().x;
+	if (czy < czy2)
+	{
+		if (czy2 >= ETarget->ServerPosition().z)
+		{
+			cz = true;
+		}
+		else
+		{
+			cz = false;
+		}
+	}
+	else if (czy == czy2)
+	{
+		cz = false;
+	}
+	else
+	{
+		if (czy2 <= ETarget->ServerPosition().z)
+		{
+			cz = true;
+		}
+		else
+		{
+			cz = false;
+		}
+	}
+	czy = czy2;
+	czy2 = ETarget->ServerPosition().z;
+}
+
+Vec3 Ahri::PredPos (IUnit* Hero, float Delay)
+{
+	float value = 0.f;
+	if (Hero->IsFacing (Hero))
+	{
+		value = (50.f - Hero->BoundingRadius());
+	}
+	else
+	{
+		value = - (100.f - Hero->BoundingRadius());
+	}
+	auto distance = Delay * Hero->MovementSpeed() + value;
+	auto path = Hero->GetWaypointList();
+	for (auto i = 0; i < path.size() - 1; i++)
+	{
+		auto a = path[i];
+		auto b = path[i + 1];
+		auto d = Extensions::GetDistance (a, b);
+		if (d < distance)
+		{
+			distance -= d;
+		}
+		else
+		{
+			return (a + distance * (b - a).VectorNormalize());
+		}
+	}
+	return (path[path.size() - 1]).To3D();
+}
+
 void Ahri::OnRender()
 {
 	Drawing();
@@ -154,7 +252,16 @@ void Ahri::OnRender()
 	{
 		return;
 	}
-	GRender->DrawCircle (GetCastPosition (E, Hero, target), 30, Vec4 (255, 255, 0, 255), 2);
+	Vec3 out;
+	if (GetCastPosition (E, Hero, target, out))
+	{ GRender->DrawCircle (out, 30, Vec4 (255, 255, 0, 255), 2); }
+	auto pred = PredPos (ETarget, 0.35f + (GGame->Latency() / 1000));
+	if (!cz)
+	{
+		GRender->DrawCircle (pred, 30, Vec4 (255, 0, 0, 255), 2);
+	}
+
+
 }
 
 static std::unordered_map<int, float> mia;
@@ -406,7 +513,7 @@ float Ahri::GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit)
 	return impactTime;
 }
 
-Vec3 Ahri::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit)
+bool Ahri::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit, Vec3& out)
 {
 	auto castPosition = Vec3 (0, 0, 0);
 	auto index = 0;
@@ -422,7 +529,7 @@ Vec3 Ahri::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit)
 				auto impactTime = GetImpactTime (spell, source, unit);
 				if (!impactTime)
 				{
-					return Vec3 (0, 0, 0);
+					return false;
 				}
 				castPosition = unitPosition + unitDirection * (unit->MovementSpeed() * impactTime);
 			}
@@ -430,11 +537,12 @@ Vec3 Ahri::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit)
 		}
 		if (Extensions::GetDistance (source->ServerPosition(), castPosition) > spell->Range())
 		{
-			return Vec3 (0, 0, 0);
+			return false;
 		}
-		return castPosition;
+		out = castPosition;
+		return true;
 	}
-	return Vec3 (0, 0, 0);
+	return false;
 }
 
 
@@ -468,20 +576,46 @@ bool Ahri::BestCastPosition (IUnit* Unit, ISpell2* Skillshot, Vec3& CastPosition
 	}
 }
 
+void Ahri::OnDash (UnitDash* Args)
+{
+	if (Args->Source->IsHero() && Args->Source->IsEnemy (Hero))
+	{
+		if (E->IsReady() && Args->Source->IsValidTarget() && !GEntityList->Player()->IsDead() && Args->Source->IsEnemy (GEntityList->Player()))
+		{
+			if (Extensions::GetDistance (GEntityList->Player(), Args->EndPosition) <= E->Range())
+			{
+				auto delay = Args->EndTick - GGame->TickCount() - E->GetDelay() * 1000;
+				if (delay > 0)
+				{
+					GPluginSDK->DelayFunctionCall (delay, [=]()
+					{
+						E->CastOnPosition (Args->EndPosition);
+
+					});
+				}
+				else
+				{
+					E->CastOnPosition (Args->EndPosition);
+				}
+			}
+		}
+	}
+}
 
 void Ahri::CastE (IUnit* target)
 {
 	if (PredictionType->GetInteger() == 2)
 	{
-		AdvPredictionOutput prediction_output;
-		auto castPos = GetCastPosition (E, Hero, target);
-		if (castPos != Vec3 (0, 0, 0) && CheckForCollision (E,castPos))
+		Vec3 castPos;
+
+		if (CheckForCollision (E,castPos) && GetCastPosition (E, Hero, target, castPos))
 		{
 			E->CastOnPosition (castPos);
 		}
 	}
 	if (PredictionType->GetInteger() == 1)
 	{
+		/**/
 		AdvPredictionOutput prediction_output;
 		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
 		if (prediction_output.HitChance != kHitChanceCollision)
@@ -509,9 +643,19 @@ void Ahri::CastE (IUnit* target)
 
 void Ahri::CastQ (IUnit* target)
 {
+	if (target->HasBuffOfType (BUFF_Charm))
+	{
+		Q->CastOnTarget (target);
+		return;
+	}
 	if (PredictionType->GetInteger() == 2)
 	{
-		Q->CastOnTarget (target, kHitChanceHigh);
+		Vec3 castPos;
+
+		if (GetCastPosition (Q, Hero, target, castPos))
+		{
+			Q->CastOnPosition (castPos);
+		}
 	}
 	if (PredictionType->GetInteger() == 1)
 	{
@@ -525,6 +669,11 @@ void Ahri::CastQ (IUnit* target)
 
 void Ahri::AntiGapclose (GapCloserSpell const& args)
 {
+	if (args.Source == nullptr || args.Source->IsDead() || strstr (args.Source->ChampionName(), "Zed") || strstr (args.Source->ChampionName(), "Master Yi") || !args.Source->IsEnemy (Hero))
+	{
+		return;
+	}
+
 	if (E->IsReady() && gapcloseE->Enabled() && args.Source->IsValidTarget() && !GEntityList->Player()->IsDead() && args.Source->IsEnemy (GEntityList->Player()))
 	{
 		if (Extensions::GetDistance (GEntityList->Player(), args.EndPosition) <= 300)

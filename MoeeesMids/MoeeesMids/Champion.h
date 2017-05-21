@@ -32,6 +32,7 @@ public:
 	virtual void OnOrbwalkPreAttack (IUnit* Target);
 	virtual void OnExitVisible (IUnit* Args);
 	virtual void OnPlayAnimation (IUnit* Source, std::string const Args);
+	virtual void OnDash (UnitDash* Args);
 	/*virtual void OnRealSpellCast(CastedSpell const& Args);
 	virtual void OnOrbwalkAttack(IUnit* Source, IUnit* Target);
 	virtual void BeforeAttack(IUnit* Target);

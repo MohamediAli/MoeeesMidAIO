@@ -13,7 +13,7 @@ Karthus::~Karthus()
 
 Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 {
-	Q = GPluginSDK->CreateSpell2 (kSlotQ, kLineCast, true, true, kCollidesWithNothing);
+	Q = GPluginSDK->CreateSpell2 (kSlotQ, kLineCast, false, true, kCollidesWithNothing);
 	Q->SetSkillshot (1.f, 140.f, FLT_MAX, 890.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kCircleCast, false, true, kCollidesWithNothing);
 	W->SetSkillshot (1.0f, 200.f, FLT_MAX, 1000.f);
@@ -23,6 +23,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	KarthusMenu = Parent->AddMenu ("Karthus Menu");
 	ComboMenu = Parent->AddMenu ("Combo");
 	qMenu = Parent->AddMenu ("Q Settings");
+	Prediction = Parent->AddMenu ("Prediction");
 	wMenu = Parent->AddMenu ("W Settings");
 	eMenu = Parent->AddMenu ("E Settings");
 	rMenu = Parent->AddMenu ("R Settings");
@@ -52,6 +53,8 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Ping = { "Normal", "Danger", "Enemy Missing","OMW","Fall Back","Assist" };
 	PingOption = rMenu->AddSelection ("Ping Selection", 1, Ping);
 	PingDelay = rMenu->AddInteger ("Ping Delay in 100ms", 1, 10, 4);
+	PredType = { "SN Style", "Praedictio" };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 	ComboAALevel = MiscMenu->AddInteger ("At what level disable AA", 1, 18, 6);
 	ComboAA = MiscMenu->CheckBox ("Disable AA", false);
 	ComboAAkey = MiscMenu->AddKey ("Disable key", 32);
@@ -60,6 +63,114 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawQ = Drawings->CheckBox ("Draw Q", true);
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", false);
+}
+
+bool Karthus::GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit, float& impact)
+{
+	auto unitSpeed = unit->MovementSpeed();
+	auto unitHitboxRadius = unit->BoundingRadius();
+	//auto unitDirection = PathManager : GetDirection(unit, unit.path.curPath)
+	auto unitPath = unit->GetWaypointList();
+	//PathManager.paths[nID][unit.path.curPath]
+	auto unitDirection = (unitPath[unitPath.size()] - (unit->ServerPosition())).VectorNormalize();
+	//Calculations //
+	auto ping = GGame->Latency() / 1000;
+	auto delays = ping + spell->GetDelay();
+	auto unitPosition = unit->ServerPosition();
+	auto sourcePosition = source->ServerPosition();
+	unitPosition = unitPosition + unitDirection * (unitSpeed * delays);
+	unitPosition = unitPosition - unitDirection * unitHitboxRadius;
+	auto toUnitDirection = (unitPosition - sourcePosition).VectorNormalize();
+	sourcePosition = sourcePosition - toUnitDirection * source->BoundingRadius();
+	auto theta = unitDirection * toUnitDirection;
+	auto castDirection = unitDirection + toUnitDirection;
+	unitPosition = unitPosition - castDirection * (theta * spell->Radius());
+	auto unitDistance = Extensions::GetDistance (sourcePosition, unitPosition);
+	//sourcePosition : dist(unitPosition)
+	//Calculations //
+	auto a = (unitSpeed * unitSpeed) - (spell->Speed() * spell->Speed());
+	auto b = 2 * unitSpeed * unitDistance * theta;
+	auto c = unitDistance * unitDistance;
+	auto discriminant = b * b - 4 * a * c;
+	if (discriminant < 0)
+	{
+		return false;
+	}
+	impact = 2 * c / (sqrt (discriminant) - b);
+	if (impact < 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool Karthus::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit, Vec3& cast)
+{
+	Vec3 castPosition;
+	auto index = 0;
+	auto path = unit->GetWaypointList();
+	if (unit->IsMoving() && path.size() > 1)
+	{
+		for (auto pathIndex : path)
+		{
+			auto unitPosition = unit->ServerPosition();
+			auto unitPath = pathIndex;
+
+			auto unitDirection = (pathIndex - unitPosition).VectorNormalize();
+			float impactTime;
+
+			if (GetImpactTime (spell, source, unit, impactTime))
+			{
+
+				if (!impactTime)
+				{
+					return false;
+				}
+				castPosition = unitPosition + unitDirection * (unit->MovementSpeed() * impactTime);
+
+				index++;
+			}
+			if (Extensions::GetDistance (source->ServerPosition(), castPosition) < spell->Range())
+			{
+				cast = castPosition;
+				return true;
+			}
+		}
+
+	}
+	return false;
+}
+
+void Karthus::CastQ (IUnit* target)
+{
+	if (PredictionType->GetInteger() == 1)
+	{
+		Q->SetSkillshot (1.f, 140.f, 2000, 890.f);
+		Vec3 castPos;
+
+		if (GetCastPosition (Q, Hero, target, castPos))
+		{
+			Q->CastOnPosition (castPos);
+		}
+	}
+	if (PredictionType->GetInteger() == 0)
+	{
+		Q->SetSkillshot (1.f, 140.f, FLT_MAX, 890.f);
+		if (!cz)
+		{
+			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
+		}
+		else
+		{
+			Q->SetSkillshot (1.f, 140.f, 2000, 890.f);
+			Vec3 castPos;
+
+			if (GetCastPosition (Q, Hero, target, castPos))
+			{
+				Q->CastOnPosition (castPos);
+			}
+		}
+	}
 }
 
 void Karthus::OnGameUpdate()
@@ -142,11 +253,7 @@ void Karthus::automatic()
 		{
 			return;
 		}
-		else if (!cz)
-		{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
-			return;
-		}
+		CastQ (QTarget);
 	}
 }
 
@@ -300,7 +407,6 @@ void  Karthus::CastW()
 	if (IsInWRange (futurePos.To2D()))
 		if (Hero->IsValidTarget (target, W->Range()))
 		{
-			W->SetOverrideRadius (wWidthChange (target));
 			W->CastOnTarget (target);
 			return;
 		}
@@ -372,6 +478,10 @@ Vec3 Karthus::FarmQ (Vec3 pos)
 
 void Karthus::Combo()
 {
+	if (ComboW->Enabled() && W->IsReady())
+	{
+		CastW();
+	}
 	auto target = GTargetSelector->FindTarget (QuickestKill, SpellDamage, Q->Range());
 	if (target == nullptr || !target->IsHero() || target->IsDead() || !Extensions::Validate (QTarget) || ! (QTarget->IsVisible()))
 	{
@@ -379,20 +489,9 @@ void Karthus::Combo()
 	}
 	if (ComboQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()))
 	{
-		//	Q->SetOverrideRadius (qWidthChange (target));
-		if (!cz)
-		{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
-		}
-		else
-		{
-			Q->CastOnTarget (QTarget);
-		}
+		CastQ (QTarget);
 	}
-	if (ComboW->Enabled() && W->IsReady())
-	{
-		CastW();
-	}
+
 	if (Extensions::EnemiesInRange (Hero->ServerPosition(), E->Range()) && ComboE->Enabled())
 	{
 		eToggle();
@@ -408,11 +507,7 @@ void Karthus::Harass()
 	}
 	if (harassQ->Enabled() && Q->IsReady() && Hero->IsValidTarget (target, Q->Range()) && Hero->ManaPercent() >= harassQMana->GetFloat())
 	{
-		//Q->SetOverrideRadius(qWidthChange(target));
-		if (!cz)
-		{
-			Q->CastOnPosition (PredPos (QTarget, 0.75f + (GGame->Latency() / 1000)));
-		}
+		CastQ (QTarget);
 	}
 	if (harassW->Enabled() && W->IsReady() && Hero->IsValidTarget (target, W->Range()))
 	{
@@ -512,6 +607,8 @@ void Karthus::dmgdraw()
 		//	message->Render(pos.x + 10 + 32, pos.y + 10, killable.c_str());
 	}
 }
+bool myKarthfunctionHP (IUnit* i, IUnit* j) { return (i->GetHealth() >= j->GetHealth()); }
+
 
 
 
@@ -524,7 +621,7 @@ void Karthus::LaneClear()
 	Q->SetOverrideRadius (160.f);
 	if (Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() >= laneClearQMana->GetFloat())
 	{
-		for (auto minion : GEntityList->GetAllMinions (false, true, true))
+		for (auto minion : GEntityList->GetAllMinions (false, true, false))
 		{
 			if (Extensions::Validate (minion) && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance (Hero, minion->ServerPosition()) <= 1000)
 			{
@@ -542,8 +639,42 @@ void Karthus::LaneClear()
 				}
 			}
 		}
+
+
+		std::vector<IUnit*> allMobs;
+		for (auto mob : GEntityList->GetAllMinions (false, false, true))
+		{
+			if (mob != nullptr && mob->IsValidTarget() && mob->IsJungleCreep() && mob->IsVisible() && Extensions::GetDistance (Hero, mob->ServerPosition()) <= Q->Range())
+			{
+				if (!mob->IsDead() && mob->PhysicalDamage() > 1)
+				{
+					allMobs.push_back (mob);
+				}
+			}
+		}
+		if (allMobs.size() >= 1 && Q->IsReady() && laneClearQ->Enabled() && Hero->ManaPercent() > laneClearQMana->GetFloat())
+		{
+			std::sort (allMobs.begin(), allMobs.end(), myKarthfunctionHP);
+			if (!allMobs[0]->IsMoving())
+			{
+				Q->CastOnUnit (allMobs[0]);
+			}
+			else
+			{
+				Q->SetSkillshot (1.f, 140.f, 1800, 890.f);
+				Vec3 castPos;
+
+				if (GetCastPosition (Q, Hero, allMobs[0], castPos))
+				{
+					Q->CastOnPosition (castPos);
+					Q->SetSkillshot (1.f, 140.f, FLT_MAX, 890.f);
+				}
+			}
+
+		}
 	}
 }
+
 
 
 void Karthus::LastHit()

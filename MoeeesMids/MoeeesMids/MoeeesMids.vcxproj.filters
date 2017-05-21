@@ -69,6 +69,9 @@
     <ClInclude Include="Viktor.h">
       <Filter>Champs</Filter>
     </ClInclude>
+    <ClInclude Include="Cassiopeia.h">
+      <Filter>Champs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PluginSDK.cpp">
@@ -99,6 +102,9 @@
       <Filter>Champs</Filter>
     </ClCompile>
     <ClCompile Include="Viktor.cpp">
+      <Filter>Champs</Filter>
+    </ClCompile>
+    <ClCompile Include="Cassiopeia.cpp">
       <Filter>Champs</Filter>
     </ClCompile>
   </ItemGroup>

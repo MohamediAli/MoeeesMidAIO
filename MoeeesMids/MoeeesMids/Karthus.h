@@ -13,8 +13,13 @@ public:
 	void OnGameUpdate();
 	void OnRender();
 	void AntiGapclose (GapCloserSpell const& args);
-
 private:
+	IMenuOption* PredictionType;
+	IMenu* Prediction;
+	std::vector<std::string> PredType;
+	void CastQ (IUnit* target);
+	bool GetImpactTime (ISpell2* spell, IUnit* source, IUnit* unit, float& impact);
+	bool GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit, Vec3& cast);
 	std::vector<std::string> Ping;
 	IMenuOption* ComboAA;
 	IMenuOption* ComboAAkey;

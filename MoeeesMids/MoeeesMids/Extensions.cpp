@@ -413,3 +413,100 @@ void Extensions::DrawLineRectangle (Vec3 start2, Vec3 end2, int radius, float wi
 	GRender->DrawLine (rStartPos, lStartPos, color);
 	GRender->DrawLine (lEndPos, rEndPos, color);
 }
+
+bool Extensions::HasSpellShield (IUnit* entity)
+{
+	return entity->HasBuff ("bansheesveil") || entity->HasBuff ("SivirE") || entity->HasBuff ("NocturneW");
+}
+
+
+float Extensions::Polar (Vec2 v1)
+{
+	if (Extensions::Close (v1.x, 0, 0))
+	{
+		if (v1.y > 0)
+		{
+			return 90;
+		}
+		return v1.y < 0 ? 270 : 0;
+	}
+
+	auto theta = (atan ( (v1.y) / v1.x)) * (180.0 / PI);
+	if (v1.x < 0)
+	{
+		theta = theta + 180;
+	}
+	if (theta < 0)
+	{
+		theta = theta + 360;
+	}
+	return theta;
+}
+
+double Extensions::timeImmobile (IUnit* unit)
+{
+	std::vector<void*> buffs;
+	unit->GetAllBuffsData (buffs);
+	for (auto x : buffs)
+	{
+		if (GBuffData->IsActive (x) && GBuffData->GetEndTime (x) > GGame->Time())
+		{
+
+			if (GBuffData->GetBuffType (x) == BUFF_Charm || GBuffData->GetBuffType (x) == BUFF_Knockup || GBuffData->GetBuffType (x) == BUFF_Stun || GBuffData->GetBuffType (x) == BUFF_Suppression || GBuffData->GetBuffType (x) == BUFF_Snare)
+			{
+				return GBuffData->GetEndTime (x) - GGame->Time();
+			}
+		}
+	}
+	return 0;
+}
+
+bool Extensions::IsFacingMe (IUnit* source, float angle)
+{
+	if (!Extensions::Validate (source) || source->IsDead())
+	{
+		return false;
+	}
+
+	return Extensions::AngleBetween (source->Direction().To2D().Perpendicular(), ( (GEntityList->Player()->ServerPosition() - source->ServerPosition()).To2D())) < angle;
+}
+
+float Extensions::AngleBetween (Vec2 p1, Vec2 p2)
+{
+	auto theta = Extensions::Polar (p1) - Extensions::Polar (p2);
+
+	if (theta < 0)
+	{
+		theta = theta + 360;
+	}
+	if (theta > 180)
+	{
+		theta = 360 - theta;
+	}
+	return theta;
+}
+
+float Extensions::AngleBetweenEx (Vec2 p1, Vec2 p2)
+{
+	auto theta = Extensions::Polar (p1) - Extensions::Polar (p2);
+
+	if (theta > 180)
+	{
+		theta = 360 - theta;
+	}
+	if (theta < -180)
+	{
+		theta = 360 + theta;
+	}
+
+	return theta;
+}
+
+bool Extensions::Close (float a, float b, float eps)
+{
+	if (abs (eps) < FLT_EPSILON)
+	{
+		eps = (float) 1e-9;
+	}
+	return abs (a - b) <= eps;
+}

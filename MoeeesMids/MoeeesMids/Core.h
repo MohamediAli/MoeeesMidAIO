@@ -6,6 +6,7 @@
 #include "Taliyah.h"
 #include "Karthus.h"
 #include "Viktor.h"
+#include "Cassiopeia.h"
 /*  Core Variables  */
 
 //MENU

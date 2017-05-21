@@ -70,6 +70,10 @@ PLUGIN_EVENT (void) OnPlayAnimation (IUnit* Source, std::string const Args)
 	ChampHandler->OnPlayAnimation (Source, Args);
 }
 
+PLUGIN_EVENT (void) OnDash (UnitDash* Args)
+{
+	ChampHandler->OnDash (Args);
+}
 
 void  LoadEvents()
 {
@@ -87,7 +91,8 @@ void  LoadEvents()
 	GEventManager->AddEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
 	GEventManager->AddEventHandler (kEventOnExitVisible, OnExitVisible);
 	GEventManager->AddEventHandler (kEventOnPlayAnimation, OnPlayAnimation);
-	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO (Ahri, Orianna, Karthus, Taliyah, Viktor) </b></font><b><font color=\"#FFFFFF\"> Loaded!</font></b>");
+	GEventManager->AddEventHandler (kEventOnDash, OnDash);
+	GGame->PrintChat ("<font color=\"#ff4dee\"><b>Moeee's Mid AIO (Ahri, Orianna, Karthus, Taliyah, Viktor, </b></font> <font color = \"#62ff4d\"><b>Cassiopeia)</b></font><b><font color=\"#FFFFFF\"><b><font color=\"#FFFFFF\">  Loaded!</font></b>");
 	GGame->PrintChat ("<b><font color=\"#FF0000\"> DELETE Config if you are having errors!</font></b>");
 }
 
@@ -107,6 +112,7 @@ void  UnloadEvents()
 	GEventManager->RemoveEventHandler (kEventOrbwalkBeforeAttack, OnOrbwalkPreAttack);
 	GEventManager->RemoveEventHandler (kEventOnExitVisible, OnExitVisible);
 	GEventManager->RemoveEventHandler (kEventOnPlayAnimation, OnPlayAnimation);
+	GEventManager->RemoveEventHandler (kEventOnDash, OnDash);
 }
 
 // Called when plugin is first loaded
@@ -143,6 +149,11 @@ PLUGIN_API void OnLoad (IPluginSDK* PluginSDK)
 	{
 		ChampMenu = MainMenu->AddMenu ("Viktor");
 		ChampHandler = new Viktor (ChampMenu, Player);
+	}
+	else if (strstr (Player->ChampionName(), "Cassiopeia"))
+	{
+		ChampMenu = MainMenu->AddMenu ("Cassiopeia");
+		ChampHandler = new Cassiopeia (ChampMenu, Player);
 	}
 	else
 	{ ChampHandler = new Champion (ChampMenu, Player); }

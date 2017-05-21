@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Ahri.h" />
+    <ClInclude Include="Cassiopeia.h" />
     <ClInclude Include="Champion.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Extensions.h" />
@@ -166,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ahri.cpp" />
+    <ClCompile Include="Cassiopeia.cpp" />
     <ClCompile Include="Champion.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Extensions.cpp" />

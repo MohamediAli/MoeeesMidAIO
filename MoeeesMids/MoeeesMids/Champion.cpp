@@ -77,3 +77,8 @@ void Champion::OnExitVisible (IUnit* Args)
 void Champion::OnPlayAnimation (IUnit* Source, std::string const Args)
 {
 }
+
+void Champion:: OnDash (UnitDash* Args)
+{
+
+}

@@ -38,7 +38,9 @@ auto Rembrandt::DamageModifierFromMasteries (IUnit* Hero, IUnit* Target) -> doub
 			else if (Mastery.MasteryId == 232)
 			{
 				if (Target->HealthPercent() < 40)
-				{ Modifier += (0.6 * Mastery.Points) / 100; }
+				{
+					Modifier += (0.6 * Mastery.Points) / 100;
+				}
 			}
 		}
 	}
@@ -126,7 +128,9 @@ auto Rembrandt::FindBestLineCastPosition (std::vector<Vec3> RangeCheckFroms, flo
 			for (auto Minion : GEntityList->GetAllMinions (false, true, false))
 			{
 				if (!Minion->IsValidTarget() || Minion->IsWard())
-				{ continue; }
+				{
+					continue;
+				}
 				if (IsInRange (RangeCheckFrom, Minion->GetPosition(), range)) { targets.push_back (Minion); }
 				if (IsInRange (RangeCheckFrom, Minion->GetPosition(), castrange)) { casttargets.push_back (Minion); }
 			}
@@ -136,7 +140,9 @@ auto Rembrandt::FindBestLineCastPosition (std::vector<Vec3> RangeCheckFroms, flo
 			for (auto Champ : GEntityList->GetAllHeros (false, true))
 			{
 				if (!Champ->IsValidTarget() || Champ->IsClone())
-				{ continue; }
+				{
+					continue;
+				}
 				if (IsInRange (RangeCheckFrom, Champ->GetPosition(), range)) { targets.push_back (Champ); }
 				if (IsInRange (RangeCheckFrom, Champ->GetPosition(), castrange)) { casttargets.push_back (Champ); }
 			}
