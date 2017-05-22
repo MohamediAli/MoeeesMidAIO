@@ -165,5 +165,6 @@ PLUGIN_API void OnUnload()
 {
 	GGame->PrintChat ("<font color=\"#FFFFFF\"><b>Moeee's Mid AIO</b></font><b><font color=\"#FF0000\"> UnLoaded!</font></b>");
 	MainMenu->Remove();
+	ChampMenu->Remove();
 	UnloadEvents();
 }

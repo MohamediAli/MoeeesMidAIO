@@ -22,10 +22,11 @@ public:
 
 private:
 	std::vector<Vec2> rClose (std::vector< Vec3> pos);
+	Vec3 TrueflashPosition;
 	float WWidth();
 	float WMaxRangeSqr();
 	float WMaxRange();
-	float DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR, int eTimes = 1);
+	float DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR, int eTimes = 1, bool poison = true);
 	void TryMassUlt();
 	void PerformFlashUlt();
 	void CastAssistedUlt();

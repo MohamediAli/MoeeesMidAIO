@@ -23,8 +23,6 @@ Cassiopeia::Cassiopeia (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	R = GPluginSDK->CreateSpell2 (kSlotR, kConeCast, false, true, kCollidesWithNothing); //825 range, 210 radius, 0.5 delay
 	R->SetSkillshot (0.5f, (float) (210 * PI / 180), FLT_MAX, 825.f);
 	R->SetTriggerEvents (false);
-	RFlash = GPluginSDK->CreateSpell2 (kSlotR, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
-	RFlash->SetSkillshot (0.5f, (float) (210 * PI / 180), FLT_MAX, 1150);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
 	{
 		Flash = GPluginSDK->CreateSpell2 (kSummonerSlot1, kCircleCast, false, false, kCollidesWithNothing);
@@ -186,13 +184,24 @@ void Cassiopeia::AntiGapclose (GapCloserSpell const& args)
 				{
 					GPluginSDK->DelayFunctionCall (delay, [=]()
 					{
+						scriptR = true;
 						R->CastOnPosition (args.EndPosition);
-						return;
+						GPluginSDK->DelayFunctionCall (1000, [=]()
+						{
+							scriptR = false;
+
+						});
 					});
 				}
 				else
 				{
+					scriptR = true;
 					R->CastOnPosition (args.EndPosition);
+					GPluginSDK->DelayFunctionCall (1000, [=]()
+					{
+						scriptR = false;
+
+					});
 					return;
 				}
 
@@ -208,8 +217,8 @@ void Cassiopeia::CastFlash()
 {
 	auto target = GTargetSelector->GetFocusedTarget() != nullptr
 	              ? GTargetSelector->GetFocusedTarget()
-	              : GTargetSelector->FindTarget (QuickestKill, SpellDamage, RFlash->Range());
-	Flash->CastOnPosition (getPosToRflash (target->GetPosition()));
+	              : GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1150);
+	Flash->CastOnPosition (TrueflashPosition);
 }
 bool Cassiopeia::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -234,7 +243,7 @@ void Cassiopeia::OnOrbwalkPreAttack (IUnit* Target)
 		}
 	}
 }
-float Cassiopeia::DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR, int eTimes)
+float Cassiopeia::DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR, int eTimes, bool poison)
 {
 	if (target == nullptr || !target->IsValidTarget() || target->IsDead() || !target->IsVisible())
 	{
@@ -259,8 +268,8 @@ float Cassiopeia::DPS (IUnit* target, bool dpsQ, bool dpsW, bool dpsE, bool dpsR
 		double d[] = { 10, 40, 70, 100, 130 };
 		double flDamage = static_cast<float> ( (48 + 4 * Hero->GetLevel())) + 0.1 * Hero->BonusMagicDamage();
 
-		//Poison Ticks
-		flDamage += d[Level] + 0.35 * Hero->BonusMagicDamage();
+		if (poison)
+		{ flDamage += d[Level] + 0.35 * Hero->BonusMagicDamage(); }
 
 		total += GDamage->CalcMagicDamage (Hero, target, flDamage) * eTimes;
 	}
@@ -432,7 +441,7 @@ bool Cassiopeia::OnPreCast (int Slot, IUnit* Target, Vec3* StartPosition, Vec3* 
 				{
 					scriptR = true;
 					R->CastOnPosition (x.first);
-					GPluginSDK->DelayFunctionCall (500, [=]()
+					GPluginSDK->DelayFunctionCall (1000, [=]()
 					{
 						scriptR = false;
 
@@ -482,7 +491,7 @@ void Cassiopeia::TryMassUlt()
 				scriptR = true;
 
 				R->CastOnPosition (x.first);
-				GPluginSDK->DelayFunctionCall (500, [=]()
+				GPluginSDK->DelayFunctionCall (1000, [=]()
 				{
 					scriptR = false;
 
@@ -504,7 +513,7 @@ void Cassiopeia::TryMassUlt()
 			{
 				scriptR = true;
 				R->CastOnPosition (y.first);
-				GPluginSDK->DelayFunctionCall (500, [=]()
+				GPluginSDK->DelayFunctionCall (1000, [=]()
 				{
 					scriptR = false;
 
@@ -523,7 +532,7 @@ void Cassiopeia::PerformFlashUlt()
 	{
 		auto target = GTargetSelector->GetFocusedTarget() != nullptr
 		              ? GTargetSelector->GetFocusedTarget()
-		              : GTargetSelector->FindTarget (QuickestKill, SpellDamage, RFlash->Range());
+		              : GTargetSelector->FindTarget (QuickestKill, SpellDamage, 1150);
 		if (target == nullptr || !target->IsHero() || target->IsDead() || !target->IsValidTarget())
 		{
 			return;
@@ -538,16 +547,17 @@ void Cassiopeia::PerformFlashUlt()
 			}
 		}
 		std::vector<std::pair<Vec3, int>> correctedPos;
-		if (GetBestPosition (all, correctedPos, RFlash, flashPosition))
+		if (GetBestPosition (all, correctedPos, R, flashPosition))
 		{
 			for (auto x : correctedPos)
 			{
 				if (x.second)
 				{
+					TrueflashPosition = flashPosition;
 					scriptR = true;
 					R->CastOnPosition (x.first);
 					GPluginSDK->DelayFunctionCall (500 - (GGame->Latency()), [=]() { CastFlash(); });
-					GPluginSDK->DelayFunctionCall (500, [=]()
+					GPluginSDK->DelayFunctionCall (1800, [=]()
 					{
 						scriptR = false;
 
@@ -579,7 +589,7 @@ void Cassiopeia::CastAssistedUlt()
 			{
 				scriptR = true;
 				R->CastOnPosition (x.first);
-				GPluginSDK->DelayFunctionCall (500, [=]()
+				GPluginSDK->DelayFunctionCall (1000, [=]()
 				{
 					scriptR = false;
 
@@ -878,7 +888,7 @@ void Cassiopeia::OnInterrupt (InterruptibleSpell const& Args)
 				{
 					scriptR = true;
 					R->CastOnPosition (x.first);
-					GPluginSDK->DelayFunctionCall (500, [=]()
+					GPluginSDK->DelayFunctionCall (1000, [=]()
 					{
 						scriptR = false;
 
@@ -904,7 +914,7 @@ void Cassiopeia::Combo()
 	{
 		scriptR = true;
 		R->CastOnPosition (eTarget->ServerPosition());
-		GPluginSDK->DelayFunctionCall (500, [=]()
+		GPluginSDK->DelayFunctionCall (1000, [=]()
 		{
 			scriptR = false;
 
@@ -1211,7 +1221,7 @@ void Cassiopeia::LaneClear()
 									hp = GHealthPrediction->GetPredictedHealth (pCreep, kLastHitPrediction, t, 0);
 								}
 
-								if (hp > 0 && hp < GDamage->GetSpellDamage (GEntityList->Player(), pCreep, kSlotE) - 12.5f)
+								if (hp > 0 && hp < DPS (pCreep,false,false,true,false,1,false))
 								{
 									if (E->CastOnUnit (pCreep))
 									{
