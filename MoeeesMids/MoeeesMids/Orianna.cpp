@@ -1254,9 +1254,14 @@ std::vector<std::pair<int, std::vector<IUnit*>>> Orianna::GetHits (ISpell2* spel
 }
 void Orianna::WLogic()
 {
-	if (Extensions::EnemiesInRange (NewOriannaBall, W->Radius()))
+	auto hits = GetHits (W, 0);
+	for (auto entry : hits)
 	{
-		W->CastOnPlayer();
+		if (entry.first > 0)
+		{
+			W->CastOnPlayer();
+			return;
+		}
 	}
 }
 bool Orianna::RLogic()

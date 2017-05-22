@@ -115,6 +115,7 @@ Cassiopeia::Cassiopeia (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 void Cassiopeia::OnGameUpdate()
 {
+	Automated();
 	srand (time (NULL));
 	if (!notified && GGame->Time() > 27 * 60)
 	{
@@ -198,7 +199,7 @@ void Cassiopeia::OnGameUpdate()
 			GOrbwalking->SetAttacksAllowed (true);
 		}
 	}
-	Automated();
+
 
 }
 void Cassiopeia::OnRender()
