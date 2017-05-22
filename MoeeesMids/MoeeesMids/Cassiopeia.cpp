@@ -204,6 +204,8 @@ void Cassiopeia::OnGameUpdate()
 }
 void Cassiopeia::OnRender()
 {
+
+	TryMassUlt();
 	dmgDraw();
 	if (!autoUlt->Enabled())
 	{
@@ -401,17 +403,17 @@ bool Cassiopeia::IsInWRange (Vec2 position)
 
 bool Cassiopeia::validRPos (IUnit* target, ISpell2* spell, Vec3& cast)
 {
-	AdvPredictionOutput uno;
 	if (Extensions::Validate (target) && !target->IsDead())
 	{
-		spell->RunPrediction (target, true, kCollidesWithNothing, &uno);
-		if (uno.HitChance >= kHitChanceHigh)
+		Vec3 futurePos;
+		GPrediction->GetFutureUnitPosition (target, 0.4, true, futurePos);
+		if (Extensions::GetDistanceSqr (futurePos,Hero->ServerPosition()) <R->Range() *R->Range())
 		{
-			cast = uno.CastPosition;
+			cast = futurePos;
 			return true;
 		}
-	}
 
+	}
 	auto timeImmobile = Extensions::timeImmobile (target);
 	if (timeImmobile >= spell->GetDelay())
 	{
@@ -484,8 +486,8 @@ bool Cassiopeia::GetBestPosition (std::vector<IUnit*> targets, std::vector<std::
 			final.z += preds[i].y;
 		}
 
-		final.x /= preds.size() + 1;
-		final.z /= preds.size() + 1;
+		final.x /= preds.size() +1;
+		final.z /= preds.size() +1;
 
 		Final.push_back (std::make_pair (final, preds.size()));
 		result = Final;
@@ -568,7 +570,8 @@ void Cassiopeia::TryMassUlt()
 			if (minFacing->GetInteger() <= x.second)
 			{
 				scriptR = true;
-				R->CastOnPosition (x.first);
+				GRender->DrawCircle (x.first, 50, Vec4 (255, 0, 0, 255));
+				//	R->CastOnPosition (x.first);
 				GPluginSDK->DelayFunctionCall (500, [=]()
 				{
 					scriptR = false;
@@ -590,7 +593,8 @@ void Cassiopeia::TryMassUlt()
 			if (minNotfacing->GetInteger() <= y.second)
 			{
 				scriptR = true;
-				R->CastOnPosition (y.first);
+				GRender->DrawCircle (y.first, 50, Vec4 (255, 0, 0, 255));
+				//R->CastOnPosition (y.first);
 				GPluginSDK->DelayFunctionCall (500, [=]()
 				{
 					scriptR = false;
