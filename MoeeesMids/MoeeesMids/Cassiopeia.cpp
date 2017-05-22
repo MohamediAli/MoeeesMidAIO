@@ -23,7 +23,7 @@ Cassiopeia::Cassiopeia (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	R = GPluginSDK->CreateSpell2 (kSlotR, kConeCast, false, true, kCollidesWithNothing); //825 range, 210 radius, 0.5 delay
 	R->SetSkillshot (0.5f, (float) (210 * PI / 180), FLT_MAX, 825.f);
 	R->SetTriggerEvents (false);
-	RFlash = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
+	RFlash = GPluginSDK->CreateSpell2 (kSlotR, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
 	RFlash->SetSkillshot (0.5f, (float) (210 * PI / 180), FLT_MAX, 1150);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
 	{
@@ -204,10 +204,8 @@ void Cassiopeia::OnGameUpdate()
 }
 void Cassiopeia::OnRender()
 {
-
-	TryMassUlt();
 	dmgDraw();
-	if (!autoUlt->Enabled())
+	if (!autoUlt->Enabled() || GOrbwalking->GetOrbwalkingMode() == kModeCombo)
 	{
 		TryMassUlt();
 	}
@@ -267,7 +265,7 @@ void Cassiopeia::AntiGapclose (GapCloserSpell const& args)
 			}
 		}
 
-		if (R->IsReady() && args.Source->IsValidTarget() && !Hero->IsDead() && args.Source->IsEnemy (Hero) && args.Source->IsFacing (Hero) && Hero->HealthPercent() <gapcloseR->GetInteger())
+		if (R->IsReady() && args.Source->IsValidTarget() && !Hero->IsDead() && args.Source->IsEnemy (Hero) && Extensions::IsFacingMe (args.Source) && Hero->HealthPercent() <gapcloseR->GetInteger())
 		{
 			if (Extensions::GetDistance (Hero, args.EndPosition) < 350)
 			{
@@ -556,7 +554,7 @@ void Cassiopeia::TryMassUlt()
 
 			all.push_back (targets);
 
-			if (targets->IsFacing (Hero))
+			if ( (Hero)->IsFacing (targets))
 			{
 				facing.push_back (targets);
 			}
@@ -570,8 +568,8 @@ void Cassiopeia::TryMassUlt()
 			if (minFacing->GetInteger() <= x.second)
 			{
 				scriptR = true;
-				GRender->DrawCircle (x.first, 50, Vec4 (255, 0, 0, 255));
-				//	R->CastOnPosition (x.first);
+
+				R->CastOnPosition (x.first);
 				GPluginSDK->DelayFunctionCall (500, [=]()
 				{
 					scriptR = false;
@@ -593,8 +591,7 @@ void Cassiopeia::TryMassUlt()
 			if (minNotfacing->GetInteger() <= y.second)
 			{
 				scriptR = true;
-				GRender->DrawCircle (y.first, 50, Vec4 (255, 0, 0, 255));
-				//R->CastOnPosition (y.first);
+				R->CastOnPosition (y.first);
 				GPluginSDK->DelayFunctionCall (500, [=]()
 				{
 					scriptR = false;
@@ -950,7 +947,7 @@ void Cassiopeia::OnInterrupt (InterruptibleSpell const& Args)
 	}
 
 
-	if (R->IsReady() && InterruptR->Enabled() && Hero->IsValidTarget (Args.Source, R->Range()) && Args.Source->IsFacing (Hero))
+	if (R->IsReady() && InterruptR->Enabled() && Hero->IsValidTarget (Args.Source, R->Range()) && Extensions::IsFacingMe (Args.Source))
 	{
 		std::vector<IUnit*> all;
 		for (auto targets : GEntityList->GetAllHeros (false, true))
@@ -991,7 +988,7 @@ void Cassiopeia::Combo()
 	auto eTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, E->Range());
 	auto wTarget = GTargetSelector->FindTarget (QuickestKill, SpellDamage, W->Range());
 
-	if (r && eTarget != nullptr  && eTarget->IsValidTarget() && eTarget->IsHero() && !eTarget->IsDead() && eTarget->IsFacing (Hero) && DPS (eTarget, true, true, true, true, min (3, (int) (Hero->GetMana() / E->ManaCost()))) > eTarget->GetHealth() && DPS (eTarget, true, true, true, false, min (2, (int) (Hero->GetMana() / E->ManaCost()))) < eTarget->GetHealth() && (minHealth->GetInteger() < eTarget->HealthPercent() || Hero->HealthPercent() < autoBurst->GetInteger() || burstMode))
+	if (r && eTarget != nullptr  && eTarget->IsValidTarget() && eTarget->IsHero() && !eTarget->IsDead() && Extensions::IsFacingMe (eTarget) && DPS (eTarget, true, true, true, true, min (3, (int) (Hero->GetMana() / E->ManaCost()))) > eTarget->GetHealth() && DPS (eTarget, true, true, true, false, min (2, (int) (Hero->GetMana() / E->ManaCost()))) < eTarget->GetHealth() && (minHealth->GetInteger() < eTarget->HealthPercent() || Hero->HealthPercent() < autoBurst->GetInteger() || burstMode))
 	{
 		scriptR = true;
 		R->CastOnPosition (eTarget->ServerPosition());
