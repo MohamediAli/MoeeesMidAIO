@@ -23,12 +23,12 @@ PLUGIN_EVENT (void) OnSpellCast (CastedSpell const& args)
 
 PLUGIN_EVENT (void) OnDoCast (CastedSpell const& args)
 {
-	ChampHandler->OnSpellCast (args);
+	ChampHandler->OnDoCast (args);
 }
 
 PLUGIN_EVENT (void) OnOrbwalkPreAttack (IUnit* Target)
 {
-	ChampHandler->OnCreate (Target);
+	ChampHandler->OnOrbwalkPreAttack (Target);
 }
 
 PLUGIN_EVENT (void) OnCreate (IUnit* object)
@@ -126,33 +126,33 @@ PLUGIN_API void OnLoad (IPluginSDK* PluginSDK)
 	//LOAD CHAMP PLUGIN
 	if (strstr (Player->ChampionName(), "Orianna"))
 	{
-		ChampMenu = MainMenu->AddMenu ("Orianna");
+		ChampMenu = GPluginSDK->AddMenu ("Moes Orianna");
 		ChampHandler = new Orianna (ChampMenu, Player);
 	}
 	//Load default empty handler if champ not found
 	else if (strstr (Player->ChampionName(), "Ahri"))
 	{
-		ChampMenu = MainMenu->AddMenu ("Ahri");
+		ChampMenu = GPluginSDK->AddMenu ("Moes Ahri");
 		ChampHandler = new Ahri (ChampMenu, Player);
 	}
 	else if (strstr (Player->ChampionName(), "Taliyah"))
 	{
-		ChampMenu = MainMenu->AddMenu ("Taliyah");
+		ChampMenu = GPluginSDK->AddMenu ("Moes Taliyah");
 		ChampHandler = new Taliyah (ChampMenu, Player);
 	}
 	else if (strstr (Player->ChampionName(), "Karthus"))
 	{
-		ChampMenu = MainMenu->AddMenu ("Karthus");
+		ChampMenu = GPluginSDK->AddMenu ("Moes Karthus");
 		ChampHandler = new Karthus (ChampMenu, Player);
 	}
 	else if (strstr (Player->ChampionName(), "Viktor"))
 	{
-		ChampMenu = MainMenu->AddMenu ("Viktor");
+		ChampMenu = GPluginSDK->AddMenu ("Moes Viktor");
 		ChampHandler = new Viktor (ChampMenu, Player);
 	}
 	else if (strstr (Player->ChampionName(), "Cassiopeia"))
 	{
-		ChampMenu = MainMenu->AddMenu ("Cassiopeia");
+		ChampMenu = GPluginSDK->AddMenu ("Moes Cassiopeia");
 		ChampHandler = new Cassiopeia (ChampMenu, Player);
 	}
 	else

@@ -113,95 +113,7 @@ Cassiopeia::Cassiopeia (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 
 }
 
-void Cassiopeia::OnGameUpdate()
-{
-	Automated();
-	srand (time (NULL));
-	if (!notified && GGame->Time() > 27 * 60)
-	{
-		notified = true;
-		std::string noti = "Disable AA in Combo For";
-		std::string noti2 = "Better Late Game DPS";
-		GRender->Notification (Vec4 (52, 152, 219, 255), 10, noti.c_str());
-		GRender->Notification (Vec4 (52, 152, 219, 255), 10, noti2.c_str());
-	}
 
-	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
-	{
-		return;
-	}
-
-	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
-	{
-		TryMassUlt();
-		if (laneMode)
-		{
-			Harass();
-		}
-		else
-		{
-			Combo();
-		}
-	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
-	{
-		Harass();
-		LastHit();
-	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeLastHit)
-	{
-		LastHit();
-	}
-	if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
-	{
-		LaneClear();
-	}
-	if (GUtility->IsKeyDown (assistedUlt->GetInteger()))
-	{
-		CastAssistedUlt();
-	}
-
-	if (GUtility->IsKeyDown (FlashUlt->GetInteger()) && !GGame->IsChatOpen())
-	{
-		PerformFlashUlt();
-	}
-	if (GUtility->IsKeyDown (laneDom->GetInteger()) && !didiPress)
-	{
-		didiPress = true;
-		GPluginSDK->DelayFunctionCall (300, [=]()
-		{
-			laneMode = !laneMode;
-			didiPress = false;
-		});
-
-	}
-	if (GUtility->IsKeyDown (burstKey->GetInteger()) && !didiPress)
-	{
-		didiPress = true;
-		GPluginSDK->DelayFunctionCall (300, [=]()
-		{
-			burstMode = !burstMode;
-			didiPress = false;
-		});
-
-	}
-	if (GUtility->IsKeyDown (ComboAAkey->GetInteger()))
-	{
-		auto level = GEntityList->Player()->GetLevel();
-		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && GEntityList->Player()->GetMana() > 100)
-		{
-			GOrbwalking->SetAttacksAllowed (false);
-		}
-	}
-	if (!GUtility->IsKeyDown (ComboAAkey->GetInteger()) || GEntityList->Player()->GetMana() < 100)
-	{
-		{
-			GOrbwalking->SetAttacksAllowed (true);
-		}
-	}
-
-
-}
 void Cassiopeia::OnRender()
 {
 	dmgDraw();
@@ -314,7 +226,7 @@ bool Cassiopeia::onMouseWheel (HWND wnd, UINT message, WPARAM wparam, LPARAM lpa
 }
 void Cassiopeia::OnOrbwalkPreAttack (IUnit* Target)
 {
-	if (!Target->IsHero() && Hero->GetSpellLevel (kSlotE) > 0 && (GOrbwalking->GetOrbwalkingMode() == kModeLastHit || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
+	if (!Target->IsHero() && (GOrbwalking->GetOrbwalkingMode() == kModeLastHit || GOrbwalking->GetOrbwalkingMode() == kModeMixed))
 	{
 		if (Target != nullptr && Target->IsCreep())
 		{
@@ -1299,7 +1211,7 @@ void Cassiopeia::LaneClear()
 									hp = GHealthPrediction->GetPredictedHealth (pCreep, kLastHitPrediction, t, 0);
 								}
 
-								if (hp > 0 && hp < GDamage->GetSpellDamage (GEntityList->Player(), pCreep, kSlotE) - 20.f)
+								if (hp > 0 && hp < GDamage->GetSpellDamage (GEntityList->Player(), pCreep, kSlotE) - 12.5f)
 								{
 									if (E->CastOnUnit (pCreep))
 									{
@@ -1527,14 +1439,108 @@ void Cassiopeia::Automated()
 
 				}
 			}
+			auto tearSt = GPluginSDK->CreateItemForId (3070, 0);
+			if (tearSt->IsOwned() && tearSt->Stacks() > 745)
+			{ return; }
 
 			if (tear && Hero->GetSpellRemainingCooldown (itemslot) <= 0)
 			{
+
 				Q->CastOnPosition (Hero->ServerPosition().Extend (GGame->CursorPosition(), 500));
 			}
 
 		}
 	}
+
+}
+
+void Cassiopeia::OnGameUpdate()
+{
+	Automated();
+	srand (time (NULL));
+	if (!notified && GGame->Time() > 27 * 60)
+	{
+		notified = true;
+		std::string noti = "Disable AA in Combo For";
+		std::string noti2 = "Better Late Game DPS";
+		GRender->Notification (Vec4 (52, 152, 219, 255), 10, noti.c_str());
+		GRender->Notification (Vec4 (52, 152, 219, 255), 10, noti2.c_str());
+	}
+
+	if (!GUtility->IsLeagueWindowFocused() || GGame->IsChatOpen() || GGame->IsShopOpen())
+	{
+		return;
+	}
+
+	if (GOrbwalking->GetOrbwalkingMode() == kModeCombo)
+	{
+		TryMassUlt();
+		if (laneMode)
+		{
+			Harass();
+		}
+		else
+		{
+			Combo();
+		}
+	}
+	if (GOrbwalking->GetOrbwalkingMode() == kModeMixed)
+	{
+		Harass();
+		LastHit();
+	}
+	if (GOrbwalking->GetOrbwalkingMode() == kModeLastHit)
+	{
+		LastHit();
+	}
+	if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear)
+	{
+		LaneClear();
+	}
+	if (GUtility->IsKeyDown (assistedUlt->GetInteger()))
+	{
+		CastAssistedUlt();
+	}
+
+	if (GUtility->IsKeyDown (FlashUlt->GetInteger()) && !GGame->IsChatOpen())
+	{
+		PerformFlashUlt();
+	}
+	if (GUtility->IsKeyDown (laneDom->GetInteger()) && !didiPress)
+	{
+		didiPress = true;
+		GPluginSDK->DelayFunctionCall (300, [=]()
+		{
+			laneMode = !laneMode;
+			didiPress = false;
+		});
+
+	}
+	if (GUtility->IsKeyDown (burstKey->GetInteger()) && !didiPress)
+	{
+		didiPress = true;
+		GPluginSDK->DelayFunctionCall (300, [=]()
+		{
+			burstMode = !burstMode;
+			didiPress = false;
+		});
+
+	}
+	if (GUtility->IsKeyDown (ComboAAkey->GetInteger()))
+	{
+		auto level = GEntityList->Player()->GetLevel();
+		if (ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && GEntityList->Player()->GetMana() > 100)
+		{
+			GOrbwalking->SetAttacksAllowed (false);
+		}
+	}
+	if (!GUtility->IsKeyDown (ComboAAkey->GetInteger()) || GEntityList->Player()->GetMana() < 100)
+	{
+		{
+			GOrbwalking->SetAttacksAllowed (true);
+		}
+	}
+
 
 }
 void Cassiopeia::Drawing()
