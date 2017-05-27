@@ -215,7 +215,7 @@ int Extensions::EnemiesInRange (Vec3 Source, float range)
 	auto enemiesInRange = 0;
 	for (auto target : Targets)
 	{
-		if (Extensions::Validate (target) && !target->IsDead() && target->IsHero() && target->IsValidTarget())
+		if (Extensions::Validate (target) && !target->IsDead() && target->IsHero() && target->IsValidTarget() && target->PhysicalDamage() >1)
 		{
 			auto flDistance = (target->GetPosition() - Source).Length();
 			if (flDistance <= range)
@@ -284,14 +284,43 @@ int Extensions::CountEnemiesInRange (float range)
 	int enemies = 0;
 	for (auto enemy : GEntityList->GetAllHeros (false, true))
 	{
-		if (enemy != nullptr && Validate (enemy) && enemy->IsValidTarget() && GetDistance (GEntityList->Player(), enemy) <= range)
+		if (enemy != nullptr && Validate (enemy) && enemy->IsValidTarget() && GetDistance (GEntityList->Player(), enemy) < range)
 		{
 			enemies++;
 		}
 	}
 	return enemies;
 }
+std::vector<IUnit *> Extensions::GetInRange (Vec2 pos, float range, std::vector<IUnit *> group)
+{
+	std::vector<IUnit *> list;
 
+	if (group.empty())
+	{
+		return list;
+	}
+
+	for (auto o : group)
+	{
+		if (o != nullptr && o->IsValidTarget() && Dist2D (pos, o->ServerPosition()) <= range)
+		{
+			list.push_back (o);
+		}
+	}
+
+	return list;
+}
+
+
+int Extensions::CountInRange (IUnit * unit, float range, std::vector<IUnit *> units)
+{
+	return GetInRange (To2D (unit->ServerPosition()), range, units).size();
+}
+
+int Extensions::CountInRange (Vec2 pos, float range, std::vector<IUnit *> units)
+{
+	return GetInRange (pos, range, units).size();
+}
 bool Extensions::IsValid (Vec2 p)
 {
 	return p.x != 0 && p.y != 0;

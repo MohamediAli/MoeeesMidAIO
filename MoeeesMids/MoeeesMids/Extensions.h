@@ -85,6 +85,10 @@ struct FarmLocationVik
 
 namespace Extensions
 {
+
+int CountInRange (IUnit * unit, float range, std::vector<IUnit *> units);
+int CountInRange (Vec2 pos, float range, std::vector<IUnit *> units);
+std::vector<IUnit *> GetInRange (Vec2 pos, float range, std::vector<IUnit *> group);
 bool HasSpellShield (IUnit* entity);
 bool IsFacingMe (IUnit* source, float angle = 80);
 float AngleBetween (Vec2 p1, Vec2 p2);

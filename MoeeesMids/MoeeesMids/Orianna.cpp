@@ -194,7 +194,7 @@ void Orianna::OnNewPath (IUnit* Source, const std::vector<Vec3>& path_)
 		return;
 	}
 	if (target == Source && GOrbwalking->GetOrbwalkingMode() == kModeCombo)
-		if (Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() &&  Extensions::CountInRange (Hero, R->Radius() * 2, GEntityList->GetAllHeros (false,true)) > 1)
 		{
 			TeamFightQ (target->GetPosition());
 			return;
@@ -698,7 +698,7 @@ void Orianna::TeamFightQ (Vec3 pos)
 			auto xPos = static_cast<float> (floor (pos.x + curRadius * cos (cRadians)));
 			auto zPos = static_cast<float> (floor (pos.z + curRadius * sin (cRadians)));
 			auto posFor2D = Vec2 (xPos, zPos);
-			auto count = Extensions::EnemiesInRange (Extensions::To3D (posFor2D), R->Radius());
+			auto count = Extensions::CountInRange ( (posFor2D), R->Radius(), GEntityList->GetAllHeros (false,true));
 			//GGame->PrintChat (std::to_string (count).c_str());
 			if (GNavMesh->IsPointWall (Extensions::To3D (posFor2D)))
 			{
@@ -1136,7 +1136,7 @@ void Orianna::CastQ (IUnit* target)
 }
 bool Orianna::IsOneVsOne()
 {
-	if (Extensions::EnemiesInRange (Hero->GetPosition(), 1000) == 1 && Extensions::AlliesInRange (Hero->GetPosition(), 950) <= 2)
+	if (Extensions::CountInRange (Hero->GetPosition().To2D(), 1000, GEntityList->GetAllHeros (false,true)) == 1 && Extensions::AlliesInRange (Hero->GetPosition(), 950) <= 2)
 	{
 		return true;
 	}
@@ -1183,30 +1183,30 @@ float Orianna::eMinionHits()
 }
 void Orianna::eLogic()
 {
-	auto player = Hero;//sebby start
+
 	if (isBallMoving() || PriorityHit() || !E->IsReady())
 	{
 		return;
 	}
-	auto ballEnemies = Extensions::EnemiesInRange (NewOriannaBall, 600);
+	auto ballEnemies = Extensions::CountInRange (NewOriannaBall.To2D(), 600, GEntityList->GetAllHeros (false, true));
 	int playerEnemies = 0;
-	if (player != StationaryBall)
+	if (Hero != StationaryBall)
 	{
-		playerEnemies = Extensions::EnemiesInRange (player->GetPosition(), 600);
+		playerEnemies = Extensions::CountInRange (Hero, 600, GEntityList->GetAllHeros (false, true));
 	}
-	if (!Q->IsReady() && player->GetSpellRemainingCooldown (kSlotW) < player->GetSpellRemainingCooldown (kSlotQ) &&
+	if (!Q->IsReady() && Hero->GetSpellRemainingCooldown (kSlotW) < Hero->GetSpellRemainingCooldown (kSlotQ) &&
 	    (ballEnemies > playerEnemies || ballEnemies == playerEnemies))
 	{
 		return;
 	}
 	if (GetEHits() > (ballEnemies <= 2 ? 1 : 2))   //sebby end
 	{
-		CastE (player);
+		CastE (Hero);
 		return;
 	}
 	for (auto ally : GEntityList->GetAllHeros (true, false))
 	{
-		if (Extensions::EnemiesInRange (ally->GetPosition(), R->Radius() * 2) >= 2 && (ally->GetPosition() - player->GetPosition()).Length() <= E->Range() && R->IsReady() && !isBallMoving())
+		if (Extensions::CountInRange (ally, R->Radius() * 2, GEntityList->GetAllHeros (false, true)) >= 2 && (ally->GetPosition() - Hero->GetPosition()).Length() <= E->Range() && R->IsReady() && !isBallMoving())
 		{
 			if (ally != Hero)
 			{
@@ -1215,14 +1215,14 @@ void Orianna::eLogic()
 			}
 		}
 	}
-	if (!Hero->IsDead() && Hero->HealthPercent() <= HealthPercentage->GetFloat() && Extensions::EnemiesInRange (Hero->GetPosition(), 600) > 0)
+	if (!Hero->IsDead() && Hero->HealthPercent() <= HealthPercentage->GetFloat() && Extensions::CountInRange (Hero, 600, GEntityList->GetAllHeros (false, true)) > 0)
 	{
-		CastE (player);
+		CastE (Hero);
 		return;
 	}
-	if (!Hero->IsDead() && Extensions::EnemiesInRange (Hero->GetPosition(), 360) > 0)
+	if (!Hero->IsDead() && Extensions::CountInRange (Hero, 360, GEntityList->GetAllHeros (false, true)) > 0)
 	{
-		CastE (player);
+		CastE (Hero);
 		return;
 	}
 }
@@ -1337,7 +1337,7 @@ void Orianna::Combo()
 	{
 		return;
 	}
-	if (PredictionType->GetInteger() == 2 && Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+	if (PredictionType->GetInteger() == 2 && Q->IsReady() && ComboQ->Enabled() && !isChasing (target) && R->IsReady() && Extensions::CountInRange (Hero, R->Radius() * 2, GEntityList->GetAllHeros (false,true)) > 1)
 	{
 		TeamFightQ (target->GetPosition());
 		return;
@@ -1366,7 +1366,7 @@ void Orianna::Harass()
 	}
 	if (harassQ->Enabled() && Hero->ManaPercent() > harassQMana->GetFloat())
 	{
-		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, Q->Range()) && Extensions::EnemiesInRange (target->ServerPosition(), R->Radius() * 2) > 1)
+		if (Q->IsReady() && target != nullptr && Hero->IsValidTarget (target, Q->Range()) && Extensions::CountInRange (Hero, R->Radius() * 2, GEntityList->GetAllHeros (false, true)) > 1)
 		{
 			(TeamFightQ (target->ServerPosition()));
 		}
