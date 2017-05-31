@@ -53,7 +53,7 @@ Karthus::Karthus (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Ping = { "Normal", "Danger", "Enemy Missing","OMW","Fall Back","Assist" };
 	PingOption = rMenu->AddSelection ("Ping Selection", 1, Ping);
 	PingDelay = rMenu->AddInteger ("Ping Delay in 100ms", 1, 10, 4);
-	PredType = { "SN Style", "Praedictio" };
+	PredType = { "SN Style", "Praedictio", "Core" };
 	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 	ComboAALevel = MiscMenu->AddInteger ("At what level disable AA", 1, 18, 6);
 	ComboAA = MiscMenu->CheckBox ("Disable AA", false);
@@ -143,6 +143,13 @@ bool Karthus::GetCastPosition (ISpell2* spell, IUnit* source, IUnit* unit, Vec3&
 
 void Karthus::CastQ (IUnit* target)
 {
+	if (PredictionType->GetInteger() == 2)
+	{
+		Q->SetSkillshot (1.f, 140.f, 2000, 890.f);
+		Q->CastOnTarget (target, kHitChanceMedium);
+
+	}
+
 	if (PredictionType->GetInteger() == 1)
 	{
 		Q->SetSkillshot (1.f, 140.f, 2000, 890.f);

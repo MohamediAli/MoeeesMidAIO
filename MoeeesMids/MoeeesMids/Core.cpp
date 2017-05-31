@@ -156,7 +156,10 @@ PLUGIN_API void OnLoad (IPluginSDK* PluginSDK)
 		ChampHandler = new Cassiopeia (ChampMenu, Player);
 	}
 	else
-	{ ChampHandler = new Champion (ChampMenu, Player); }
+	{
+		ChampMenu = GPluginSDK->AddMenu ("Champions");
+		ChampHandler = new Champion (ChampMenu, Player);
+	}
 	LoadEvents();
 }
 
