@@ -65,8 +65,8 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
-	PredType = { "Core","Moeee's Pred", "Praedictio" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 2, PredType);
+	PredType = { "Core" };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
 }
 
 void Ahri::OnGameUpdate()
@@ -584,19 +584,7 @@ void Ahri::OnDash (UnitDash* Args)
 		{
 			if (Extensions::GetDistance (GEntityList->Player(), Args->EndPosition) <= E->Range())
 			{
-				auto delay = Args->EndTick - GGame->TickCount() - E->GetDelay() * 1000;
-				if (delay > 0)
-				{
-					GPluginSDK->DelayFunctionCall (delay, [=]()
-					{
-						E->CastOnPosition (Args->EndPosition);
-
-					});
-				}
-				else
-				{
-					E->CastOnPosition (Args->EndPosition);
-				}
+				E->CastOnTarget (Args->Source);
 			}
 		}
 	}
@@ -678,16 +666,8 @@ void Ahri::AntiGapclose (GapCloserSpell const& args)
 	{
 		if (Extensions::GetDistance (GEntityList->Player(), args.EndPosition) <= 300)
 		{
-			auto delay = (GBuffData->GetEndTime (args.Data) - GGame->Time() - E->GetDelay());
-			if (delay > 0)
-			{
-				GPluginSDK->DelayFunctionCall (delay, [=]()
-				{
-					E->CastOnPosition (args.EndPosition);
-				});
-			}
-			else
-			{ E->CastOnPosition (args.EndPosition); }
+
+			E->CastOnTarget (args.Source);
 
 		}
 	}
