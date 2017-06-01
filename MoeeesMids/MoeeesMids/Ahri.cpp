@@ -15,8 +15,8 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	Q->SetSkillshot (0.25f, 90.f, 1550.f, 870.f);
 	W = GPluginSDK->CreateSpell2 (kSlotW, kTargetCast, false, false, kCollidesWithNothing);
 	W->SetOverrideRange (580);
-	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, false, (kCollidesWithHeroes, kCollidesWithMinions));
-	E->SetSkillshot (0.25f, 90.f, 1550.f, 950.f);
+	E = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, true, false, (kCollidesWithHeroes, kCollidesWithMinions, kCollidesWithYasuoWall));
+	E->SetSkillshot (0.25f, 60.f, 1550.f, 950.f);
 	EFlash = GPluginSDK->CreateSpell2 (kSlotE, kLineCast, false, false, static_cast<eCollisionFlags> (kCollidesWithMinions | kCollidesWithYasuoWall));
 	EFlash->SetSkillshot (0.25f, 60, 3100, 1350);
 	if (strcmp (Hero->GetSpellName (kSummonerSlot1), "SummonerFlash") == 0)
@@ -65,8 +65,8 @@ Ahri::Ahri (IMenu* Parent, IUnit* Hero) :Champion (Parent, Hero)
 	DrawW = Drawings->CheckBox ("Draw W", true);
 	DrawE = Drawings->CheckBox ("Draw E", true);
 	DrawR = Drawings->CheckBox ("Draw R", true);
-	PredType = { "Core" };
-	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 0, PredType);
+	PredType = { "Core", "Praedicto" };
+	PredictionType = Prediction->AddSelection ("Choose Prediction Type", 1, PredType);
 }
 
 void Ahri::OnGameUpdate()
@@ -237,7 +237,7 @@ void Ahri::OnRender()
 	dmgdraw();
 	if (CalculateReturnPos() != Vec3 (0, 0, 0))
 	{
-		GRender->DrawCircle (CalculateReturnPos(), 100, Vec4 (255, 0, 255, 255), 5, false);
+		
 		if (CatchQ->Enabled() && Extensions::GetDistance (Hero, CalculateReturnPos()) < 500 && Extensions::GetDistance (Hero, CalculateReturnPos()) > 20 && (GOrbwalking->GetOrbwalkingMode() == kModeCombo || GOrbwalking->GetOrbwalkingMode() == kModeMixed) || autoQ->Enabled())
 		{
 			GGame->IssueOrder (Hero, kMoveTo, CalculateReturnPos());
@@ -592,20 +592,27 @@ void Ahri::OnDash (UnitDash* Args)
 
 void Ahri::CastE (IUnit* target)
 {
-	if (PredictionType->GetInteger() == 2)
+	if (PredictionType->GetInteger() == 1)
 	{
 		Vec3 castPos;
-
-		if (CheckForCollision (E,castPos) && GetCastPosition (E, Hero, target, castPos))
+		AdvPredictionOutput prediction_output;
+		E->RunPrediction(target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
+		if (prediction_output.HitChance != kHitChanceCollision)
 		{
-			E->CastOnPosition (castPos);
+			auto pred = PredPos(ETarget, 0.35f + (GGame->Latency() / 1000));
+			if (!cz)
+			{
+				
+					E->CastOnPosition(pred);
+				
+			}
 		}
 	}
-	if (PredictionType->GetInteger() == 1)
+	if (PredictionType->GetInteger() == 2)
 	{
 		/**/
 		AdvPredictionOutput prediction_output;
-		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
+		E->RunPrediction(target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
 		if (prediction_output.HitChance != kHitChanceCollision)
 		{
 			for (auto x : mPrediction (target, E, Hero->GetPosition()))
@@ -619,13 +626,13 @@ void Ahri::CastE (IUnit* target)
 	}
 	if (PredictionType->GetInteger() == 0)
 	{
-		E->CastOnTarget (target, kHitChanceHigh);
-		/*AdvPredictionOutput prediction_output;
+		//E->CastOnTarget (target, kHitChanceHigh);
+		AdvPredictionOutput prediction_output;
 		E->RunPrediction (target, false, kCollidesWithYasuoWall | kCollidesWithMinions, &prediction_output);
-		if (prediction_output.HitChance >= kHitChanceVeryHigh)
-		{/
+		if (prediction_output.HitChance >= kHitChanceHigh)
+		{
 			E->CastOnPosition (prediction_output.CastPosition);
-		}*/
+		}
 	}
 }
 
@@ -876,18 +883,7 @@ void Ahri::Automated()
 	{
 		PerformFlashCharm();
 	}
-	for (auto target : GEntityList->GetAllHeros (false, true))
-	{
-		if (Hero->IsValidTarget (target, E->Range()) && target != nullptr && !target->IsDead())
-		{
-			AdvPredictionOutput prediction_output;
-			E->RunPrediction (target, true, kCollidesWithMinions || kCollidesWithYasuoWall, &prediction_output);
-			if (prediction_output.HitChance == kHitChanceImmobile)
-			{
-				E->CastOnTarget (target, kHitChanceImmobile);
-			}
-		}
-	}
+	
 }
 
 void Ahri::Drawing()
