@@ -705,7 +705,7 @@ float Viktor::DPS (IUnit* target, bool dpsQ, bool checkQ, bool dpsE, bool dpsR, 
 		total += GDamage->CalcMagicDamage (GEntityList->Player(), target, 100 + GEntityList->Player()->TotalMagicDamage() * 0.1);
 	}
 
-	total * Rembrandt::DamageModifierFromMasteries (Hero, target);
+	total = total * Rembrandt::DamageModifierFromMasteries (Hero, target);
 	return (float) total;
 	//credit lizzarin for most of logic here
 }
