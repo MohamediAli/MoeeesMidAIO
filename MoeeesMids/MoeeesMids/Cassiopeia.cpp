@@ -679,17 +679,7 @@ bool Cassiopeia::GetImpactTime(ISpell2* spell, IUnit* source, IUnit* unit, float
     }
     return true;
 }
-bool Cassiopeia::eCheck(IUnit* target)
-{
-    if(!Q->IsReady() || target->HasBuffOfType(BUFF_Poison) || GDamage->GetSpellDamage(Hero, target, kSlotE) * (min(4, (int)(Hero->GetMana() / E->ManaCost()))) > target->GetHealth())
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
+
 bool Cassiopeia::GetCastPosition(ISpell2* spell, IUnit* source, IUnit* unit, Vec3& cast)
 {
     Vec3 castPosition;
@@ -801,7 +791,7 @@ void Cassiopeia::eLogic(IUnit* target)
             CastE(trueTarget);
         }
     }
-    else if(target != nullptr && target->IsValidTarget() && target->IsVisible() && !target->IsDead() && target->IsHero() && !target->IsInvulnerable() && eCheck(target))
+    else if(target != nullptr && target->IsValidTarget() && target->IsVisible() && !target->IsDead() && target->IsHero() && !target->IsInvulnerable())
     {
         CastE(target);
     }

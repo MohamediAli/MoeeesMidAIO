@@ -66,79 +66,79 @@ Orianna::Orianna(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
         Flash = GPluginSDK->CreateSpell2(kSummonerSlot2, kCircleCast, false, false, kCollidesWithNothing);
         Flash->SetOverrideRange(425.f);
     }
-    OriannaMenu = Parent->AddMenu("Orianna Menu");
-    qMenu = Parent->AddMenu("Q Settings");
-    wMenu = Parent->AddMenu("W Settings");
-    eMenu = Parent->AddMenu("E Settings");
-    rMenu = Parent->AddMenu("R Settings");
-    oneVerusOne = Parent->AddMenu("1v1 Settings");
-    LaneClearMenu = Parent->AddMenu("Lane Clear");
-    Prediction = Parent->AddMenu("Prediction");
-    MiscMenu = Parent->AddMenu("Miscs");
-    Drawings = Parent->AddMenu("All Drawings");
-    DivineBall = Parent->AddMenu("Divine Ball Colors");
-    killStealQ = qMenu->CheckBox("Kill Steal with Q", true);
-    ComboQ = qMenu->CheckBox("Use Q in Combo", true);
-    autoQ = qMenu->CheckBox("Automatic Harass Q", false);
-    harassQ = qMenu->CheckBox("Harass with Q", true);
-    harassQMana = qMenu->AddFloat(":: Only Harras Q if Mana >", 0, 100, 50);
-    gapcloseQ = qMenu->CheckBox("Use Q on Gap Closers", true);
-    killStealW = wMenu->CheckBox("Kill Steal with W", true);
-    ComboW = wMenu->CheckBox("Use W in Combo", true);
-    autoW = wMenu->CheckBox("Automatic Harass W", false);
-    harassW = wMenu->CheckBox("Harass with W", true);
-    harassWMana = wMenu->AddFloat(":: Only Harras W if Mana >", 0, 100, 50);
-    ComboE = eMenu->CheckBox("Use E in Combo", true);
-    killStealE = eMenu->CheckBox("Kill Steal with E", true);
-    harassE = eMenu->CheckBox("Harass with E", false);
-    HealthPercentage = eMenu->AddFloat("Shield  Self if Health Percent Below: ", 0, 100, 25);
-    ShieldTeamate = eMenu->CheckBox("Shield Teammates", true);
+    OriannaMenu          = Parent->AddMenu("Orianna Menu");
+    qMenu                = Parent->AddMenu("Q Settings");
+    wMenu                = Parent->AddMenu("W Settings");
+    eMenu                = Parent->AddMenu("E Settings");
+    rMenu                = Parent->AddMenu("R Settings");
+    oneVerusOne          = Parent->AddMenu("1v1 Settings");
+    LaneClearMenu        = Parent->AddMenu("Lane Clear");
+    Prediction           = Parent->AddMenu("Prediction");
+    MiscMenu             = Parent->AddMenu("Miscs");
+    Drawings             = Parent->AddMenu("All Drawings");
+    DivineBall           = Parent->AddMenu("Divine Ball Colors");
+    killStealQ           = qMenu->CheckBox("Kill Steal with Q", true);
+    ComboQ               = qMenu->CheckBox("Use Q in Combo", true);
+    autoQ                = qMenu->CheckBox("Automatic Harass Q", false);
+    harassQ              = qMenu->CheckBox("Harass with Q", true);
+    harassQMana          = qMenu->AddFloat(":: Only Harras Q if Mana >", 0, 100, 50);
+    gapcloseQ            = qMenu->CheckBox("Use Q on Gap Closers", true);
+    killStealW           = wMenu->CheckBox("Kill Steal with W", true);
+    ComboW               = wMenu->CheckBox("Use W in Combo", true);
+    autoW                = wMenu->CheckBox("Automatic Harass W", false);
+    harassW              = wMenu->CheckBox("Harass with W", true);
+    harassWMana          = wMenu->AddFloat(":: Only Harras W if Mana >", 0, 100, 50);
+    ComboE               = eMenu->CheckBox("Use E in Combo", true);
+    killStealE           = eMenu->CheckBox("Kill Steal with E", true);
+    harassE              = eMenu->CheckBox("Harass with E", false);
+    HealthPercentage     = eMenu->AddFloat("Shield  Self if Health Percent Below: ", 0, 100, 25);
+    ShieldTeamate        = eMenu->CheckBox("Shield Teammates", true);
     ShieldTeamatePercent = eMenu->AddFloat("::Shield Teammate if Health Percent Below: ", 0, 100, 30);
-    autoEiniti = eMenu->CheckBox("Automatically Shield Initiating Teammates", true);
-    eHelper = eMenu->CheckBox("E Assist", true);
-    eRange = eMenu->CheckBox("::Mouse Range Check", true);
-    eHelperKey = eMenu->AddKey("E Assist Key", 69);
-    ComboR = rMenu->CheckBox("Use Ult in Combo", true);
-    ultMin = rMenu->AddInteger("Only Ult if it will hit atleast: ", 0, 5, 2);
-    BlockR = rMenu->CheckBox("Block R on no hits", true);
-    FlashUlt = rMenu->AddKey("Flash Ult key", 84);
-    InterruptR = rMenu->CheckBox("Use Ult to Interrupt Spells", true);
-    KillStealR = rMenu->CheckBox("Use Ult to Kill Steal", false);
-    priorityMin = rMenu->AddInteger("Automatically R if Priority >=", 0, 5, 5);
-    onev1 = oneVerusOne->CheckBox("Enable 1v1 Mode", true);
-    extraAutos = oneVerusOne->AddInteger("Add Extra Autos in Ult Damage Calc", 0, 5, 2);
-    Laneclear = LaneClearMenu->CheckBox("Use Spells in Lane Clear", true);
-    laneClearQ = LaneClearMenu->CheckBox("Wave Clear with Q", true);
-    laneClearQMana = LaneClearMenu->AddFloat(":: Only Wave Clear Q if Mana >", 0, 100, 30);
-    laneClearW = LaneClearMenu->CheckBox("Wave Clear with W", true);
-//	laneClearWMin = LaneClearMenu->AddInteger ("Minimum Minions to W", 1, 5, 3);
-    laneClearWMana = LaneClearMenu->AddFloat(":: Only Wave Clear W if Mana >", 0, 100, 30);
-    laneClearE = LaneClearMenu->CheckBox("Wave Clear with E", true);
-    laneClearEMana = LaneClearMenu->AddFloat(":: Only Wave Clear E if Mana >", 0, 100, 60);
-    mouseClear = LaneClearMenu->CheckBox("Mouse Scroll to Toggle Wave Clear", true);
-    PredType = { "Oracle", "Core", "Praedictio" };
-    PredictionType = Prediction->AddSelection("Choose Prediction Type", 2, PredType);
-    ballAnimation = { "Divine Nader [Sl]", "Gagong" };
-    DrawReady = Drawings->CheckBox("Draw Ready Spells", true);
-    drawDmg = Drawings->CheckBox("Draw Damage", true);
-    HPBarColor = Drawings->AddColor("Change Health Bar", 69, 64, 185, 100);
-    DrawQ = Drawings->CheckBox("Draw Q", true);
-    DrawW = Drawings->CheckBox("Draw W", true);
-    DrawE = Drawings->CheckBox("Draw E", true);
-    DrawR = Drawings->CheckBox("Draw R", true);
-    drawLC = Drawings->CheckBox("Draw Lane Clear Status", true);
-    drawBall = Drawings->CheckBox("Draw Ball Animation", true);
-    ballSelect = Drawings->AddSelection("Choose Ball Style", 0, ballAnimation);
-    ballColor = { "Normal", "Random", "DISCO" };
-    RandomMode = DivineBall->AddSelection("Choose Color Pattern", 0, ballColor);
-    DivineColor1 = DivineBall->AddColor("Divine Ball Color Line 1", 138, 195, 202, 100);
-    DivineColor2 = DivineBall->AddColor("Divine Ball Color Line 2", 69, 29, 195, 100);
-    DivineColor3 = DivineBall->AddColor("Divine Ball Color Line 3", 127, 140, 185, 100);
-    DivineColor4 = DivineBall->AddColor("Divine Ball Color Line 4", 60, 169, 185, 100);
-    DivineColor5 = DivineBall->AddColor("Divine Ball Color Line 5", 49, 64, 255, 100);
-    DivineColor6 = DivineBall->AddColor("Divine Ball Color Line 6", 104, 94, 240, 100);
-    DivineColor7 = DivineBall->AddColor("Divine Ball Color Line 7", 71, 131, 170, 100);
-    DivineColor8 = DivineBall->AddColor("Divine Ball Color Line 8", 122, 171, 255, 100);
+    autoEiniti           = eMenu->CheckBox("Automatically Shield Initiating Teammates", true);
+    eHelper              = eMenu->CheckBox("E Assist", true);
+    eRange               = eMenu->CheckBox("::Mouse Range Check", true);
+    eHelperKey           = eMenu->AddKey("E Assist Key", 69);
+    ComboR               = rMenu->CheckBox("Use Ult in Combo", true);
+    ultMin               = rMenu->AddInteger("Only Ult if it will hit atleast: ", 0, 5, 2);
+    BlockR               = rMenu->CheckBox("Block R on no hits", true);
+    FlashUlt             = rMenu->AddKey("Flash Ult key", 84);
+    InterruptR           = rMenu->CheckBox("Use Ult to Interrupt Spells", true);
+    KillStealR           = rMenu->CheckBox("Use Ult to Kill Steal", false);
+    priorityMin          = rMenu->AddInteger("Automatically R if Priority >=", 0, 5, 5);
+    onev1                = oneVerusOne->CheckBox("Enable 1v1 Mode", true);
+    extraAutos           = oneVerusOne->AddInteger("Add Extra Autos in Ult Damage Calc", 0, 5, 2);
+    Laneclear            = LaneClearMenu->CheckBox("Use Spells in Lane Clear", true);
+    laneClearQ           = LaneClearMenu->CheckBox("Wave Clear with Q", true);
+    laneClearQMana       = LaneClearMenu->AddFloat(":: Only Wave Clear Q if Mana >", 0, 100, 30);
+    laneClearW           = LaneClearMenu->CheckBox("Wave Clear with W", true);
+//	laneClearWMin        = LaneClearMenu->AddInteger ("Minimum Minions to W", 1, 5, 3);
+    laneClearWMana       = LaneClearMenu->AddFloat(":: Only Wave Clear W if Mana >", 0, 100, 30);
+    laneClearE           = LaneClearMenu->CheckBox("Wave Clear with E", true);
+    laneClearEMana       = LaneClearMenu->AddFloat(":: Only Wave Clear E if Mana >", 0, 100, 60);
+    mouseClear           = LaneClearMenu->CheckBox("Mouse Scroll to Toggle Wave Clear", true);
+    PredType             = { "Oracle", "Core", "Praedictio" };
+    PredictionType       = Prediction->AddSelection("Choose Prediction Type", 1, PredType);
+    ballAnimation        = { "Divine Nader [Sl]", "Gagong" };
+    DrawReady            = Drawings->CheckBox("Draw Ready Spells", true);
+    drawDmg              = Drawings->CheckBox("Draw Damage", true);
+    HPBarColor           = Drawings->AddColor("Change Health Bar", 69, 64, 185, 100);
+    DrawQ                = Drawings->CheckBox("Draw Q", true);
+    DrawW                = Drawings->CheckBox("Draw W", true);
+    DrawE                = Drawings->CheckBox("Draw E", true);
+    DrawR                = Drawings->CheckBox("Draw R", true);
+    drawLC               = Drawings->CheckBox("Draw Lane Clear Status", true);
+    drawBall             = Drawings->CheckBox("Draw Ball Animation", true);
+    ballSelect           = Drawings->AddSelection("Choose Ball Style", 0, ballAnimation);
+    ballColor            = { "Normal", "Random", "DISCO" };
+    RandomMode           = DivineBall->AddSelection("Choose Color Pattern", 0, ballColor);
+    DivineColor1         = DivineBall->AddColor("Divine Ball Color Line 1", 138, 195, 202, 100);
+    DivineColor2         = DivineBall->AddColor("Divine Ball Color Line 2", 69, 29, 195, 100);
+    DivineColor3         = DivineBall->AddColor("Divine Ball Color Line 3", 127, 140, 185, 100);
+    DivineColor4         = DivineBall->AddColor("Divine Ball Color Line 4", 60, 169, 185, 100);
+    DivineColor5         = DivineBall->AddColor("Divine Ball Color Line 5", 49, 64, 255, 100);
+    DivineColor6         = DivineBall->AddColor("Divine Ball Color Line 6", 104, 94, 240, 100);
+    DivineColor7         = DivineBall->AddColor("Divine Ball Color Line 7", 71, 131, 170, 100);
+    DivineColor8         = DivineBall->AddColor("Divine Ball Color Line 8", 122, 171, 255, 100);
 }
 
 Vec3 Orianna::getPosToRflash(Vec3 target)
@@ -187,7 +187,7 @@ void Orianna::PerformFlashUlt()
 void Orianna::OnNewPath(IUnit* Source, const std::vector<Vec3>& path_)
 {
     auto target = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
-    if(target == nullptr || !target->IsHero() || target->IsDead() || isBallMoving() || !target->IsVisible() || PredictionType->GetInteger() == 2)
+    if(target == nullptr || !target->IsHero() || target->IsDead() || isBallMoving() || !target->IsVisible() || !PredictionType->GetInteger() == 0)
     {
         return;
     }
@@ -1092,7 +1092,24 @@ void Orianna::CastQ(IUnit* target)
     }
     if(PredictionType->GetInteger() == 1)
     {
-        Q->CastOnTarget(target, kHitChanceHigh);
+        AdvPredictionOutput prediction_output;
+        AdvPredictionInput here;
+        here.FromPosition = NewOriannaBall;
+        here.Range = Q->Range();
+        here.AddBoundingRadius = true;
+        here.CollisionFlags = kCollidesWithYasuoWall;
+        here.IsAoE = true;
+        here.Delay = Q->GetDelay();
+        here.Speed = Q->Speed();
+        here.RangeCheckFromPosition = Hero->ServerPosition();
+        here.Type = kCircleCast;
+        here.Radius = Q->Radius();
+        here.Target = target;
+        GPrediction->RunPrediction(&here, &prediction_output);
+        if(prediction_output.HitChance >= kHitChanceHigh)
+        {
+            Q->CastOnPosition(prediction_output.CastPosition);
+        }
     }
     else if(PredictionType->GetInteger() == 2)
     {
@@ -1122,7 +1139,7 @@ void Orianna::CastQ(IUnit* target)
 }
 bool Orianna::IsOneVsOne()
 {
-    if(Extensions::CountInRange(Hero->GetPosition().To2D(), 1700, GEntityList->GetAllHeros(false,true)) == 1 && Extensions::AlliesInRange(Hero->GetPosition(), 950) <= 2)
+    if(Extensions::CountInRange(Hero->GetPosition().To2D(), 1700, GEntityList->GetAllHeros(false,true)) == 1 && Extensions::CountInRange(Hero->GetPosition().To2D(), 1100, GEntityList->GetAllHeros(true, false)) == 1)
     {
         return true;
     }
@@ -1169,6 +1186,7 @@ float Orianna::eMinionHits()
 }
 void Orianna::eLogic()
 {
+    // GGame->PrintChat(Extensions::BoolToString(IsOneVsOne()));
     if(isBallMoving() || PriorityHit() || !E->IsReady())
     {
         return;
@@ -1186,7 +1204,7 @@ void Orianna::eLogic()
     }
     if(eTarget != nullptr)
     {
-        if(GetEHits() >= (ballEnemies) && IsOneVsOne() && !Q->IsReady() && ballEnemies < ultMin->GetInteger() && (!DPS(eTarget, true, true, true, true, 2) >= eTarget->GetHealth() || DPS(eTarget, false, false, true, false) >= eTarget->GetHealth()))     //sebby end
+        if(GetEHits() >= (ballEnemies) && IsOneVsOne() && !Q->IsReady() && !W->IsReady() && ballEnemies < ultMin->GetInteger() && (DPS(eTarget, true, true, true, true, 2) < eTarget->GetHealth() || DPS(eTarget, false, false, true, false) >= eTarget->GetHealth()) && (Hero->GetMana() > Q->ManaCost() + W->ManaCost() + E->ManaCost() + 100 || DPS(eTarget, false, false, true, false) >= eTarget->GetHealth()))     //sebby end
         {
             CastE(Hero);
             return;
@@ -1327,12 +1345,12 @@ void Orianna::Combo()
     {
         return;
     }
-    if(PredictionType->GetInteger() == 2 && Q->IsReady() && ComboQ->Enabled() && !isChasing(target) && R->IsReady() && Extensions::CountInRange(Hero, R->Radius() * 2, GEntityList->GetAllHeros(false,true)) > 1)
+    if(!PredictionType->GetInteger() == 0 && Q->IsReady() && ComboQ->Enabled() && !isChasing(target) && R->IsReady() && Extensions::CountInRange(Hero, R->Radius() * 2, GEntityList->GetAllHeros(false,true)) > 1)
     {
         TeamFightQ(target->GetPosition());
         return;
     }
-    else if(PredictionType->GetInteger() == 2 && Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget(target, Q->Range()))
+    else if(!PredictionType->GetInteger() == 0 && Q->IsReady() && ComboQ->Enabled() && Hero->IsValidTarget(target, Q->Range()))
     {
         // do a normal cast not aoe one
         CastQ(target);
