@@ -1114,11 +1114,9 @@ void Orianna::CastQ(IUnit* target)
     else if(PredictionType->GetInteger() == 2)
     {
         auto castPos = GetCastPosition(Q, Hero, target);
-        AdvPredictionOutput prediction_output;
-        Q->RunPrediction(target, true, kCollidesWithYasuoWall, &prediction_output);
-        if(prediction_output.HitChance >= kHitChanceHigh)
+        if(castPos != Vec3(0, 0, 0))
         {
-            Praedictio::Cast(Hero, Q, target, NewOriannaBall);
+            Q->CastOnPosition(castPos);
         }
         if(isChasing(target) && target->GetWaypointList().size() >= 1)  // target is running
         {

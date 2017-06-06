@@ -19,7 +19,7 @@ Karthus::Karthus(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
     W = GPluginSDK->CreateSpell2(kSlotW, kCircleCast, false, true, kCollidesWithNothing);
     W->SetSkillshot(1.0f, 200.f, FLT_MAX, 1000.f);
     E = GPluginSDK->CreateSpell2(kSlotE, kConeCast, false, true, kCollidesWithWalls);
-    E->SetSkillshot(0.30f, 550.f, FLT_MAX, 550.f);
+    E->SetSkillshot(0.30f, 520.f, FLT_MAX, 520.f);
     R = GPluginSDK->CreateSpell2(kSlotR, kTargetCast, false, false, kCollidesWithNothing);
     KarthusMenu      = Parent->AddMenu("Karthus Menu");
     ComboMenu        = Parent->AddMenu("Combo");

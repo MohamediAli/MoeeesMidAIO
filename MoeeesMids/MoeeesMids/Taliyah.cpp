@@ -145,8 +145,6 @@ Vec3 Taliyah::CalculateReturnPos() //credits 2 my nigga sebby
     return Vec3(0, 0, 0);
 }
 
-
-
 void Taliyah::zigzag()   //credits sn karthus
 {
     if(QTarget == nullptr || !QTarget->IsHero() || !QTarget->IsValidTarget())
