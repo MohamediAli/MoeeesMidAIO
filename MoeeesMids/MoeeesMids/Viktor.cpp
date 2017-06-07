@@ -101,7 +101,7 @@ void Viktor::OnGameUpdate()
         LaneClear();
         JungleClear();
     }
-    if(GetAsyncKeyState(ComboAAkey->GetInteger()))
+    if(GUtility->IsKeyDown(ComboAAkey->GetInteger()))
     {
         auto level = Hero->GetLevel();
         if(ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
@@ -110,13 +110,13 @@ void Viktor::OnGameUpdate()
             GOrbwalking->SetAttacksAllowed(false);
         }
     }
-    if(!GetAsyncKeyState(ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
+    if(!GUtility->IsKeyDown(ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
     {
         {
             GOrbwalking->SetAttacksAllowed(true);
         }
     }
-    if(GetAsyncKeyState(Fleemode->GetInteger()))
+    if(GUtility->IsKeyDown(Fleemode->GetInteger()))
     {
 //		GGame->PrintChat (std::to_string (DPS (test, true, false, true, true)).c_str());
         FleeMode();

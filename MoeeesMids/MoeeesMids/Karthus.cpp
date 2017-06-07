@@ -195,7 +195,7 @@ void Karthus::OnGameUpdate()
     {
         LaneClear();
     }
-    if(GetAsyncKeyState(ComboAAkey->GetInteger()))
+    if(GUtility->IsKeyDown(ComboAAkey->GetInteger()))
     {
         auto level = Hero->GetLevel();
         if(ComboAA->Enabled() && level >= ComboAALevel->GetInteger() && Hero->GetMana() > 100)
@@ -203,7 +203,7 @@ void Karthus::OnGameUpdate()
             GOrbwalking->SetAttacksAllowed(false);
         }
     }
-    if(!GetAsyncKeyState(ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
+    if(!GUtility->IsKeyDown(ComboAAkey->GetInteger()) || Hero->GetMana() < 100)
     {
         {
             GOrbwalking->SetAttacksAllowed(true);

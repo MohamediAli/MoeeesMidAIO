@@ -1,12 +1,12 @@
 #include "Taliyah.h"
 #include "Rembrandt.h"
 #include "Extensions.h"
+#define M_PI 3.14159265358979323846
 
 Taliyah::~Taliyah()
 {
     TaliyahMenu->Remove();
 }
-
 
 Taliyah::Taliyah(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
 {
@@ -15,13 +15,14 @@ Taliyah::Taliyah(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
     W = GPluginSDK->CreateSpell2(kSlotW, kCircleCast, false, true, kCollidesWithNothing);
     W->SetSkillshot(1.0f, 200.f, FLT_MAX, 900.f);
     E = GPluginSDK->CreateSpell2(kSlotE, kConeCast, false, true, kCollidesWithWalls);
-    E->SetSkillshot(0.30f, 450.f, FLT_MAX, 800.f);
+    E->SetSkillshot(0.30f, 450.f, FLT_MAX, 750.f);
     R = GPluginSDK->CreateSpell2(kSlotR, kTargetCast, false, false, kCollidesWithNothing);
     TaliyahMenu      = Parent->AddMenu("Taliyah Menu");
     ComboMenu        = Parent->AddMenu("Combo");
     qMenu            = Parent->AddMenu("Q Settings");
     wMenu            = Parent->AddMenu("W Settings");
     eMenu            = Parent->AddMenu("E Settings");
+    Prediction       = Parent->AddMenu("Prediction");
     Drawings         = Parent->AddMenu("Spell Drawings");
     MiscMenu         = Parent->AddMenu("Miscs");
     LockQ            = qMenu->CheckBox("Auto-Lock Q", true);
@@ -56,6 +57,8 @@ Taliyah::Taliyah(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
     JungleClearE     = eMenu->CheckBox("Jungle Clear with E", true);
     JungleClearEMana = eMenu->AddFloat(":: Only Jungle Clear E if Mana >", 0, 100, 50);
     gapCloserE       = eMenu->CheckBox("E on Gap Closer", true);
+    PredType         = { "Core", "mPred"};
+    PredictionType   = Prediction->AddSelection("Choose Prediction Type", 1, PredType);
     RideR            = MiscMenu->CheckBox("Automatically Mount on R", true);
     DrawReady        = Drawings->CheckBox("Draw Ready Spells", true);
     drawDmg          = Drawings->CheckBox("Draw Damage", false);
@@ -65,7 +68,6 @@ Taliyah::Taliyah(IMenu* Parent, IUnit* Hero) :Champion(Parent, Hero)
     DrawE            = Drawings->CheckBox("Draw E", true);
     DrawR            = Drawings->CheckBox("Draw R", true);
 }
-
 
 void Taliyah::OnGameUpdate()
 {
@@ -99,6 +101,7 @@ void Taliyah::OnGameUpdate()
         JungleClear();
     }
 }
+
 void Taliyah::OnRender()
 {
     if(Extensions::Validate(Qing) && LockQ->Enabled())
@@ -107,14 +110,11 @@ void Taliyah::OnRender()
     }
     Drawing();
     dmgdraw();
-    GRender->DrawCircle(Hero->GetPosition(), 30, Vec4(255, 255, 0, 255), 2);
     if(CalculateReturnPos() != Vec3(0, 0, 0))
     {
         GRender->DrawCircle(CalculateReturnPos(), 100, Vec4(255, 0, 255, 255), 5, false);
     }
 }
-
-
 
 Vec3 Taliyah::CalculateReturnPos() //credits 2 my nigga sebby
 {
@@ -264,9 +264,11 @@ void Taliyah::OnInterrupt(InterruptibleSpell const& args)
     if(args.Source == nullptr || args.Source->IsDead()) { return; }
     if(W->IsReady() && interrupterW->Enabled() && Hero->IsValidTarget(args.Source, W->Range()) && args.Source != nullptr && args.Source != Hero && args.Source->IsEnemy(Hero))
     {
-        if(!cz)
+        Vec3 out;
+        WPos(args.Source, out);
+        if(out != Vec3(0, 0, 0))
         {
-            W->CastFrom(PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
+            W->CastFrom(out, Hero->ServerPosition());
         }
     }
 }
@@ -295,7 +297,7 @@ void Taliyah::OnCreate(IUnit* object)
     {
         if(strcmp(objectName, "Taliyah_Base_E_Mines.troy") == 0 && object->IsVisible() && object->IsValidObject())
         {
-            eOnGround = true;
+            eOnGround = object;
             result1.push_back(qaoe1);
         }
     }
@@ -317,22 +319,28 @@ void Taliyah::OnDelete(IUnit* object)
     }
     if(strcmp(objectName, "Taliyah_Base_E_Timeout.troy") == 0 && object->IsVisible() && object->IsValidObject())   //!soldier->IsEnemy(Hero)
     {
-        eOnGround = false;
+        //   eOnGround = false;
     }
 }
 
-void Taliyah::CastE()
+void Taliyah::WPos(IUnit* target, Vec3 &out)
 {
-    auto target = GTargetSelector->GetFocusedTarget() != nullptr
-                  ? GTargetSelector->GetFocusedTarget()
-                  : GTargetSelector->FindTarget(QuickestKill, SpellDamage, W->Range() + 50);
-    if(target == nullptr || !target->IsHero())
+    out = Vec3(0, 0, 0);
+    if(PredictionType->GetInteger() == 0)
     {
-        return;
+        AdvPredictionOutput prediction_output;
+        W->RunPrediction(target, true, kCollidesWithNothing, &prediction_output);
+        if(prediction_output.HitChance >= kHitChanceHigh)
+        {
+            out = prediction_output.CastPosition;
+        }
     }
-    if(ComboE->Enabled() && Extensions::GetDistanceSqr(Hero->ServerPosition(),target->ServerPosition()) < (E->Range()+100) * (E->Range() + 100))
+    if(PredictionType->GetInteger() == 1)
     {
-        E->CastOnPosition(target->ServerPosition());
+        if(!cz)
+        {
+            out = PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2);
+        }
     }
 }
 
@@ -349,48 +357,61 @@ void Taliyah::Combo()
         {
             if(E->IsReady() && (Hero->ServerPosition() - target->ServerPosition()).Length() > 420)
             {
-                if(!cz)
+                Vec3 out;
+                WPos(target, out);
+                if(out != Vec3(0,0,0))
                 {
-                    W->CastFrom(PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
+                    W->CastFrom(out, Hero->ServerPosition());
                 }
             }
             if(E->IsReady() && W->IsReady() && Extensions::GetDistance(Hero, target) < 420)
             {
-                if(!cz)
+                Vec3 out;
+                WPos(target, out);
+                if(out != Vec3(0, 0, 0))
                 {
                     W->CastOnPosition(PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
                 }
             }
         }
-        if(eOnGround)
+        if(Extensions::Validate(eOnGround))
         {
             if((Hero->ServerPosition() - target->ServerPosition()).Length() > 420)
             {
-                if(!cz)
+                Vec3 out;
+                WPos(target, out);
+                if(out != Vec3(0, 0, 0))
                 {
-                    W->CastFrom(PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
+                    W->CastFrom(out, Hero->ServerPosition());
                 }
             }
             if((Hero->ServerPosition() - target->ServerPosition()).Length() < 420)
             {
-                if(!cz)
+                Vec3 out;
+                WPos(target, out);
+                if(out != Vec3(0, 0, 0))
                 {
-                    W->CastOnPosition(PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2));
+                    W->CastOnPosition(out);
                 }
             }
         }
         if(!EonlyW->Enabled())
         {
-            if(!cz)
+            Vec3 out;
+            WPos(target, out);
+            if(out != Vec3(0, 0, 0))
             {
-                W->CastFrom(PredPos(QTarget, 0.75f + (GGame->Latency() / 1000) / 2), Hero->ServerPosition());
+                W->CastFrom(out, Hero->ServerPosition());
             }
         }
     }
-    if(ComboE->Enabled() && E->IsReady() && !W->IsReady() && Hero->IsValidTarget(target, E->Range()))
+    if(ComboW->Enabled() && W->IsReady())
     {
-        //GPluginSDK->DelayFunctionCall(400, []() { CastE(); });
-        CastE();
+        return;
+    }
+    if(ComboE->Enabled() && E->IsReady() && Hero->IsValidTarget(target, W->Range()))
+    {
+        E->CastOnPosition(target->ServerPosition());
     }
     if(ComboQ->Enabled() && Q->IsReady() && Hero->IsValidTarget(target, Q->Range() + 50))
     {
@@ -404,10 +425,6 @@ void Taliyah::Combo()
         }
     }
 }
-
-
-
-
 
 void Taliyah::Harass()
 {
@@ -429,6 +446,60 @@ void Taliyah::Harass()
     }
 }
 
+bool Taliyah::FarmSpell(Vec3 pos, ISpell2* spell, std::vector<std::pair<int, Vec2>>& result)  //back line
+{
+    auto posChecked = 0;
+    auto maxRange = R->Radius() + spell->Range();
+    auto posRadius = spell->Radius() / 2;
+    auto maxPosChecked = (int)(maxRange / posRadius);
+    auto radiusIndex = 0;
+    bool menu;
+    std::vector<std::pair<int, Vec2>> HighestMinionCount;
+    std::vector<std::pair<int, Vec2>> possibleQPositions;
+    while(posChecked < maxPosChecked)
+    {
+        radiusIndex++;
+        auto curRadius = radiusIndex * (0x00002 * posRadius);
+        auto curCurcleChecks = static_cast<int>(ceil(0x2 * M_PI * curRadius / (0x2 * static_cast<double>(posRadius))));
+        for(auto i = 0x1; i < curCurcleChecks; i++)
+        {
+            posChecked++;
+            auto cRadians = 0x2 * M_PI / (curCurcleChecks - 0x1) * i;
+            auto xPos = static_cast<float>(floor(pos.x + curRadius * cos(cRadians)));
+            auto zPos = static_cast<float>(floor(pos.z + curRadius * sin(cRadians)));
+            auto posFor2D = Vec2(xPos, zPos);
+            auto count = Extensions::CountMinionsInTargetRange(Extensions::To3D(posFor2D), W->Radius());
+            //GGame->PrintChat(std::to_string(count).c_str());
+            if(GNavMesh->IsPointWall(Extensions::To3D(posFor2D)))
+            {
+                // dont push is wall
+                continue;
+            }
+            if(Extensions::Dist2D(posFor2D, GEntityList->Player()->ServerPosition()) > spell->Range())
+            {
+                // dont push to far away to cast;
+                continue;
+            }
+            if(Extensions::Dist2D(posFor2D, pos) <= spell->Radius() * 4)
+            {
+                //	GGame->ShowPing(kPingAssistMe, To3D(posFor2D), false);
+                possibleQPositions.push_back(std::make_pair(count, posFor2D));
+            }
+        }
+    }
+    std::sort(possibleQPositions.begin(), possibleQPositions.end(), [](auto &left, auto &right)
+    {
+        return left.first > right.first;
+    });
+    if(possibleQPositions.size() > 0)
+    {
+        HighestMinionCount.push_back(std::make_pair(possibleQPositions[0].first, possibleQPositions[0].second));
+        result = HighestMinionCount;
+        return true;
+    }
+    return false;
+}
+
 void Taliyah::LaneClear()
 {
     for(auto minions : GEntityList->GetAllMinions(false, true, false))
@@ -448,9 +519,70 @@ void Taliyah::LaneClear()
         {
             E->CastOnUnit(minions);
         }
-        if(laneClearW->Enabled() && Hero->ManaPercent() > laneClearWMana->GetFloat() && W->IsReady() && Hero->IsValidTarget(minions, W->Range()))
+        if(laneClearW->Enabled() && Hero->ManaPercent() > laneClearWMana->GetFloat() && W->IsReady() && Extensions::Validate(eOnGround) && Hero->IsValidTarget(minions, W->Range()))
         {
-            W->CastFrom(minions->ServerPosition(), Hero->ServerPosition());
+            std::vector<std::pair<int, Vec2>> BestPos;
+            std::vector<std::pair<int, Vec2>> BestPosRanged;
+            std::vector<std::pair<int, Vec2>> FinalPos;
+            std::vector<Vec3> allMinions;
+            std::vector<IUnit*> allMinionsUnit;
+            std::vector<Vec3> rangedMinions;
+            for(auto minion : GEntityList->GetAllMinions(false, true, false))
+            {
+                if(minion != nullptr && !minion->IsWard() && minion->IsCreep() && Extensions::GetDistance(GEntityList->Player(), minion->ServerPosition()) <= Q->Range())
+                {
+                    if(!minion->IsDead() && minion->PhysicalDamage() > 1);
+                    {
+                        allMinions.push_back(minion->GetPosition());
+                        allMinionsUnit.push_back(minion);
+                        if(Extensions::GetMinionType(minion) == kMinionNormal || Extensions::GetMinionType(minion) == kMinionSiege)
+                        {
+                            rangedMinions.push_back(minion->GetPosition());
+                        }
+                    }
+                }
+            }
+            if(allMinions.size())
+            {
+                for(auto x : allMinions)
+                {
+                    std::vector<std::pair<int, Vec2>> result;
+                    if(FarmSpell(x, W, result))
+                    {
+                        BestPos.push_back(result[0]);
+                    }
+                }
+                std::sort(BestPos.begin(), BestPos.end(), [](auto &left, auto &right)
+                {
+                    return left.first > right.first;
+                });
+                if(rangedMinions.size() > 0)
+                {
+                    for(auto x : rangedMinions)
+                    {
+                        std::vector<std::pair<int, Vec2>> result2;
+                        if(FarmSpell(x, W, result2))
+                        {
+                            BestPosRanged.push_back(result2[0]);
+                        }
+                    }
+                    std::sort(BestPosRanged.begin(), BestPosRanged.end(), [](auto &left, auto &right)
+                    {
+                        return left.first > right.first;
+                    });
+                    FinalPos = BestPos[0].first > BestPosRanged[0].first + 1 ? BestPos : BestPosRanged;
+                }
+                else
+                {
+                    FinalPos = BestPos;
+                }
+                //	auto finalPos = BestPos[0].first > BestPosRanged[0].first + 1 ? BestPos : BestPosRanged;
+                if(FinalPos[0].first >= 3)
+                {
+                    W->CastFrom(Extensions::To3D(FinalPos[0].second), Hero->GetPosition());
+                    return;
+                }
+            }
         }
     }
 }
@@ -470,7 +602,7 @@ void Taliyah::JungleClear()
                 Q->CastOnPosition(minions->ServerPosition());
             }
         }
-        if(JungleClearE->Enabled() && Hero->ManaPercent() > JungleClearEMana->GetFloat() && E->IsReady() && Hero->IsValidTarget(minions, W->Range()))
+        if(JungleClearE->Enabled() && Hero->ManaPercent() > JungleClearEMana->GetFloat() && E->IsReady() && Hero->IsValidTarget(minions, E->Range()))
         {
             E->CastOnUnit(minions);
         }
@@ -520,14 +652,6 @@ void Taliyah::OnSpellCast(CastedSpell const& args)
     if(std::string(args.Name_) == "TaliyahR" && RideR->Enabled() && args.Caster_ == Hero)
     {
         R->CastOnPlayer();
-    }
-    auto target = GTargetSelector->FindTarget(QuickestKill, SpellDamage, W->Range());
-    if(std::string(args.Name_) == "TaliyahWVC" && RideR->Enabled() && args.Caster_ == Hero)
-    {
-        if(ComboE->Enabled() && E->IsReady() && Hero->IsValidTarget(target, W->Range()))
-        {
-            CastE();
-        }
     }
 }
 
@@ -677,7 +801,6 @@ void Taliyah::dmgdraw()
         }
     }
 }
-
 
 void Taliyah::KillSteal()
 {
